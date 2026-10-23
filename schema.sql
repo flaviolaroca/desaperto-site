@@ -10,11 +10,19 @@ CREATE TABLE IF NOT EXISTS respostas (
   nome        TEXT,
   email       TEXT,
   teste       INTEGER NOT NULL DEFAULT 0,-- 1 = enviado no modo de teste
-  status      TEXT NOT NULL DEFAULT 'recebido', -- recebido | plano_enviado
+  status      TEXT NOT NULL DEFAULT 'recebido', -- recebido | gerando | plano_pronto | erro_plano | plano_enviado
   plano_enviado_em TEXT,
+  plano_gerado_em TEXT,
+  plano_resumo TEXT,                     -- JSON com data de saída, avisos e se precisa de revisão
+  plano_erro  TEXT,
   origem_hash TEXT,                      -- hash do IP + sal, só para limitar abuso
   dados       TEXT NOT NULL              -- respostas completas, em JSON
 );
 
 CREATE INDEX IF NOT EXISTS idx_respostas_criado ON respostas (criado_em);
 CREATE INDEX IF NOT EXISTS idx_respostas_origem ON respostas (origem_hash, criado_em);
+
+-- Para um banco criado antes destas colunas existirem:
+-- ALTER TABLE respostas ADD COLUMN plano_gerado_em TEXT;
+-- ALTER TABLE respostas ADD COLUMN plano_resumo TEXT;
+-- ALTER TABLE respostas ADD COLUMN plano_erro TEXT;

@@ -1,0 +1,78 @@
+# Gera o plano em PDF quando chega uma resposta nova no site.
+# Disparado pelo site (repository_dispatch) ou à mão, em Actions → Gerar plano → Run workflow.
+name: Gerar plano
+
+on:
+  repository_dispatch:
+    types: [gerar-plano]
+  workflow_dispatch:
+    inputs:
+      id:
+        description: 'id da resposta (está na área /admin)'
+        required: true
+
+concurrency:
+  group: plano-${{ github.event.client_payload.id || inputs.id }}
+  cancel-in-progress: true
+
+jobs:
+  gerar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SITE: https://desaperto.com
+      ID: ${{ github.event.client_payload.id || inputs.id }}
+      ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Navegador para gerar o PDF
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-1.48.2
+
+      - name: Instalar o Playwright
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.48.2
+          npx playwright install --with-deps chromium
+
+      - name: Buscar as respostas
+        run: |
+          test -n "$ADMIN_TOKEN" || { echo "Falta o segredo ADMIN_TOKEN no GitHub"; exit 1; }
+          mkdir -p trabalho
+          curl -sSf -H "authorization: Bearer $ADMIN_TOKEN" "$SITE/api/admin/respostas?id=$ID" -o trabalho/resposta.json
+          python3 -c "
+          import json
+          r = json.load(open('trabalho/resposta.json'))['resposta']
+          json.dump(r['dados'], open('trabalho/dados.json', 'w'), ensure_ascii=False)
+          open('trabalho/data.txt', 'w').write(r['criado_em'][:10])
+          "
+
+      - name: Calcular e montar o plano
+        run: python3 motor/gerar_plano.py trabalho/dados.json "$(cat trabalho/data.txt)" trabalho
+
+      - name: Gerar o PDF
+        run: node motor/gerar_pdf.js trabalho/plano.html trabalho/plano.pdf
+
+      - name: Enviar o PDF para o site
+        run: |
+          curl -sSf -X PUT -H "authorization: Bearer $ADMIN_TOKEN" -H "content-type: application/pdf" \
+            --data-binary @trabalho/plano.pdf "$SITE/api/admin/plano?id=$ID"
+          python3 -c "
+          import json
+          json.dump({'resumo': json.load(open('trabalho/resumo.json'))}, open('trabalho/corpo.json', 'w'), ensure_ascii=False)
+          "
+          curl -sSf -X POST -H "authorization: Bearer $ADMIN_TOKEN" -H "content-type: application/json" \
+            --data-binary @trabalho/corpo.json "$SITE/api/admin/plano?id=$ID"
+
+      - name: Avisar o site se deu erro
+        if: failure()
+        run: |
+          curl -sS -X POST -H "authorization: Bearer $ADMIN_TOKEN" -H "content-type: application/json" \
+            -d "{\"erro\": \"A geração falhou. Veja o registro em ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            "$SITE/api/admin/plano?id=$ID" || true

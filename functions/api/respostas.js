@@ -1,6 +1,6 @@
 // POST /api/respostas  -> guarda as respostas do questionário e devolve um protocolo.
 // PUT  /api/respostas  -> a própria pessoa corrige as respostas já enviadas (precisa do id e da chave).
-import { json, erro, sha256, aleatorio, protocolo, agora, lerCorpo, validarRespostas, limparAntigas, enviarEmail, escapar, LIMITE_POR_HORA } from '../../lib/api.js';
+import { json, erro, sha256, aleatorio, protocolo, agora, lerCorpo, validarRespostas, limparAntigas, enviarEmail, escapar, pedirPlano, LIMITE_POR_HORA } from '../../lib/api.js';
 
 async function origem(request, env) {
   const ip = request.headers.get('cf-connecting-ip') || 'sem-ip';
@@ -37,6 +37,9 @@ export async function onRequestPost({ request, env }) {
     }
   }
   try { await limparAntigas(env.DB); } catch {}
+  if (await pedirPlano(env, id)) {
+    try { await env.DB.prepare("UPDATE respostas SET status = 'gerando' WHERE id = ?").bind(id).run(); } catch {}
+  }
 
   // Avisos por e-mail: só se o envio estiver configurado. A falha aqui não impede o recebimento.
   const primeiroNome = r.nome.trim().split(/\s+/)[0];
@@ -66,8 +69,11 @@ export async function onRequestPut({ request, env }) {
   if (problema) return erro(problema);
   const linha = await env.DB.prepare('SELECT chave_hash, protocolo FROM respostas WHERE id = ?').bind(id).first();
   if (!linha || linha.chave_hash !== (await sha256(chave))) return erro('Não encontramos esse envio. Envie de novo como novo.', 404);
-  await env.DB.prepare("UPDATE respostas SET dados = ?, nome = ?, email = ?, atualizado_em = ?, status = 'recebido' WHERE id = ?")
+  await env.DB.prepare("UPDATE respostas SET dados = ?, nome = ?, email = ?, atualizado_em = ?, status = 'recebido', plano_resumo = NULL, plano_erro = NULL WHERE id = ?")
     .bind(JSON.stringify(r), r.nome.trim(), r.email.trim().toLowerCase(), agora(), id).run();
+  if (await pedirPlano(env, id)) {
+    try { await env.DB.prepare("UPDATE respostas SET status = 'gerando' WHERE id = ?").bind(id).run(); } catch {}
+  }
   return json({ ok: true, id, protocolo: linha.protocolo });
 }
 

@@ -2,3 +2,5 @@ node_modules/
 .wrangler/
 .DS_Store
 __pycache__/
+trabalho/
+package-lock.json

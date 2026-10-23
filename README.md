@@ -24,6 +24,18 @@ Site do Desaperto, publicado pela Cloudflare Pages a partir deste repositório.
 5. Custom domains → Set up a domain → `desaperto.com` (e depois `www.desaperto.com`).
 6. Deployments → Retry deployment, para as configurações valerem.
 
+## Geração automática do plano
+- Quando chega uma resposta, o site pede ao GitHub para rodar `.github/workflows/gerar-plano.yml`.
+- O workflow busca as respostas, roda o motor (`motor/`), gera o PDF e devolve ao site. A resposta fica como "Plano pronto" no /admin.
+- Na /admin: "Ver plano" abre o PDF; "Enviar plano" manda por e-mail com o PDF anexo.
+- Envio sem revisão: variável `ENVIO_AUTOMATICO` = `sim` na Cloudflare. Mesmo assim, planos com aviso grave ficam para revisão.
+
+Configuração extra:
+- Cloudflare → KV → criar namespace `desaperto-planos` → no projeto Pages, ligação KV com nome `PLANOS`.
+- Cloudflare, segredos: `GITHUB_TOKEN` (token do GitHub com permissão de Contents: Read and write só neste repositório) e `RESEND_API_KEY`.
+- GitHub → Settings → Secrets and variables → Actions → `ADMIN_TOKEN` (a mesma da Cloudflare).
+- Banco criado antes: rodar os três `ALTER TABLE` do fim de `schema.sql`.
+
 ## Depois de no ar
 - Respostas: desaperto.com/admin, com a `ADMIN_TOKEN`.
 - Cada resposta é apagada sozinha 90 dias depois do envio.

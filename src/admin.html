@@ -16,6 +16,13 @@ td.n { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; 
 .chip { display: inline-block; font-size: .75rem; font-weight: 700; border-radius: 99px; padding: 3px 9px; background: var(--areia); white-space: nowrap; }
 .chip.ok { background: #DCEBE1; color: var(--verde); }
 .chip.t { background: var(--tinta); color: var(--papel); }
+.chip.pronto { background: #16704A; color: #fff; }
+.chip.rev { background: #F3E3C7; color: #9A5B12; }
+.chip.erro { background: #F3E3C7; color: #9A5B12; }
+.avisos { margin: 8px 0 0; padding-left: 18px; font-size: .875rem; color: #3D3420; display: flex; flex-direction: column; gap: 4px; }
+.det { display: flex; flex-direction: column; gap: 8px; font-size: .9375rem; }
+.det b { font-weight: 700; }
+.msg-linha { font-size: .8125rem; color: var(--cinza); }
 .acoes { display: flex; flex-wrap: wrap; gap: 6px; }
 .acoes button { padding: 6px 12px; font-size: .8125rem; }
 pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .75rem; overflow: auto; max-height: 50vh; margin: 8px 0 0; }
@@ -40,7 +47,7 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
   'use strict';
   var token = '';
   try { token = sessionStorage.getItem('desaperto-admin') || ''; } catch (e) {}
-  var lista = [], aberto = null, confirmando = null;
+  var lista = [], aberto = null, confirmando = null, enviando = null;
   var $ = function (id) { return document.getElementById(id); };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function data(iso) { if (!iso) return ''; var d = new Date(iso); return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }
@@ -53,19 +60,51 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
     var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = nome; document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
   }
+  var MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  function situacao(x) {
+    var p = x.plano_resumo;
+    if (x.status === 'plano_enviado') return '<span class="chip ok">Plano enviado</span>';
+    if (x.status === 'plano_pronto') return '<span class="chip pronto">Plano pronto</span>' + (p && p.precisa_revisao ? ' <span class="chip rev">revisar</span>' : '');
+    if (x.status === 'gerando') return '<span class="chip">Gerando plano...</span>';
+    if (x.status === 'erro_plano') return '<span class="chip erro">Erro ao gerar</span>';
+    return '<span class="chip">Recebido</span>';
+  }
+  function saidaTxt(p) {
+    if (!p) return '';
+    if (p.repactuacao) return 'Renegociação pela lei' + (p.saida ? ' · saída ' + MESES[p.saida[1] - 1] + '/' + String(p.saida[0]).slice(2) : '');
+    if (!p.saida) return 'Sem data de saída';
+    return 'Saída ' + MESES[p.saida[1] - 1] + '/' + String(p.saida[0]).slice(2) + (p.cenario_carro ? ' · com venda do carro' : '');
+  }
+  function abrirPdf(id) {
+    $('msg').textContent = 'Abrindo o plano...';
+    fetch('/api/admin/plano?id=' + encodeURIComponent(id), { headers: { authorization: 'Bearer ' + token } })
+      .then(function (r) { if (!r.ok) throw new Error('Plano não encontrado'); return r.blob(); })
+      .then(function (b) { var u = URL.createObjectURL(b); var w = window.open(u, '_blank'); if (!w) { var a = document.createElement('a'); a.href = u; a.download = 'plano.pdf'; a.click(); } desenharMsg(); })
+      .catch(function (e) { $('msg').textContent = 'Erro: ' + e.message; });
+  }
+  function desenharMsg() {
+    var prontos = lista.filter(function (x) { return x.status === 'plano_pronto'; }).length;
+    $('msg').textContent = (lista.length ? lista.length + (lista.length === 1 ? ' resposta' : ' respostas') : 'Nenhuma resposta ainda') + (prontos ? '. ' + prontos + (prontos === 1 ? ' plano esperando' : ' planos esperando') + ' a sua revisão.' : '.') + ' Tudo é apagado sozinho 90 dias depois do envio.';
+  }
   function desenhar() {
-    $('msg').textContent = lista.length ? lista.length + (lista.length === 1 ? ' resposta.' : ' respostas.') + ' Elas são apagadas sozinhas 90 dias depois do envio.' : 'Nenhuma resposta ainda.';
+    desenharMsg();
     if (!lista.length) { $('tabela').hidden = true; return; }
     $('tabela').hidden = false;
-    $('tabela').innerHTML = '<table><thead><tr><th>Recebido</th><th>Protocolo</th><th>Nome</th><th>E-mail</th><th>Dívidas</th><th>Situação</th><th>Ações</th></tr></thead><tbody>' +
+    $('tabela').innerHTML = '<table><thead><tr><th>Recebido</th><th>Protocolo</th><th>Nome</th><th>Dívidas</th><th>Plano</th><th>Situação</th><th>Ações</th></tr></thead><tbody>' +
       lista.map(function (x) {
-        var sit = x.status === 'plano_enviado' ? '<span class="chip ok">Plano enviado</span>' : '<span class="chip">Aguardando plano</span>';
+        var sit = situacao(x);
         if (x.teste) sit += ' <span class="chip t">teste</span>';
-        var acoes = '<button type="button" class="sec" data-ver="' + x.id + '">' + (aberto && aberto.id === x.id ? 'Fechar' : 'Ver') + '</button>' +
+        var temPdf = x.status === 'plano_pronto' || x.status === 'plano_enviado';
+        var acoes = (temPdf ? '<button type="button" data-pdf="' + x.id + '">Ver plano</button>' : '') +
+          (x.status === 'plano_pronto' ? (enviando === x.id ? '<button type="button" data-enviar-sim="' + x.id + '">Confirmar envio para ' + esc(x.email) + '</button><button type="button" class="perigo" data-cancelar>Cancelar</button>' : '<button type="button" data-enviar="' + x.id + '">Enviar plano</button>') : '') +
+          '<button type="button" class="sec" data-ver="' + x.id + '">' + (aberto && aberto.id === x.id ? 'Fechar' : 'Respostas') + '</button>' +
+          '<button type="button" class="sec" data-gerar="' + x.id + '">' + (x.status === 'recebido' || x.status === 'erro_plano' ? 'Gerar plano' : 'Gerar de novo') + '</button>' +
           '<button type="button" class="sec" data-baixar="' + x.id + '">Baixar</button>' +
-          (x.status === 'plano_enviado' ? '<button type="button" class="sec" data-status="recebido" data-id="' + x.id + '">Desfazer envio</button>' : '<button type="button" data-status="plano_enviado" data-id="' + x.id + '">Marcar plano enviado</button>') +
           (confirmando === x.id ? '<button type="button" class="perigo" data-apagar-sim="' + x.id + '">Confirmar: apagar</button><button type="button" class="perigo" data-cancelar>Cancelar</button>' : '<button type="button" class="perigo" data-apagar="' + x.id + '">Apagar</button>');
-        var linha = '<tr><td>' + esc(data(x.criado_em)) + (x.atualizado_em !== x.criado_em ? '<br><small>corrigido ' + esc(data(x.atualizado_em)) + '</small>' : '') + '</td><td class="n">' + esc(x.protocolo) + '</td><td>' + esc(x.nome) + '</td><td>' + esc(x.email) + '</td><td>' + esc(x.n_dividas) + '</td><td>' + sit + '</td><td><div class="acoes">' + acoes + '</div></td></tr>';
+        var p = x.plano_resumo, avisos = '';
+        if (p && ((p.alertas && p.alertas.length) || p.precisa_revisao)) avisos = '<ul class="avisos">' + (p.alertas || []).map(function (a) { return '<li>' + esc(a.texto) + '</li>'; }).join('') + (!p.conta_fecha ? '<li>A conta não fecha: confira se faz sentido o caminho escolhido (' + esc(saidaTxt(p)) + ').</li>' : '') + '</ul>';
+        if (x.status === 'erro_plano' && x.plano_erro) avisos = '<p class="msg-linha">' + esc(x.plano_erro) + '</p>';
+        var linha = '<tr><td>' + esc(data(x.criado_em)) + (x.atualizado_em !== x.criado_em ? '<br><small>corrigido ' + esc(data(x.atualizado_em)) + '</small>' : '') + '</td><td class="n">' + esc(x.protocolo) + '</td><td>' + esc(x.nome) + '<br><small>' + esc(x.email) + '</small></td><td>' + esc(x.n_dividas) + '</td><td>' + esc(saidaTxt(p)) + avisos + '</td><td>' + sit + (x.plano_enviado_em ? '<br><small>' + esc(data(x.plano_enviado_em)) + '</small>' : '') + '</td><td><div class="acoes">' + acoes + '</div></td></tr>';
         if (aberto && aberto.id === x.id) linha += '<tr><td colspan="7"><pre>' + esc(JSON.stringify(aberto.dados, null, 2)) + '</pre></td></tr>';
         return linha;
       }).join('') + '</tbody></table>';
@@ -93,11 +132,22 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
     var t = e.target, id;
     if ((id = t.getAttribute('data-ver'))) { if (aberto && aberto.id === id) { aberto = null; desenhar(); return; } completa(id).then(function (r) { aberto = r; desenhar(); }); }
     else if ((id = t.getAttribute('data-baixar'))) completa(id).then(function (r) { baixar('desaperto-' + r.protocolo + '.json', r); });
-    else if (t.hasAttribute('data-status')) api('POST', '', { id: t.getAttribute('data-id'), status: t.getAttribute('data-status') }).then(carregar);
+    else if ((id = t.getAttribute('data-pdf'))) abrirPdf(id);
+    else if ((id = t.getAttribute('data-enviar'))) { enviando = id; desenhar(); }
+    else if ((id = t.getAttribute('data-enviar-sim'))) {
+      $('msg').textContent = 'Enviando...';
+      fetch('/api/admin/enviar', { method: 'POST', headers: { authorization: 'Bearer ' + token, 'content-type': 'application/json' }, body: JSON.stringify({ id: id }) })
+        .then(function (r) { return r.json(); }).then(function (j) { enviando = null; if (!j.ok) { $('msg').textContent = 'Não enviou: ' + j.erro; desenhar(); return; } carregar(); });
+    }
+    else if ((id = t.getAttribute('data-gerar'))) {
+      fetch('/api/admin/gerar', { method: 'POST', headers: { authorization: 'Bearer ' + token, 'content-type': 'application/json' }, body: JSON.stringify({ id: id }) })
+        .then(function (r) { return r.json(); }).then(function (j) { if (!j.ok) $('msg').textContent = 'Não foi possível: ' + j.erro; else carregar(); });
+    }
     else if ((id = t.getAttribute('data-apagar'))) { confirmando = id; desenhar(); }
     else if ((id = t.getAttribute('data-apagar-sim'))) api('DELETE', '?id=' + encodeURIComponent(id)).then(function () { confirmando = null; aberto = null; carregar(); });
-    else if (t.hasAttribute('data-cancelar')) { confirmando = null; desenhar(); }
+    else if (t.hasAttribute('data-cancelar')) { confirmando = null; enviando = null; desenhar(); }
   });
+  setInterval(function () { if (token && lista.some(function (x) { return x.status === 'gerando'; }) && !aberto && !enviando && !confirmando) carregar(); }, 15000);
   if (token) carregar();
 })();
 </script>
