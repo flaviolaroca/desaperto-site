@@ -1,0 +1,23 @@
+:root { --papel: #F3EFE6; --tinta: #16211C; --verde: #16704A; --areia: #E7DFD0; --cinza: #555D58; --branco: #FFFFFF; color-scheme: light; }
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--papel); color: var(--tinta); font-family: "Archivo", "Helvetica Neue", Arial, sans-serif; font-size: 1.0625rem; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+a { color: var(--verde); }
+:focus-visible { outline: 3px solid var(--verde); outline-offset: 3px; border-radius: 6px; }
+.topo { padding: 16px max(20px, env(safe-area-inset-right, 0px)) 16px max(20px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--areia); }
+.topo .in { max-width: 44rem; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.topo a.logo { display: block; height: 22px; color: var(--tinta); }
+.topo a.logo svg { height: 100%; width: auto; display: block; }
+.topo .voltar { font-weight: 700; text-decoration: none; font-size: .9375rem; }
+main { padding: 40px max(20px, env(safe-area-inset-right, 0px)) 72px max(20px, env(safe-area-inset-left, 0px)); }
+main .in { max-width: 44rem; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.rotulo { margin: 0; font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--verde); }
+h1 { margin: 0 0 8px; font-family: "Archivo", "Arial Narrow", sans-serif; font-weight: 800; font-size: clamp(2rem, 7vw, 2.8rem); line-height: 1.05; letter-spacing: -0.03em; text-wrap: balance; }
+h2 { margin: 24px 0 0; font-weight: 800; font-size: 1.3rem; letter-spacing: -0.015em; text-wrap: balance; }
+p, ul { margin: 0; }
+ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px; }
+.resumo { background: var(--branco); border-radius: 18px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+.atualizado { color: var(--cinza); font-size: .9375rem; }
+footer { padding: 28px max(20px, env(safe-area-inset-right, 0px)) 40px max(20px, env(safe-area-inset-left, 0px)); background: var(--tinta); color: #C9D0CB; font-size: .875rem; }
+footer .in { max-width: 44rem; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 8px 20px; }
+footer a { color: #F3EFE6; }

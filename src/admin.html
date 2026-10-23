@@ -1,0 +1,103 @@
+<style>
+main .in { max-width: 64rem; }
+.entrar { background: var(--branco); border-radius: 18px; padding: 18px 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.entrar label { display: flex; flex-direction: column; gap: 6px; font-weight: 700; font-size: .9375rem; flex: 1 1 260px; }
+input[type=password] { font: inherit; padding: 12px 14px; border-radius: 12px; border: 1.5px solid #CFC4AE; background: var(--papel); }
+button { font: inherit; font-weight: 700; border: 0; border-radius: 999px; padding: 10px 16px; cursor: pointer; background: var(--verde); color: #fff; }
+button.sec { background: var(--areia); color: var(--tinta); }
+button.perigo { background: transparent; color: #9A5B12; text-decoration: underline; padding: 6px 8px; }
+.barra { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.msg { color: var(--cinza); font-size: .9375rem; }
+.tabela { overflow-x: auto; background: var(--branco); border-radius: 18px; }
+table { width: 100%; border-collapse: collapse; font-size: .9375rem; }
+th { text-align: left; font-size: .8125rem; color: var(--cinza); padding: 12px 14px; border-bottom: 1px solid var(--areia); white-space: nowrap; }
+td { padding: 12px 14px; border-bottom: 1px solid var(--papel); vertical-align: top; }
+td.n { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; white-space: nowrap; }
+.chip { display: inline-block; font-size: .75rem; font-weight: 700; border-radius: 99px; padding: 3px 9px; background: var(--areia); white-space: nowrap; }
+.chip.ok { background: #DCEBE1; color: var(--verde); }
+.chip.t { background: var(--tinta); color: var(--papel); }
+.acoes { display: flex; flex-wrap: wrap; gap: 6px; }
+.acoes button { padding: 6px 12px; font-size: .8125rem; }
+pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .75rem; overflow: auto; max-height: 50vh; margin: 8px 0 0; }
+</style>
+
+<p class="rotulo">Área interna</p>
+<h1>Respostas recebidas.</h1>
+
+<form class="entrar" id="form-entrar">
+  <label for="token">Chave de acesso<input type="password" id="token" autocomplete="current-password" required></label>
+  <button type="submit">Entrar</button>
+</form>
+
+<div class="barra" id="barra" hidden>
+  <p class="msg" id="msg">Carregando...</p>
+  <div class="acoes"><button type="button" class="sec" id="btn-atualizar">Atualizar</button><button type="button" id="btn-tudo">Baixar todas</button></div>
+</div>
+<div class="tabela" id="tabela" hidden></div>
+
+<script>
+(function () {
+  'use strict';
+  var token = '';
+  try { token = sessionStorage.getItem('desaperto-admin') || ''; } catch (e) {}
+  var lista = [], aberto = null, confirmando = null;
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function data(iso) { if (!iso) return ''; var d = new Date(iso); return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }
+  function api(metodo, url, corpo) {
+    return fetch('/api/admin/respostas' + (url || ''), { method: metodo, headers: { authorization: 'Bearer ' + token, 'content-type': 'application/json' }, body: corpo ? JSON.stringify(corpo) : undefined })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.erro || 'Erro ' + r.status); return j; }); });
+  }
+  function baixar(nome, obj) {
+    var b = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = nome; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+  function desenhar() {
+    $('msg').textContent = lista.length ? lista.length + (lista.length === 1 ? ' resposta.' : ' respostas.') + ' Elas são apagadas sozinhas 90 dias depois do envio.' : 'Nenhuma resposta ainda.';
+    if (!lista.length) { $('tabela').hidden = true; return; }
+    $('tabela').hidden = false;
+    $('tabela').innerHTML = '<table><thead><tr><th>Recebido</th><th>Protocolo</th><th>Nome</th><th>E-mail</th><th>Dívidas</th><th>Situação</th><th>Ações</th></tr></thead><tbody>' +
+      lista.map(function (x) {
+        var sit = x.status === 'plano_enviado' ? '<span class="chip ok">Plano enviado</span>' : '<span class="chip">Aguardando plano</span>';
+        if (x.teste) sit += ' <span class="chip t">teste</span>';
+        var acoes = '<button type="button" class="sec" data-ver="' + x.id + '">' + (aberto && aberto.id === x.id ? 'Fechar' : 'Ver') + '</button>' +
+          '<button type="button" class="sec" data-baixar="' + x.id + '">Baixar</button>' +
+          (x.status === 'plano_enviado' ? '<button type="button" class="sec" data-status="recebido" data-id="' + x.id + '">Desfazer envio</button>' : '<button type="button" data-status="plano_enviado" data-id="' + x.id + '">Marcar plano enviado</button>') +
+          (confirmando === x.id ? '<button type="button" class="perigo" data-apagar-sim="' + x.id + '">Confirmar: apagar</button><button type="button" class="perigo" data-cancelar>Cancelar</button>' : '<button type="button" class="perigo" data-apagar="' + x.id + '">Apagar</button>');
+        var linha = '<tr><td>' + esc(data(x.criado_em)) + (x.atualizado_em !== x.criado_em ? '<br><small>corrigido ' + esc(data(x.atualizado_em)) + '</small>' : '') + '</td><td class="n">' + esc(x.protocolo) + '</td><td>' + esc(x.nome) + '</td><td>' + esc(x.email) + '</td><td>' + esc(x.n_dividas) + '</td><td>' + sit + '</td><td><div class="acoes">' + acoes + '</div></td></tr>';
+        if (aberto && aberto.id === x.id) linha += '<tr><td colspan="7"><pre>' + esc(JSON.stringify(aberto.dados, null, 2)) + '</pre></td></tr>';
+        return linha;
+      }).join('') + '</tbody></table>';
+  }
+  function carregar() {
+    $('barra').hidden = false; $('msg').textContent = 'Carregando...';
+    return api('GET').then(function (j) { lista = j.respostas || []; $('form-entrar').hidden = true; desenhar(); })
+      .catch(function (e) { $('msg').textContent = e.message === 'Acesso negado.' ? 'Chave de acesso errada.' : 'Não foi possível carregar: ' + e.message; $('form-entrar').hidden = false; });
+  }
+  function completa(id) { return api('GET', '?id=' + encodeURIComponent(id)).then(function (j) { return j.resposta; }); }
+
+  $('form-entrar').addEventListener('submit', function (e) {
+    e.preventDefault(); token = $('token').value.trim();
+    try { sessionStorage.setItem('desaperto-admin', token); } catch (er) {}
+    carregar();
+  });
+  $('btn-atualizar').addEventListener('click', carregar);
+  $('btn-tudo').addEventListener('click', function () {
+    $('msg').textContent = 'Preparando o arquivo...';
+    Promise.all(lista.map(function (x) { return completa(x.id); })).then(function (todas) {
+      baixar('desaperto-respostas-' + new Date().toISOString().slice(0, 10) + '.json', todas); desenhar();
+    }).catch(function (e) { $('msg').textContent = 'Erro: ' + e.message; });
+  });
+  $('tabela').addEventListener('click', function (e) {
+    var t = e.target, id;
+    if ((id = t.getAttribute('data-ver'))) { if (aberto && aberto.id === id) { aberto = null; desenhar(); return; } completa(id).then(function (r) { aberto = r; desenhar(); }); }
+    else if ((id = t.getAttribute('data-baixar'))) completa(id).then(function (r) { baixar('desaperto-' + r.protocolo + '.json', r); });
+    else if (t.hasAttribute('data-status')) api('POST', '', { id: t.getAttribute('data-id'), status: t.getAttribute('data-status') }).then(carregar);
+    else if ((id = t.getAttribute('data-apagar'))) { confirmando = id; desenhar(); }
+    else if ((id = t.getAttribute('data-apagar-sim'))) api('DELETE', '?id=' + encodeURIComponent(id)).then(function () { confirmando = null; aberto = null; carregar(); });
+    else if (t.hasAttribute('data-cancelar')) { confirmando = null; desenhar(); }
+  });
+  if (token) carregar();
+})();
+</script>

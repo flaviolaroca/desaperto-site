@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Desaperto: descubra o mês em que você sai das dívidas</title>
+<meta name="description" content="Responda sobre seu salário, seus gastos e suas dívidas. O Desaperto faz as contas e entrega um plano com a ordem certa de pagar e o mês em que você sai das dívidas.">
+<meta name="theme-color" content="#F3EFE6">
+
+<link rel="canonical" href="https://desaperto.com/">
+<link rel="icon" href="/img/icone.svg" type="image/svg+xml">
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:site_name" content="Desaperto">
+<meta property="og:title" content="Desaperto: descubra o mês em que você sai das dívidas">
+<meta property="og:description" content="Responda sobre seu salário, seus gastos e suas dívidas. O Desaperto faz as contas e entrega um plano com a ordem certa de pagar e o mês em que você sai das dívidas.">
+<meta property="og:url" content="https://desaperto.com/">
+<meta property="og:image" content="https://desaperto.com/img/compartilhar.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: coluna editorial no celular; no computador, abertura em duas colunas (promessa + capa do plano) e faixas largas de papel e verde. Uma só aparência, a da marca (papel claro), por decisão de identidade. */
+:root {
+  --papel: #F3EFE6;
+  --tinta: #16211C;
+  --verde: #16704A;
+  --verde-escuro: #0F5537;
+  --respiro: #DCEBE1;
+  --areia: #E7DFD0;
+  --areia-esc: #CFC4AE;
+  --ambar: #9A5B12;
+  --cinza: #555D58;
+  --branco: #FFFFFF;
+  --sombra: 0 1px 0 rgba(22, 33, 28, .04), 0 18px 40px -18px rgba(22, 33, 28, .28);
+  --f-marca: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --f-texto: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-num: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --larg: 72rem;
+  --gutter-l: max(20px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(20px, env(safe-area-inset-right, 0px));
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; background: var(--papel); color: var(--tinta); font-family: var(--f-texto); font-size: 1.0625rem; line-height: 1.55; font-stretch: 100%; -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--papel); }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { font-family: var(--f-marca); text-wrap: balance; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--verde); outline-offset: 3px; border-radius: 6px; }
+.faixa { padding-left: var(--gutter-l); padding-right: var(--gutter-r); }
+.miolo { max-width: var(--larg); margin: 0 auto; }
+.num { font-family: var(--f-num); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.rotulo, .cab .rotulo { font-family: var(--f-num); font-weight: 600; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--verde); }
+
+/* ---------- topo ---------- */
+.topo { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--papel) 92%, transparent); backdrop-filter: saturate(1.2) blur(8px); -webkit-backdrop-filter: saturate(1.2) blur(8px); border-bottom: 1px solid transparent; transition: border-color .2s; }
+.topo.rolou { border-bottom-color: var(--areia); }
+.topo .miolo { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; }
+.topo .logo { display: block; height: 24px; width: auto; color: var(--tinta); }
+.topo .logo svg { height: 100%; width: auto; display: block; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .5em; font-family: var(--f-marca); font-weight: 700; font-size: 1.0625rem; text-decoration: none; border-radius: 999px; padding: .95em 1.6em; border: 0; cursor: pointer; transition: background-color .15s, transform .15s; }
+.btn-principal { background: var(--verde); color: var(--branco); }
+.btn-principal:hover { background: var(--verde-escuro); }
+.btn-principal:active { transform: translateY(1px); }
+.btn-peq { font-size: .9375rem; padding: .6em 1.15em; }
+.btn .seta { display: inline-block; transition: transform .2s; }
+.btn:hover .seta { transform: translateX(3px); }
+
+/* ---------- abertura ---------- */
+.abertura .miolo { display: grid; gap: 44px; padding-block: 36px 64px; }
+.promessa { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.abertura h1 { font-size: clamp(2.6rem, 9.6vw, 4.6rem); line-height: .98; letter-spacing: -0.03em; font-weight: 800; font-stretch: 100%; }
+.abertura h1 em { font-style: normal; color: var(--verde); }
+.solta { animation: soltar 1.6s cubic-bezier(.2, .7, .1, 1) .15s both; }
+@keyframes soltar { from { font-stretch: 66%; letter-spacing: -0.05em; } to { font-stretch: 100%; letter-spacing: -0.03em; } }
+.lead { font-size: 1.1875rem; line-height: 1.5; max-width: 34rem; color: #2B3530; }
+.lead b { font-weight: 700; color: var(--tinta); }
+.cta-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+.garantias { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0; padding: 0; list-style: none; font-size: .9375rem; color: var(--cinza); }
+.garantias li { display: flex; align-items: center; gap: 7px; }
+.garantias li::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--verde); flex: none; }
+
+/* a capa do plano (exemplo) */
+.capa-ex { position: relative; justify-self: center; width: min(100%, 380px); }
+.folha { background: var(--papel); border-radius: 22px; box-shadow: var(--sombra), 0 0 0 1px rgba(22, 33, 28, .06); padding: 26px 22px 24px; display: flex; flex-direction: column; gap: 14px; position: relative; }
+.capa-ex .folha { background: #F7F4EC; }
+.folha .f-topo { display: flex; justify-content: space-between; align-items: center; }
+.folha .f-topo svg { height: 15px; width: auto; color: var(--tinta); }
+.selo { font-family: var(--f-num); font-weight: 600; font-size: .625rem; letter-spacing: .12em; text-transform: uppercase; color: var(--verde); border: 1.5px solid var(--verde); border-radius: 99px; padding: 4px 9px; }
+.folha .olho { font-weight: 600; color: var(--cinza); font-size: .9375rem; }
+.folha .data { font-family: var(--f-marca); font-weight: 800; font-size: 2.05rem; line-height: 1.02; letter-spacing: -0.03em; }
+.folha .data em { font-style: normal; color: var(--verde); }
+.folha .sub { font-size: .8125rem; color: var(--cinza); line-height: 1.4; }
+.bloco-n { background: var(--branco); border-radius: 12px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px; }
+.bloco-n span { font-size: .75rem; color: var(--cinza); }
+.bloco-n b { font-family: var(--f-num); font-weight: 600; font-size: 1.25rem; letter-spacing: -0.02em; }
+.passos-ex { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; counter-reset: p; }
+.passos-ex li { counter-increment: p; background: var(--branco); border-radius: 12px; padding: 9px 12px 9px 40px; position: relative; font-weight: 700; font-size: .875rem; line-height: 1.25; }
+.passos-ex li::before { content: counter(p); position: absolute; left: 11px; top: 9px; width: 20px; height: 20px; border-radius: 50%; background: var(--verde); color: var(--branco); font-size: .75rem; display: grid; place-items: center; }
+.passos-ex small { display: block; font-family: var(--f-num); font-weight: 600; font-size: .625rem; color: var(--verde); letter-spacing: .04em; margin-top: 2px; }
+.etiqueta { position: absolute; top: -12px; right: 18px; background: var(--tinta); color: var(--papel); font-family: var(--f-num); font-size: .6875rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; padding: 5px 10px; border-radius: 99px; }
+.legenda { margin-top: 12px; font-size: .8125rem; color: var(--cinza); text-align: center; }
+
+/* ---------- reconhecer ---------- */
+.reconhece { background: var(--tinta); color: var(--papel); }
+.reconhece .miolo { padding-block: 72px; display: grid; gap: 36px; }
+.reconhece .rotulo { color: #9FD1B6; }
+.frases { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.frases li { font-family: var(--f-marca); font-weight: 700; font-size: clamp(1.35rem, 5vw, 2.35rem); line-height: 1.12; letter-spacing: -0.02em; border-bottom: 1px solid rgba(243, 239, 230, .14); padding-block: 14px; }
+.frases li:nth-child(1) { font-stretch: 64%; }
+.frases li:nth-child(2) { font-stretch: 69%; }
+.frases li:nth-child(3) { font-stretch: 74%; }
+.frases li:nth-child(4) { font-stretch: 79%; }
+.frases li:nth-child(5) { font-stretch: 84%; }
+.frases li:nth-child(6) { font-stretch: 89%; }
+.frases li:nth-child(7) { font-stretch: 94%; }
+.frases li:nth-child(8) { font-stretch: 100%; border-bottom: 0; }
+.reconhece .virada { font-size: 1.1875rem; max-width: 36rem; color: #D5DCD7; }
+.reconhece .virada b { color: var(--papel); }
+
+/* ---------- cabeçalho das seções ---------- */
+.cab { display: flex; flex-direction: column; gap: 14px; max-width: 40rem; }
+.cab h2 { font-size: clamp(2rem, 7vw, 3.3rem); line-height: 1.02; letter-spacing: -0.03em; font-weight: 800; }
+.cab p { font-size: 1.125rem; color: #2B3530; }
+
+/* ---------- o caminho ---------- */
+.caminho .miolo { padding-block: 80px; display: grid; gap: 40px; }
+.trajeto { background: var(--branco); border-radius: 24px; padding: 24px 20px 22px; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 0 0 1px rgba(22, 33, 28, .06); min-width: 0; }
+.tr-topo { font-size: .875rem; color: var(--cinza); }
+.anos { display: flex; gap: 10px; font-family: var(--f-num); font-weight: 600; font-size: .75rem; }
+.grafico-c { position: relative; display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 6px; height: 190px; padding-top: 26px; align-items: end; }
+.grafico-c .b { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; gap: 6px; min-width: 0; }
+.grafico-c .b i { display: block; background: var(--verde); border-radius: 5px 5px 2px 2px; }
+.grafico-c .b0 i { background: var(--areia-esc); }
+.grafico-c .bz i { background: var(--verde); opacity: .45; }
+.grafico-c .b span { font-family: var(--f-num); font-weight: 500; font-size: .6875rem; color: var(--cinza); text-align: center; line-height: 1; }
+.grafico-c .v-ini { position: absolute; left: 0; top: 0; font-size: .875rem; }
+.grafico-c .v-fim { position: absolute; right: 0; bottom: 34px; font-size: .875rem; color: var(--verde); }
+.conquistas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border-top: 1px solid var(--areia); }
+.conquistas li { display: grid; grid-template-columns: 64px 1fr; gap: 12px; padding-block: 10px; border-bottom: 1px solid var(--papel); font-size: .9375rem; line-height: 1.35; }
+.conquistas li .num { color: var(--verde); font-size: .8125rem; padding-top: 2px; }
+.conquistas li.fim { font-weight: 700; color: var(--verde); border-bottom: 0; }
+.juros-ano { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.juros-ano > div { background: var(--areia); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+.juros-ano .com { background: var(--respiro); }
+.juros-ano span { font-size: .8125rem; color: var(--cinza); line-height: 1.3; }
+.juros-ano b { font-size: 1.375rem; }
+.juros-ano > div:first-child b { color: var(--cinza); }
+.trajeto .nota { font-size: .8125rem; color: var(--cinza); }
+
+/* ---------- como funciona ---------- */
+.como { background: var(--areia); }
+.como .miolo { padding-block: 80px; display: grid; gap: 40px; }
+.etapas { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; counter-reset: e; }
+.etapas li { counter-increment: e; background: var(--papel); border-radius: 22px; padding: 24px 22px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.etapas li::before { content: counter(e); font-family: var(--f-marca); font-weight: 800; font-size: 2.6rem; line-height: 1; color: var(--verde); }
+.etapas h3 { font-size: 1.375rem; letter-spacing: -0.015em; }
+.etapas p { color: #2B3530; }
+.etapas .tempo { font-family: var(--f-num); font-weight: 600; font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--cinza); margin-top: auto; padding-top: 6px; }
+
+/* ---------- o que vem no plano ---------- */
+.plano .miolo { padding-block: 80px 64px; display: grid; gap: 34px; }
+.trilho { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(250px, 78%); gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 6px var(--gutter-r) 22px var(--gutter-l); margin-inline: calc(-1 * var(--gutter-l)) calc(-1 * var(--gutter-r)); scrollbar-width: thin; scrollbar-color: var(--areia-esc) transparent; }
+.trilho > figure { scroll-snap-align: start; margin: 0; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.pg { min-height: 330px; max-width: 100%; background: #F7F4EC; border-radius: 16px; box-shadow: var(--sombra), 0 0 0 1px rgba(22, 33, 28, .06); padding: 18px 16px; display: flex; flex-direction: column; gap: 9px; overflow: hidden; font-size: .75rem; line-height: 1.35; }
+.pg .sec { font-family: var(--f-num); font-weight: 600; font-size: .5625rem; letter-spacing: .12em; text-transform: uppercase; color: var(--verde); }
+.pg h4 { margin: 0; font-family: var(--f-marca); font-weight: 800; font-size: 1.05rem; line-height: 1.1; letter-spacing: -0.015em; text-wrap: balance; }
+.pg .card { background: var(--branco); border-radius: 9px; padding: 7px 9px; display: flex; flex-direction: column; gap: 2px; }
+.pg .card b { font-size: .75rem; }
+.pg .card small { color: var(--cinza); font-size: .6563rem; line-height: 1.3; }
+.pg .linha-o { display: flex; gap: 8px; align-items: flex-start; }
+.pg .pos { flex: none; width: 17px; height: 17px; border-radius: 50%; background: var(--tinta); color: var(--papel); font-family: var(--f-num); font-weight: 600; font-size: .5625rem; display: grid; place-items: center; }
+.pg .tres { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.pg .tres div { background: var(--branco); border-radius: 8px; padding: 6px 7px; display: flex; flex-direction: column; gap: 1px; }
+.pg .tres span { font-size: .5313rem; color: var(--cinza); font-weight: 600; }
+.pg .tres b { font-family: var(--f-num); font-weight: 600; font-size: .75rem; }
+.pg .barras { display: flex; align-items: flex-end; gap: 4px; height: 92px; padding-top: 6px; }
+.pg .barras i { flex: 1; background: var(--verde); border-radius: 3px 3px 1px 1px; }
+.pg .barras i:first-child { background: var(--areia-esc); }
+.pg .mes { background: var(--branco); border-radius: 9px; padding: 7px 9px; display: grid; grid-template-columns: 34px 1fr; gap: 6px; }
+.pg .mes .m { font-family: var(--f-num); font-weight: 600; font-size: .625rem; color: var(--verde); }
+.pg .mes p { font-size: .6563rem; }
+.pg .mes .marco { color: var(--verde); font-weight: 700; }
+.pg ol.roteiro { margin: 0; padding-left: 15px; display: flex; flex-direction: column; gap: 5px; font-size: .6563rem; }
+.pg .caixa { background: var(--respiro); border-radius: 9px; padding: 8px 9px; font-size: .6563rem; }
+.pg .tab { width: 100%; border-collapse: collapse; background: var(--branco); border-radius: 8px; overflow: hidden; font-size: .5938rem; }
+.pg .tab td { padding: 4px 6px; border-bottom: 1px solid var(--papel); }
+.pg .tab td:last-child { text-align: right; font-family: var(--f-num); font-weight: 600; white-space: nowrap; }
+.pg .tab tr:last-child td { background: var(--respiro); font-weight: 800; border-bottom: 0; }
+figcaption { display: flex; flex-direction: column; gap: 4px; padding-inline: 2px; }
+figcaption b { font-family: var(--f-marca); font-size: 1.125rem; letter-spacing: -0.01em; }
+figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
+.dica-trilho { font-size: .875rem; color: var(--cinza); }
+
+/* ---------- feito para ---------- */
+.vida { background: var(--respiro); }
+.vida .miolo { padding-block: 80px; display: grid; gap: 40px; }
+.grade { display: grid; gap: 1px; background: rgba(22, 112, 74, .22); border-radius: 22px; overflow: hidden; }
+.grade > div { background: var(--respiro); padding: 22px 20px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.grade h3 { font-size: 1.1875rem; letter-spacing: -0.01em; }
+.grade p { color: #24332B; font-size: 1rem; }
+
+/* ---------- nunca ---------- */
+.nunca .miolo { padding-block: 80px; display: grid; gap: 36px; }
+.lista-nunca { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-top: 2px solid var(--tinta); }
+.lista-nunca li { display: grid; grid-template-columns: 1fr; gap: 6px; padding-block: 20px; border-bottom: 1px solid var(--areia-esc); }
+.lista-nunca b { font-family: var(--f-marca); font-size: 1.375rem; letter-spacing: -0.015em; line-height: 1.2; }
+.lista-nunca span { color: #2B3530; }
+
+/* ---------- perguntas ---------- */
+.perguntas { background: var(--areia); }
+.perguntas .miolo { padding-block: 80px; display: grid; gap: 32px; }
+.faq { display: flex; flex-direction: column; gap: 10px; }
+.faq details { background: var(--papel); border-radius: 18px; padding: 0 20px; }
+.faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-block: 18px; font-family: var(--f-marca); font-weight: 700; font-size: 1.125rem; line-height: 1.3; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: ""; flex: none; width: 12px; height: 12px; border-right: 2.5px solid var(--verde); border-bottom: 2.5px solid var(--verde); transform: rotate(45deg) translate(-3px, -3px); transition: transform .2s; }
+.faq details[open] summary::after { transform: rotate(-135deg) translate(-3px, -3px); }
+.faq details p { padding-bottom: 20px; color: #2B3530; max-width: 44rem; }
+
+/* ---------- final ---------- */
+.final { background: var(--verde); color: var(--branco); overflow: hidden; }
+.final .miolo { padding-block: 88px 80px; display: flex; flex-direction: column; gap: 30px; align-items: flex-start; }
+.final .marca-grande { font-family: var(--f-marca); font-weight: 800; font-size: clamp(3.4rem, 17vw, 10.5rem); line-height: .9; color: var(--papel); white-space: nowrap; display: flex; max-width: 100%; }
+.marca-grande span { display: inline-block; transition: font-stretch 1.1s cubic-bezier(.2, .7, .1, 1), letter-spacing 1.1s cubic-bezier(.2, .7, .1, 1); }
+.marca-grande span:nth-child(1) { font-stretch: 62%; letter-spacing: -0.025em; transition-delay: 0s; }
+.marca-grande span:nth-child(2) { font-stretch: 69.9%; letter-spacing: -0.016em; transition-delay: .07s; }
+.marca-grande span:nth-child(3) { font-stretch: 77.8%; letter-spacing: -0.006em; transition-delay: .14s; }
+.marca-grande span:nth-child(4) { font-stretch: 85.6%; letter-spacing: .003em; transition-delay: .21s; }
+.marca-grande span:nth-child(5) { font-stretch: 93.5%; letter-spacing: .013em; transition-delay: .28s; }
+.marca-grande span:nth-child(6) { font-stretch: 101.4%; letter-spacing: .022em; transition-delay: .35s; }
+.marca-grande span:nth-child(7) { font-stretch: 109.3%; letter-spacing: .031em; transition-delay: .42s; }
+.marca-grande span:nth-child(8) { font-stretch: 117.1%; letter-spacing: .041em; transition-delay: .49s; }
+.marca-grande span:nth-child(9) { font-stretch: 125%; letter-spacing: .05em; transition-delay: .56s; }
+.marca-grande.aperta span { font-stretch: 62%; letter-spacing: -0.04em; }
+.final h2 { font-size: clamp(1.8rem, 6vw, 3rem); line-height: 1.05; letter-spacing: -0.025em; max-width: 30rem; }
+.final p { font-size: 1.125rem; color: #E2F0E7; max-width: 32rem; }
+.btn-claro { background: var(--papel); color: var(--tinta); }
+.btn-claro:hover { background: var(--branco); }
+.final :focus-visible { outline-color: var(--papel); }
+
+/* ---------- rodapé ---------- */
+.rodape { background: var(--tinta); color: #C9D0CB; font-size: .9375rem; }
+.rodape .miolo { padding-block: 48px; display: grid; gap: 28px; }
+.rodape .logo { height: 22px; color: var(--papel); }
+.rodape .logo svg { height: 100%; width: auto; display: block; }
+.rodape .cols { display: grid; gap: 22px; }
+.rodape h3 { font-family: var(--f-num); font-weight: 600; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: #8FA399; margin-bottom: 6px; }
+.rodape .copiar { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rodape .copiar button { font: inherit; font-size: .8125rem; font-weight: 600; color: var(--papel); background: transparent; border: 1px solid rgba(243, 239, 230, .3); border-radius: 99px; padding: 3px 11px; cursor: pointer; }
+.rodape .copiar button:hover { border-color: var(--papel); }
+.rodape .aviso { font-size: .8125rem; color: #9AA59F; border-top: 1px solid rgba(243, 239, 230, .12); padding-top: 22px; }
+.rodape b { color: var(--papel); }
+.rodape .aviso a { color: var(--papel); }
+
+/* ---------- telas maiores ---------- */
+@media (min-width: 760px) {
+  .abertura .miolo { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: center; padding-block: 64px 96px; gap: 56px; }
+  .capa-ex { justify-self: end; }
+  .reconhece .miolo { grid-template-columns: minmax(0, .35fr) minmax(0, 1fr); align-items: start; padding-block: 96px; }
+  .reconhece .virada { grid-column: 2; }
+  .caminho .miolo { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: center; padding-block: 104px; gap: 56px; }
+  .grafico-c { height: 230px; gap: 10px; }
+  .etapas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .trilho { grid-auto-columns: minmax(250px, 1fr); grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; margin-inline: 0; padding-inline: 0; gap: 34px 24px; }
+  .dica-trilho { display: none; }
+  .grade { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lista-nunca li { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 28px; align-items: baseline; }
+  .nunca .miolo { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); align-items: start; gap: 56px; }
+  .perguntas .miolo { grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr); align-items: start; gap: 56px; }
+  .rodape .cols { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1100px) {
+  .pg { font-size: .8125rem; padding: 22px 20px; gap: 11px; }
+  .pg h4 { font-size: 1.25rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .solta { animation: none; }
+  .marca-grande span { transition: none; }
+}
+</style>
+
+
+</head>
+<body>
+<header class="topo faixa" id="topo">
+  <div class="miolo">
+    <a class="logo" href="#inicio" aria-label="Desaperto, início"><svg xmlns="http://www.w3.org/2000/svg" viewBox="24.6 -724.5 4784.3 911.5" aria-hidden="true" focusable="false"><path fill="currentColor" d="M154.2 12Q107.5 12 78.7 -18.4Q49.9 -48.8 37.3 -111.4Q24.6 -174 24.6 -269.7Q24.6 -364 36.5 -423.5Q48.5 -483 75.9 -511.3Q103.4 -539.5 147.9 -539.5Q175.1 -539.5 193.4 -530.5Q211.7 -521.5 224.1 -505.5Q236.6 -489.5 244 -468.5H249V-724.5H384.2V0H272.9L264.8 -61.7H259.8Q248.2 -31.3 223.2 -9.6Q198.3 12 154.2 12ZM206.5 -108.8Q223.5 -108.8 232.7 -120.9Q241.9 -132.9 245.7 -157.4Q249.6 -181.9 249.6 -219.4V-299.4Q249.6 -329.1 247.2 -349.9Q244.8 -370.8 239.8 -384.1Q234.7 -397.5 226.2 -403.7Q217.8 -410 205.6 -410Q190.9 -410 181.7 -398.9Q172.5 -387.7 168.1 -363.7Q163.7 -339.7 163.7 -299.4V-219.4Q163.7 -180.5 167.9 -156.1Q172 -131.6 181.5 -120.2Q190.9 -108.8 206.5 -108.8Z M627.7 12Q558.5 12 513.5 -15.9Q468.5 -43.8 446.9 -104.6Q425.2 -165.4 425.2 -263.5Q425.2 -363.9 448.5 -424.4Q471.7 -485 517.6 -512.2Q563.4 -539.4 631.1 -539.4Q698.6 -539.4 742.1 -514.5Q785.6 -489.6 806.5 -431.3Q827.5 -372.9 827.5 -271.7V-237.7H569.8Q570 -188.6 575.1 -157.1Q580.1 -125.5 593 -110.3Q605.9 -95.1 629.4 -95.1Q644.4 -95.1 655.1 -100.4Q665.8 -105.8 672.5 -117Q679.2 -128.2 682.5 -145.8Q685.7 -163.5 686.1 -188H825.9Q825.5 -137 813.1 -99.2Q800.6 -61.4 776 -36.9Q751.5 -12.5 714.3 -0.2Q677.1 12 627.7 12ZM570.1 -312.8H682.5Q682.5 -346.1 680 -368.9Q677.5 -391.7 671.6 -405.8Q665.8 -420 655.5 -426.2Q645.1 -432.3 629.6 -432.3Q607.3 -432.3 594.7 -419.4Q582.1 -406.5 576.5 -380.3Q571 -354.1 570.1 -312.8Z M1066.2 12Q1015.7 12 978.3 0.9Q940.9 -10.2 916 -31Q891.2 -51.8 878.8 -81Q866.4 -110.1 866.4 -146.5Q866.4 -150.7 866.8 -157Q867.1 -163.2 867.9 -169.3H1001.8Q1001 -163.2 1001 -159Q1001 -154.9 1001 -150.6Q1001.4 -132.3 1009.3 -119.1Q1017.2 -105.8 1031.9 -98.9Q1046.7 -92 1066.6 -92Q1083.1 -92 1097.2 -96.8Q1111.3 -101.7 1120 -112.8Q1128.8 -124 1128.8 -141.9Q1128.8 -164.6 1113.5 -177.3Q1098.3 -190 1073.7 -198.5Q1049.2 -206.9 1021 -216Q995 -224 969.1 -235Q943.2 -245.9 921.7 -263.6Q900.2 -281.3 887.1 -308.8Q874.1 -336.2 874.1 -377.5Q874.1 -420.8 889.6 -451.4Q905 -482 932.4 -501.6Q959.8 -521.2 995.7 -530.3Q1031.5 -539.4 1071.8 -539.4Q1111.1 -539.4 1145 -530.6Q1179 -521.8 1204.7 -504.2Q1230.4 -486.6 1244.6 -460.4Q1258.9 -434.3 1258.9 -399.8Q1258.9 -393.1 1258.5 -385Q1258.1 -377 1257.3 -371.6H1124.4V-386.9Q1124.4 -403.5 1117.3 -414.1Q1110.2 -424.6 1097.6 -430Q1084.9 -435.4 1068.1 -435.4Q1057.1 -435.4 1047.1 -432.8Q1037 -430.3 1029.3 -424.8Q1021.6 -419.2 1017.1 -411.2Q1012.6 -403.3 1012.6 -392Q1012.6 -374.1 1025.4 -362.8Q1038.2 -351.6 1059.4 -344.1Q1080.5 -336.6 1105.2 -328.2Q1132.6 -319.8 1161.9 -309.8Q1191.3 -299.8 1216.4 -283.2Q1241.5 -266.5 1257.1 -238.8Q1272.6 -211 1272.6 -166.6Q1272.6 -118.1 1257 -84Q1241.3 -49.9 1213.4 -28.7Q1185.5 -7.5 1147.8 2.3Q1110.2 12 1066.2 12Z M1477.9 12Q1446.8 12 1418.8 4.4Q1390.8 -3.2 1369.1 -20.3Q1347.3 -37.4 1335 -65.8Q1322.7 -94.2 1322.7 -135.1Q1322.7 -186 1342.5 -221.3Q1362.4 -256.5 1400.7 -278.3Q1438.9 -300 1494.9 -309.9Q1550.8 -319.7 1622.8 -319.7V-362.6Q1622.8 -383.1 1615.8 -397.2Q1608.8 -411.3 1594.7 -419.1Q1580.6 -426.9 1557.7 -426.9Q1535.3 -426.9 1519.9 -420.2Q1504.6 -413.4 1497.2 -401.7Q1489.9 -390 1489.9 -374.1V-365.3H1342.7Q1341.7 -369.6 1341.7 -373.5Q1341.7 -377.4 1341.7 -382.5Q1341.7 -432 1367.9 -467Q1394.1 -502.1 1443.2 -520.7Q1492.4 -539.3 1561.1 -539.3Q1623.1 -539.3 1671.4 -523Q1719.8 -506.7 1747.7 -470.2Q1775.6 -433.6 1775.6 -371.8V-139.3Q1775.6 -123.1 1783.9 -113.7Q1792.1 -104.4 1806.8 -104.4H1834.8V-6.3Q1821.2 0.4 1798.4 6Q1775.6 11.5 1747 11.5Q1716.7 11.5 1694 3.3Q1671.3 -4.9 1657.1 -19.9Q1642.9 -35 1637.7 -55.2H1631.9Q1616.4 -36.2 1595 -20.9Q1573.6 -5.6 1544.9 3.2Q1516.1 12 1477.9 12ZM1536.9 -100.5Q1556 -100.5 1571.7 -107.3Q1587.5 -114.1 1598.9 -126.1Q1610.3 -138.1 1616.5 -155.1Q1622.8 -172 1622.8 -192.2V-234.2Q1573.5 -234.2 1541.3 -225.1Q1509.1 -216 1493.6 -198.7Q1478 -181.5 1478 -156.4Q1478 -137.7 1485.3 -125.2Q1492.5 -112.6 1505.8 -106.6Q1519 -100.5 1536.9 -100.5Z M1899.9 187V-527.2H2030.1L2043 -456.3H2049.6Q2074.2 -498.3 2112.8 -518.7Q2151.3 -539.2 2201.1 -539.2Q2265.4 -539.2 2310.4 -509.2Q2355.4 -479.3 2379.1 -417.9Q2402.9 -356.4 2402.9 -261.7Q2402.9 -168.7 2379 -107.9Q2355.2 -47.1 2310.8 -17.6Q2266.5 12 2204.9 12Q2174.2 12 2147.7 4.7Q2121.2 -2.6 2100.4 -17.6Q2079.7 -32.7 2065.1 -54.8H2058.8V187ZM2150 -116.1Q2183.6 -116.1 2203.7 -130.5Q2223.9 -144.9 2232.8 -173Q2241.7 -201.2 2241.7 -242.7V-285.6Q2241.7 -327.5 2232.9 -355.8Q2224 -384.1 2203.8 -398.3Q2183.6 -412.5 2149.9 -412.5Q2117.5 -412.5 2097.1 -396.5Q2076.7 -380.5 2067.3 -351.1Q2057.9 -321.6 2057.9 -281.1V-248Q2057.9 -217.8 2063.1 -193.5Q2068.4 -169.1 2079.5 -151.9Q2090.6 -134.7 2108.2 -125.4Q2125.8 -116.1 2150 -116.1Z M2775.4 12Q2684.4 12 2620.2 -17.5Q2555.9 -47 2522.2 -108Q2488.4 -169 2488.4 -263.5Q2488.4 -357.4 2521.9 -418.2Q2555.3 -479 2618 -509.1Q2680.6 -539.1 2768.8 -539.1Q2856.5 -539.1 2917.1 -510Q2977.8 -481 3009.2 -420.9Q3040.6 -360.8 3040.6 -266.5V-231.1H2655.2Q2656.2 -189.2 2668.3 -159.9Q2680.4 -130.6 2706.3 -115.9Q2732.3 -101.1 2774 -101.1Q2799.2 -101.1 2818.7 -107.1Q2838.2 -113.1 2851.7 -124.4Q2865.2 -135.8 2872.2 -152Q2879.1 -168.2 2879.2 -188.2H3040.5Q3040.5 -140 3022.3 -102.5Q3004.2 -65 2969.6 -39.6Q2935.1 -14.2 2886.1 -1.1Q2837.1 12 2775.4 12ZM2656.6 -321.9H2871.8Q2871.8 -348.1 2864.9 -367.5Q2858 -386.9 2845.2 -400Q2832.4 -413 2814.3 -419.3Q2796.1 -425.6 2773.3 -425.6Q2736.9 -425.6 2712.3 -413.6Q2687.7 -401.7 2674.4 -378.9Q2661.1 -356 2656.6 -321.9Z M3163.9 0V-527.3H3304.4L3316.4 -443H3324Q3337 -472.2 3357.2 -494.1Q3377.4 -515.9 3404.8 -527.9Q3432.2 -539.8 3464.9 -539.8Q3483.8 -539.8 3499.9 -536.5Q3515.9 -533.3 3526.3 -528.8V-384.7H3461.4Q3428.5 -384.7 3404.7 -375.2Q3380.8 -365.6 3365.5 -347.6Q3350.3 -329.6 3342.9 -304.6Q3335.5 -279.6 3335.5 -248.7V0Z M3869.1 12Q3807.8 12 3766.1 -3.2Q3724.4 -18.3 3703.2 -53.3Q3682 -88.3 3682 -147.4V-404H3589.6V-527.4H3688.4L3724.1 -683.7H3860.2V-527.4H3993.3V-404H3860.2V-183.2Q3860.2 -148.3 3874.5 -129.9Q3888.9 -111.4 3932 -111.4H3993.3V-5.8Q3979.6 -0.9 3956.7 3.3Q3933.8 7.5 3910.2 9.7Q3886.6 12 3869.1 12Z M4460.9 12Q4355.5 12 4277.3 -18.7Q4199.1 -49.5 4156 -110.7Q4112.9 -171.9 4112.9 -264Q4112.9 -356.5 4156 -417.8Q4199.1 -479.1 4277.3 -509.3Q4355.5 -539.5 4460.9 -539.5Q4566.2 -539.5 4644.4 -509.3Q4722.7 -479.1 4765.8 -417.8Q4808.9 -356.5 4808.9 -264Q4808.9 -171.9 4765.8 -110.7Q4722.7 -49.5 4644.4 -18.7Q4566.2 12 4460.9 12ZM4460.9 -113.5Q4513.1 -113.5 4548.2 -131.2Q4583.2 -148.8 4600.6 -180.5Q4618.1 -212.2 4618.1 -254V-274Q4618.1 -316.2 4600.6 -347.7Q4583.2 -379.2 4548.2 -396.6Q4513.1 -414.1 4460.9 -414.1Q4408.7 -414.1 4373.6 -396.6Q4338.6 -379.2 4321.1 -347.7Q4303.7 -316.2 4303.7 -274V-254Q4303.7 -212.2 4321.1 -180.5Q4338.6 -148.8 4373.6 -131.2Q4408.7 -113.5 4460.9 -113.5Z"/></svg>
+</a>
+    <a class="btn btn-principal btn-peq" href="/comecar">Montar meu plano</a>
+  </div>
+</header>
+
+<main id="inicio">
+  <!-- abertura -->
+  <section class="abertura faixa">
+    <div class="miolo">
+      <div class="promessa">
+        <h1 class="solta">Descubra o mês em que você <em>sai das dívidas.</em></h1>
+        <p class="lead">Você conta quanto ganha, quanto gasta e quanto deve. O <b>Desaperto</b> faz as contas e te entrega um plano: <b>qual dívida pagar primeiro, quanto pagar em cada mês e o que falar com o banco.</b></p>
+        <div class="cta-linha">
+          <a class="btn btn-principal" href="/comecar">Montar meu plano <span class="seta" aria-hidden="true">→</span></a>
+        </div>
+        <ul class="garantias" aria-label="Como funciona o questionário">
+          <li>Leva de 15 a 20 minutos</li>
+          <li>Dá para fazer pelo celular</li>
+          <li>Não pede CPF, senha nem extrato</li>
+        </ul>
+      </div>
+
+      <div class="capa-ex">
+        <div class="folha" role="img" aria-label="Exemplo da capa do plano: Ana sai das dívidas em julho de 2027, com três passos para a primeira semana.">
+          <span class="etiqueta">Exemplo</span>
+          <div class="f-topo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="24.6 -724.5 4784.3 911.5" aria-hidden="true" focusable="false"><path fill="currentColor" d="M154.2 12Q107.5 12 78.7 -18.4Q49.9 -48.8 37.3 -111.4Q24.6 -174 24.6 -269.7Q24.6 -364 36.5 -423.5Q48.5 -483 75.9 -511.3Q103.4 -539.5 147.9 -539.5Q175.1 -539.5 193.4 -530.5Q211.7 -521.5 224.1 -505.5Q236.6 -489.5 244 -468.5H249V-724.5H384.2V0H272.9L264.8 -61.7H259.8Q248.2 -31.3 223.2 -9.6Q198.3 12 154.2 12ZM206.5 -108.8Q223.5 -108.8 232.7 -120.9Q241.9 -132.9 245.7 -157.4Q249.6 -181.9 249.6 -219.4V-299.4Q249.6 -329.1 247.2 -349.9Q244.8 -370.8 239.8 -384.1Q234.7 -397.5 226.2 -403.7Q217.8 -410 205.6 -410Q190.9 -410 181.7 -398.9Q172.5 -387.7 168.1 -363.7Q163.7 -339.7 163.7 -299.4V-219.4Q163.7 -180.5 167.9 -156.1Q172 -131.6 181.5 -120.2Q190.9 -108.8 206.5 -108.8Z M627.7 12Q558.5 12 513.5 -15.9Q468.5 -43.8 446.9 -104.6Q425.2 -165.4 425.2 -263.5Q425.2 -363.9 448.5 -424.4Q471.7 -485 517.6 -512.2Q563.4 -539.4 631.1 -539.4Q698.6 -539.4 742.1 -514.5Q785.6 -489.6 806.5 -431.3Q827.5 -372.9 827.5 -271.7V-237.7H569.8Q570 -188.6 575.1 -157.1Q580.1 -125.5 593 -110.3Q605.9 -95.1 629.4 -95.1Q644.4 -95.1 655.1 -100.4Q665.8 -105.8 672.5 -117Q679.2 -128.2 682.5 -145.8Q685.7 -163.5 686.1 -188H825.9Q825.5 -137 813.1 -99.2Q800.6 -61.4 776 -36.9Q751.5 -12.5 714.3 -0.2Q677.1 12 627.7 12ZM570.1 -312.8H682.5Q682.5 -346.1 680 -368.9Q677.5 -391.7 671.6 -405.8Q665.8 -420 655.5 -426.2Q645.1 -432.3 629.6 -432.3Q607.3 -432.3 594.7 -419.4Q582.1 -406.5 576.5 -380.3Q571 -354.1 570.1 -312.8Z M1066.2 12Q1015.7 12 978.3 0.9Q940.9 -10.2 916 -31Q891.2 -51.8 878.8 -81Q866.4 -110.1 866.4 -146.5Q866.4 -150.7 866.8 -157Q867.1 -163.2 867.9 -169.3H1001.8Q1001 -163.2 1001 -159Q1001 -154.9 1001 -150.6Q1001.4 -132.3 1009.3 -119.1Q1017.2 -105.8 1031.9 -98.9Q1046.7 -92 1066.6 -92Q1083.1 -92 1097.2 -96.8Q1111.3 -101.7 1120 -112.8Q1128.8 -124 1128.8 -141.9Q1128.8 -164.6 1113.5 -177.3Q1098.3 -190 1073.7 -198.5Q1049.2 -206.9 1021 -216Q995 -224 969.1 -235Q943.2 -245.9 921.7 -263.6Q900.2 -281.3 887.1 -308.8Q874.1 -336.2 874.1 -377.5Q874.1 -420.8 889.6 -451.4Q905 -482 932.4 -501.6Q959.8 -521.2 995.7 -530.3Q1031.5 -539.4 1071.8 -539.4Q1111.1 -539.4 1145 -530.6Q1179 -521.8 1204.7 -504.2Q1230.4 -486.6 1244.6 -460.4Q1258.9 -434.3 1258.9 -399.8Q1258.9 -393.1 1258.5 -385Q1258.1 -377 1257.3 -371.6H1124.4V-386.9Q1124.4 -403.5 1117.3 -414.1Q1110.2 -424.6 1097.6 -430Q1084.9 -435.4 1068.1 -435.4Q1057.1 -435.4 1047.1 -432.8Q1037 -430.3 1029.3 -424.8Q1021.6 -419.2 1017.1 -411.2Q1012.6 -403.3 1012.6 -392Q1012.6 -374.1 1025.4 -362.8Q1038.2 -351.6 1059.4 -344.1Q1080.5 -336.6 1105.2 -328.2Q1132.6 -319.8 1161.9 -309.8Q1191.3 -299.8 1216.4 -283.2Q1241.5 -266.5 1257.1 -238.8Q1272.6 -211 1272.6 -166.6Q1272.6 -118.1 1257 -84Q1241.3 -49.9 1213.4 -28.7Q1185.5 -7.5 1147.8 2.3Q1110.2 12 1066.2 12Z M1477.9 12Q1446.8 12 1418.8 4.4Q1390.8 -3.2 1369.1 -20.3Q1347.3 -37.4 1335 -65.8Q1322.7 -94.2 1322.7 -135.1Q1322.7 -186 1342.5 -221.3Q1362.4 -256.5 1400.7 -278.3Q1438.9 -300 1494.9 -309.9Q1550.8 -319.7 1622.8 -319.7V-362.6Q1622.8 -383.1 1615.8 -397.2Q1608.8 -411.3 1594.7 -419.1Q1580.6 -426.9 1557.7 -426.9Q1535.3 -426.9 1519.9 -420.2Q1504.6 -413.4 1497.2 -401.7Q1489.9 -390 1489.9 -374.1V-365.3H1342.7Q1341.7 -369.6 1341.7 -373.5Q1341.7 -377.4 1341.7 -382.5Q1341.7 -432 1367.9 -467Q1394.1 -502.1 1443.2 -520.7Q1492.4 -539.3 1561.1 -539.3Q1623.1 -539.3 1671.4 -523Q1719.8 -506.7 1747.7 -470.2Q1775.6 -433.6 1775.6 -371.8V-139.3Q1775.6 -123.1 1783.9 -113.7Q1792.1 -104.4 1806.8 -104.4H1834.8V-6.3Q1821.2 0.4 1798.4 6Q1775.6 11.5 1747 11.5Q1716.7 11.5 1694 3.3Q1671.3 -4.9 1657.1 -19.9Q1642.9 -35 1637.7 -55.2H1631.9Q1616.4 -36.2 1595 -20.9Q1573.6 -5.6 1544.9 3.2Q1516.1 12 1477.9 12ZM1536.9 -100.5Q1556 -100.5 1571.7 -107.3Q1587.5 -114.1 1598.9 -126.1Q1610.3 -138.1 1616.5 -155.1Q1622.8 -172 1622.8 -192.2V-234.2Q1573.5 -234.2 1541.3 -225.1Q1509.1 -216 1493.6 -198.7Q1478 -181.5 1478 -156.4Q1478 -137.7 1485.3 -125.2Q1492.5 -112.6 1505.8 -106.6Q1519 -100.5 1536.9 -100.5Z M1899.9 187V-527.2H2030.1L2043 -456.3H2049.6Q2074.2 -498.3 2112.8 -518.7Q2151.3 -539.2 2201.1 -539.2Q2265.4 -539.2 2310.4 -509.2Q2355.4 -479.3 2379.1 -417.9Q2402.9 -356.4 2402.9 -261.7Q2402.9 -168.7 2379 -107.9Q2355.2 -47.1 2310.8 -17.6Q2266.5 12 2204.9 12Q2174.2 12 2147.7 4.7Q2121.2 -2.6 2100.4 -17.6Q2079.7 -32.7 2065.1 -54.8H2058.8V187ZM2150 -116.1Q2183.6 -116.1 2203.7 -130.5Q2223.9 -144.9 2232.8 -173Q2241.7 -201.2 2241.7 -242.7V-285.6Q2241.7 -327.5 2232.9 -355.8Q2224 -384.1 2203.8 -398.3Q2183.6 -412.5 2149.9 -412.5Q2117.5 -412.5 2097.1 -396.5Q2076.7 -380.5 2067.3 -351.1Q2057.9 -321.6 2057.9 -281.1V-248Q2057.9 -217.8 2063.1 -193.5Q2068.4 -169.1 2079.5 -151.9Q2090.6 -134.7 2108.2 -125.4Q2125.8 -116.1 2150 -116.1Z M2775.4 12Q2684.4 12 2620.2 -17.5Q2555.9 -47 2522.2 -108Q2488.4 -169 2488.4 -263.5Q2488.4 -357.4 2521.9 -418.2Q2555.3 -479 2618 -509.1Q2680.6 -539.1 2768.8 -539.1Q2856.5 -539.1 2917.1 -510Q2977.8 -481 3009.2 -420.9Q3040.6 -360.8 3040.6 -266.5V-231.1H2655.2Q2656.2 -189.2 2668.3 -159.9Q2680.4 -130.6 2706.3 -115.9Q2732.3 -101.1 2774 -101.1Q2799.2 -101.1 2818.7 -107.1Q2838.2 -113.1 2851.7 -124.4Q2865.2 -135.8 2872.2 -152Q2879.1 -168.2 2879.2 -188.2H3040.5Q3040.5 -140 3022.3 -102.5Q3004.2 -65 2969.6 -39.6Q2935.1 -14.2 2886.1 -1.1Q2837.1 12 2775.4 12ZM2656.6 -321.9H2871.8Q2871.8 -348.1 2864.9 -367.5Q2858 -386.9 2845.2 -400Q2832.4 -413 2814.3 -419.3Q2796.1 -425.6 2773.3 -425.6Q2736.9 -425.6 2712.3 -413.6Q2687.7 -401.7 2674.4 -378.9Q2661.1 -356 2656.6 -321.9Z M3163.9 0V-527.3H3304.4L3316.4 -443H3324Q3337 -472.2 3357.2 -494.1Q3377.4 -515.9 3404.8 -527.9Q3432.2 -539.8 3464.9 -539.8Q3483.8 -539.8 3499.9 -536.5Q3515.9 -533.3 3526.3 -528.8V-384.7H3461.4Q3428.5 -384.7 3404.7 -375.2Q3380.8 -365.6 3365.5 -347.6Q3350.3 -329.6 3342.9 -304.6Q3335.5 -279.6 3335.5 -248.7V0Z M3869.1 12Q3807.8 12 3766.1 -3.2Q3724.4 -18.3 3703.2 -53.3Q3682 -88.3 3682 -147.4V-404H3589.6V-527.4H3688.4L3724.1 -683.7H3860.2V-527.4H3993.3V-404H3860.2V-183.2Q3860.2 -148.3 3874.5 -129.9Q3888.9 -111.4 3932 -111.4H3993.3V-5.8Q3979.6 -0.9 3956.7 3.3Q3933.8 7.5 3910.2 9.7Q3886.6 12 3869.1 12Z M4460.9 12Q4355.5 12 4277.3 -18.7Q4199.1 -49.5 4156 -110.7Q4112.9 -171.9 4112.9 -264Q4112.9 -356.5 4156 -417.8Q4199.1 -479.1 4277.3 -509.3Q4355.5 -539.5 4460.9 -539.5Q4566.2 -539.5 4644.4 -509.3Q4722.7 -479.1 4765.8 -417.8Q4808.9 -356.5 4808.9 -264Q4808.9 -171.9 4765.8 -110.7Q4722.7 -49.5 4644.4 -18.7Q4566.2 12 4460.9 12ZM4460.9 -113.5Q4513.1 -113.5 4548.2 -131.2Q4583.2 -148.8 4600.6 -180.5Q4618.1 -212.2 4618.1 -254V-274Q4618.1 -316.2 4600.6 -347.7Q4583.2 -379.2 4548.2 -396.6Q4513.1 -414.1 4460.9 -414.1Q4408.7 -414.1 4373.6 -396.6Q4338.6 -379.2 4321.1 -347.7Q4303.7 -316.2 4303.7 -274V-254Q4303.7 -212.2 4321.1 -180.5Q4338.6 -148.8 4373.6 -131.2Q4408.7 -113.5 4460.9 -113.5Z"/></svg>
+<span class="selo">Plano de desaperto</span></div>
+          <p class="olho">Ana, este é o seu caminho.</p>
+          <p class="data">Você sai das dívidas em <em>julho de 2027.</em></p>
+          <p class="sub">Se algum mês apertar, no máximo em novembro de 2027.</p>
+          <div class="bloco-n"><span>Depois de pagar as contas e as parcelas, sobram</span><b>R$ 57</b></div>
+          <ol class="passos-ex">
+            <li>Ponha em dia o empréstimo do app<small>Esta semana · 15 minutos</small></li>
+            <li>Baixe o limite do cartão para R$ 1.000<small>Hoje · 5 minutos</small></li>
+            <li>Parcele o que ficou sem pagar da fatura<small>Hoje · 10 minutos</small></li>
+          </ol>
+        </div>
+        <p class="legenda">Exemplo de plano. O seu é feito com os seus números.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- reconhecer -->
+  <section class="reconhece faixa" aria-labelledby="t-reconhece">
+    <div class="miolo">
+      <p class="rotulo" id="t-reconhece">Se alguma dessas é sua</p>
+      <ul class="frases">
+        <li>Você recebe o salário e em três dias ele já foi.</li>
+        <li>Paga a fatura do cartão e a do mês seguinte já vem maior.</li>
+        <li>Acorda para trabalhar e sente que vive só para pagar dívida.</li>
+        <li>Pegou um empréstimo para pagar outro.</li>
+        <li>O celular toca e vem a angústia: é mais uma cobrança?</li>
+        <li>Tem vergonha de olhar para a própria vida financeira.</li>
+        <li>Sente que a vida está parada até as dívidas acabarem.</li>
+        <li>Não consegue ver um caminho em que tudo esteja quitado.</li>
+      </ul>
+      <p class="virada">Não é falta de esforço. São os juros, que crescem em cima dos juros. <b>Quando você sabe qual dívida pagar primeiro, o aperto começa a soltar.</b></p>
+    </div>
+  </section>
+
+  <!-- o caminho -->
+  <section class="caminho faixa" aria-labelledby="t-caminho">
+    <div class="miolo">
+      <div class="cab">
+        <p class="rotulo">Um exemplo</p>
+        <h2 id="t-caminho">Do jeito que está, não tem fim. Com um plano, tem data.</h2>
+        <p>A Ana ganha R$ 2.900 e deve R$ 8.122 no cartão, no cheque especial e em dois empréstimos. Ela não ganhou mais nem cortou tudo. Só passou a pagar as dívidas na ordem certa.</p>
+      </div>
+      <div class="trajeto">
+        <p class="tr-topo">Quanto a Ana deve em cada mês</p>
+        <div class="grafico-c" role="img" aria-label="A dívida da Ana cai de 8.122 reais hoje para zero em julho de 2027.">
+          <b class="v-ini num">R$ 8.122</b>
+          <div class="b b0"><i style="height:100.0%"></i><span>hoje</span></div><div class="b"><i style="height:78.4%"></i><span>nov</span></div><div class="b"><i style="height:55.7%"></i><span>dez</span></div><div class="b"><i style="height:47.2%"></i><span>jan</span></div><div class="b"><i style="height:39.0%"></i><span>fev</span></div><div class="b"><i style="height:30.3%"></i><span>mar</span></div><div class="b"><i style="height:23.8%"></i><span>abr</span></div><div class="b"><i style="height:13.5%"></i><span>mai</span></div><div class="b"><i style="height:2.8%"></i><span>jun</span></div><div class="b bz"><i style="height:1.5%"></i><span>jul</span></div>
+          <b class="v-fim num">R$ 0</b>
+        </div>
+        <ol class="conquistas">
+          <li><span class="num">nov/26</span>Paga o empréstimo atrasado. O nome não vai para o Serasa.</li>
+          <li><span class="num">dez/26</span>Usa o 13º e termina de pagar o cartão.</li>
+          <li><span class="num">mar/27</span>Sai do cheque especial. Acabam os juros mais caros.</li>
+          <li><span class="num">abr/27</span>Já tem um dinheiro guardado para emergências.</li>
+          <li class="fim"><span class="num">jul/27</span>Última dívida paga.</li>
+        </ol>
+        <div class="juros-ano">
+          <div><span>Juros em 1 ano, se nada mudar</span><b class="num">R$ 6.187</b></div>
+          <div class="com"><span>Com o plano</span><b class="num">R$ 1.596</b></div>
+        </div>
+        <p class="nota">São R$ 4.591 que ficam no bolso da Ana. A Ana não existe, mas as contas foram feitas do mesmo jeito que as do seu plano.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- como funciona -->
+  <section class="como faixa" aria-labelledby="t-como">
+    <div class="miolo">
+      <div class="cab">
+        <p class="rotulo">Como funciona</p>
+        <h2 id="t-como">Você responde. A gente faz as contas. O plano chega.</h2>
+      </div>
+      <ol class="etapas">
+        <li>
+          <h3>Você conta como está</h3>
+          <p>Quanto você recebe, quanto gasta com casa, mercado e contas, e o que deve. Deixe o app do banco aberto: quase tudo está lá.</p>
+          <span class="tempo">15 a 20 minutos</span>
+        </li>
+        <li>
+          <h3>O Desaperto faz as contas</h3>
+          <p>Descobre qual dívida custa mais caro e deve ser paga primeiro, quanto sobra no seu mês e quando cada dívida termina.</p>
+          <span class="tempo">Com os seus números</span>
+        </li>
+        <li>
+          <h3>O plano chega no seu e-mail</h3>
+          <p>Um arquivo fácil de ler no celular, com a data em que você sai das dívidas e o que fazer em cada mês.</p>
+          <span class="tempo">Em até 3 dias úteis</span>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- o plano -->
+  <section class="plano faixa" aria-labelledby="t-plano">
+    <div class="miolo">
+      <div class="cab">
+        <p class="rotulo">O que vem no plano</p>
+        <h2 id="t-plano">Um caminho que você consegue seguir.</h2>
+        <p>Nada de dica pronta. Tudo é feito com as suas respostas. Veja páginas de um plano de exemplo.</p>
+      </div>
+      <div class="trilho" tabindex="0" aria-label="Páginas de um plano de exemplo">
+        <figure>
+          <div class="pg" aria-hidden="true">
+            <p class="sec">Sua primeira semana</p>
+            <h4>Três passos para esta semana.</h4>
+            <div class="card"><b>Ponha em dia o empréstimo do app</b><small>Pague as 2 parcelas atrasadas, R$ 610, e a deste mês. Assim seu nome não vai para o Serasa.</small></div>
+            <div class="card"><b>Baixe o limite do cartão</b><small>De R$ 2.500 para R$ 1.000, perto do que você gasta no mês.</small></div>
+            <div class="card"><b>Parcele o que ficou da fatura</b><small>Os juros caem e a dívida vira 12 parcelas de R$ 265.</small></div>
+          </div>
+          <figcaption><b>A primeira semana</b><span>Três coisas simples para fazer já, com o tempo que cada uma leva.</span></figcaption>
+        </figure>
+        <figure>
+          <div class="pg" aria-hidden="true">
+            <p class="sec">A ordem</p>
+            <h4>Uma dívida de cada vez.</h4>
+            <div class="linha-o"><span class="pos">1</span><div class="card" style="flex:1"><b>Cartão · fatura parcelada</b><small>8,4% ao mês. É a mais cara.</small></div></div>
+            <div class="linha-o"><span class="pos">2</span><div class="card" style="flex:1"><b>Cheque especial</b><small>7,9% ao mês. Quase o máximo permitido.</small></div></div>
+            <div class="linha-o"><span class="pos">3</span><div class="card" style="flex:1"><b>Empréstimo do app</b><small>6,9% ao mês. Vem depois.</small></div></div>
+            <div class="linha-o"><span class="pos">4</span><div class="card" style="flex:1"><b>Empréstimo pessoal</b><small>3,8% ao mês. Fica por último.</small></div></div>
+          </div>
+          <figcaption><b>A ordem certa</b><span>Qual dívida pagar primeiro e por quê. Quando uma acaba, o dinheiro dela vai para a próxima.</span></figcaption>
+        </figure>
+        <figure>
+          <div class="pg" aria-hidden="true">
+            <p class="sec">O caminho, mês a mês</p>
+            <h4>O que pagar, quanto e onde.</h4>
+            <div class="barras"><i style="height:100%"></i><i style="height:82%"></i><i style="height:66%"></i><i style="height:58%"></i><i style="height:47%"></i><i style="height:38%"></i><i style="height:28%"></i><i style="height:14%"></i><i style="height:4%"></i></div>
+            <div class="mes"><span class="m">dez/26</span><p>Com o 13º, pague R$ 1.013 a mais no cartão.<br><span class="marco">Conquista: cartão pago.</span></p></div>
+            <div class="mes"><span class="m">mar/27</span><p>Deposite R$ 120 e saia do cheque especial.<br><span class="marco">Conquista: fim dos juros mais caros.</span></p></div>
+          </div>
+          <figcaption><b>Mês a mês</b><span>Quanto pagar em cada dívida, em cada mês. O 13º e as férias também entram na conta.</span></figcaption>
+        </figure>
+        <figure>
+          <div class="pg" aria-hidden="true">
+            <p class="sec">Negociação</p>
+            <h4>Acordo da Loja Lar: o roteiro.</h4>
+            <div class="tres"><div><span>Cobrado hoje</span><b>R$ 4.800</b></div><div><span>Você oferece</span><b>R$ 1.440</b></div><div><span>Aceita até</span><b>R$ 2.000</b></div></div>
+            <ol class="roteiro">
+              <li><b>Quando:</b> em maio de 2027, quando tiver o dinheiro.</li>
+              <li><b>O que dizer:</b> "Tenho R$ 1.440 para pagar à vista hoje. Consegue fechar nesse valor?"</li>
+              <li><b>Antes de pagar:</b> peça o acordo por escrito.</li>
+            </ol>
+          </div>
+          <figcaption><b>Como negociar a dívida atrasada</b><span>Quanto oferecer, até quanto aceitar e o que falar. Dívida antiga costuma ter desconto grande.</span></figcaption>
+        </figure>
+        <figure>
+          <div class="pg" aria-hidden="true">
+            <p class="sec">Direitos que quase ninguém usa</p>
+            <h4>O que a lei já garante a você.</h4>
+            <div class="card"><b>Desconto ao adiantar parcelas</b><small>Pagou antes, paga menos juros. É lei.</small></div>
+            <div class="card"><b>Cheque especial tem teto</b><small>Os juros não podem passar de 8% ao mês.</small></div>
+            <div class="card"><b>Nome limpo em até 5 dias úteis</b><small>Pagou o acordo, a empresa tem que tirar seu nome do Serasa.</small></div>
+            <div class="card"><b>Receber o salário em outro banco</b><small>De graça e sem pedir nada para a empresa.</small></div>
+          </div>
+          <figcaption><b>Seus direitos</b><span>Só os que servem para o seu caso, explicados de um jeito simples.</span></figcaption>
+        </figure>
+        <figure>
+          <div class="pg" aria-hidden="true">
+            <p class="sec">Se a conta não fecha</p>
+            <h4>Uma proposta só para todas as dívidas.</h4>
+            <table class="tab"><tbody><tr><td>Banco Verde</td><td>R$ 453</td></tr><tr><td>CrediJá</td><td>R$ 92</td></tr><tr><td>Loja Bela</td><td>R$ 38</td></tr><tr><td>Proposta por mês</td><td>R$ 583</td></tr></tbody></table>
+            <div class="caixa"><b>Existe uma lei para isso.</b> O plano monta a proposta e os papéis para você levar ao Procon ou à Defensoria Pública. É de graça.</div>
+          </div>
+          <figcaption><b>Quando o salário não dá para tudo</b><span>Primeiro vêm casa, comida e contas. Depois, o plano mostra como renegociar todas as dívidas juntas.</span></figcaption>
+        </figure>
+      </div>
+      <p class="dica-trilho">Arraste para o lado para ver as outras páginas.</p>
+    </div>
+  </section>
+
+  <!-- feito para -->
+  <section class="vida faixa" aria-labelledby="t-vida">
+    <div class="miolo">
+      <div class="cab">
+        <p class="rotulo">Feito para quem vive de salário</p>
+        <h2 id="t-vida">Ele entende a sua realidade.</h2>
+      </div>
+      <div class="grade">
+        <div><h3>"Tenho medo de falar com o banco."</h3><p>O plano te dá o valor para oferecer e a frase pronta. Você chega na conversa sabendo o que dizer.</p></div>
+        <div><h3>"Vou receber 13º ou férias."</h3><p>O plano mostra em qual dívida usar esse dinheiro para ele render mais.</p></div>
+        <div><h3>"Recebo vale-alimentação."</h3><p>O mercado já é pago pelo vale. O plano não pede para cortar o que não sai do seu bolso.</p></div>
+        <div><h3>"Meu cartão virou uma bola de neve."</h3><p>O plano separa a fatura, o que foi parcelado e as compras em várias vezes, e mostra quanto você deve de verdade.</p></div>
+        <div><h3>"Estou com o nome sujo."</h3><p>O plano diz quanto oferecer para quitar e até quanto vale aceitar.</p></div>
+        <div><h3>"Tem gasto que não dá para cortar."</h3><p>Você escolhe o que não pode mexer, como aluguel ou remédio. O plano respeita.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- nunca -->
+  <section class="nunca faixa" aria-labelledby="t-nunca">
+    <div class="miolo">
+      <div class="cab">
+        <p class="rotulo">Pode confiar</p>
+        <h2 id="t-nunca">O que o Desaperto nunca faz.</h2>
+      </div>
+      <ul class="lista-nunca">
+        <li><b>Pedir CPF, senha ou extrato.</b><span>Você informa só os valores. Ninguém entra na sua conta.</span></li>
+        <li><b>Emprestar dinheiro.</b><span>O Desaperto não é banco, não indica banco e não oferece empréstimo.</span></li>
+        <li><b>Cobrar para "limpar seu nome".</b><span>Isso é golpe. O plano mostra onde negociar de forma segura e o que é de graça.</span></li>
+        <li><b>Guardar suas respostas para sempre.</b><span>Elas são apagadas em até 90 dias depois que o plano chega.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- perguntas -->
+  <section class="perguntas faixa" aria-labelledby="t-perg">
+    <div class="miolo">
+      <div class="cab">
+        <p class="rotulo">Perguntas</p>
+        <h2 id="t-perg">Antes de começar.</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Preciso saber os valores exatos?</summary>
+          <p>Quanto mais certo o valor, mais certa a data. Quase tudo está no app do banco. Se não achar algum valor, marque "não encontrei". O plano faz uma conta aproximada e avisa onde fez isso.</p>
+        </details>
+        <details>
+          <summary>Meu nome já está sujo. Ainda serve?</summary>
+          <p>Serve, e ajuda muito. Dívida antiga costuma ter desconto grande. O plano diz quanto oferecer, até quanto aceitar e quando você vai ter o dinheiro.</p>
+        </details>
+        <details>
+          <summary>E se o salário não der para tudo?</summary>
+          <p>O plano mostra isso com clareza. Primeiro garante casa, comida e contas. Depois mostra a saída: vender um bem, quando vale a pena, ou renegociar todas as dívidas juntas por uma lei feita para isso. Ele já monta a proposta e os papéis.</p>
+        </details>
+        <details>
+          <summary>Vou ter que pegar outro empréstimo?</summary>
+          <p>Não. O plano usa o que você já tem: o que sobra no mês, o 13º, as férias e o que você guardou.</p>
+        </details>
+        <details>
+          <summary>Alguém vai me ligar ou o banco vai saber?</summary>
+          <p>Não. O Desaperto não fala com bancos nem com cobradores, e você não informa CPF. Você decide com quem falar e quando, com o plano na mão.</p>
+        </details>
+        <details>
+          <summary>Isso é um consultor financeiro?</summary>
+          <p>Não. O Desaperto faz as contas com o que você informa e mostra um caminho. A decisão é sempre sua.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- final -->
+  <section class="final faixa" aria-labelledby="t-final">
+    <div class="miolo">
+      <p class="marca-grande" id="marca-grande" aria-label="desaperto"><span>d</span><span>e</span><span>s</span><span>a</span><span>p</span><span>e</span><span>r</span><span>t</span><span>o</span></p>
+      <h2 id="t-final">O primeiro desaperto é olhar para ela.</h2>
+      <p>Separe 20 minutos e abra o app do banco. Em até 3 dias úteis, o plano chega no seu e-mail.</p>
+      <a class="btn btn-claro" href="/comecar">Montar meu plano <span class="seta" aria-hidden="true">→</span></a>
+    </div>
+  </section>
+</main>
+
+<footer class="rodape faixa">
+  <div class="miolo">
+    <span class="logo" aria-label="desaperto"><svg xmlns="http://www.w3.org/2000/svg" viewBox="24.6 -724.5 4784.3 911.5" aria-hidden="true" focusable="false"><path fill="currentColor" d="M154.2 12Q107.5 12 78.7 -18.4Q49.9 -48.8 37.3 -111.4Q24.6 -174 24.6 -269.7Q24.6 -364 36.5 -423.5Q48.5 -483 75.9 -511.3Q103.4 -539.5 147.9 -539.5Q175.1 -539.5 193.4 -530.5Q211.7 -521.5 224.1 -505.5Q236.6 -489.5 244 -468.5H249V-724.5H384.2V0H272.9L264.8 -61.7H259.8Q248.2 -31.3 223.2 -9.6Q198.3 12 154.2 12ZM206.5 -108.8Q223.5 -108.8 232.7 -120.9Q241.9 -132.9 245.7 -157.4Q249.6 -181.9 249.6 -219.4V-299.4Q249.6 -329.1 247.2 -349.9Q244.8 -370.8 239.8 -384.1Q234.7 -397.5 226.2 -403.7Q217.8 -410 205.6 -410Q190.9 -410 181.7 -398.9Q172.5 -387.7 168.1 -363.7Q163.7 -339.7 163.7 -299.4V-219.4Q163.7 -180.5 167.9 -156.1Q172 -131.6 181.5 -120.2Q190.9 -108.8 206.5 -108.8Z M627.7 12Q558.5 12 513.5 -15.9Q468.5 -43.8 446.9 -104.6Q425.2 -165.4 425.2 -263.5Q425.2 -363.9 448.5 -424.4Q471.7 -485 517.6 -512.2Q563.4 -539.4 631.1 -539.4Q698.6 -539.4 742.1 -514.5Q785.6 -489.6 806.5 -431.3Q827.5 -372.9 827.5 -271.7V-237.7H569.8Q570 -188.6 575.1 -157.1Q580.1 -125.5 593 -110.3Q605.9 -95.1 629.4 -95.1Q644.4 -95.1 655.1 -100.4Q665.8 -105.8 672.5 -117Q679.2 -128.2 682.5 -145.8Q685.7 -163.5 686.1 -188H825.9Q825.5 -137 813.1 -99.2Q800.6 -61.4 776 -36.9Q751.5 -12.5 714.3 -0.2Q677.1 12 627.7 12ZM570.1 -312.8H682.5Q682.5 -346.1 680 -368.9Q677.5 -391.7 671.6 -405.8Q665.8 -420 655.5 -426.2Q645.1 -432.3 629.6 -432.3Q607.3 -432.3 594.7 -419.4Q582.1 -406.5 576.5 -380.3Q571 -354.1 570.1 -312.8Z M1066.2 12Q1015.7 12 978.3 0.9Q940.9 -10.2 916 -31Q891.2 -51.8 878.8 -81Q866.4 -110.1 866.4 -146.5Q866.4 -150.7 866.8 -157Q867.1 -163.2 867.9 -169.3H1001.8Q1001 -163.2 1001 -159Q1001 -154.9 1001 -150.6Q1001.4 -132.3 1009.3 -119.1Q1017.2 -105.8 1031.9 -98.9Q1046.7 -92 1066.6 -92Q1083.1 -92 1097.2 -96.8Q1111.3 -101.7 1120 -112.8Q1128.8 -124 1128.8 -141.9Q1128.8 -164.6 1113.5 -177.3Q1098.3 -190 1073.7 -198.5Q1049.2 -206.9 1021 -216Q995 -224 969.1 -235Q943.2 -245.9 921.7 -263.6Q900.2 -281.3 887.1 -308.8Q874.1 -336.2 874.1 -377.5Q874.1 -420.8 889.6 -451.4Q905 -482 932.4 -501.6Q959.8 -521.2 995.7 -530.3Q1031.5 -539.4 1071.8 -539.4Q1111.1 -539.4 1145 -530.6Q1179 -521.8 1204.7 -504.2Q1230.4 -486.6 1244.6 -460.4Q1258.9 -434.3 1258.9 -399.8Q1258.9 -393.1 1258.5 -385Q1258.1 -377 1257.3 -371.6H1124.4V-386.9Q1124.4 -403.5 1117.3 -414.1Q1110.2 -424.6 1097.6 -430Q1084.9 -435.4 1068.1 -435.4Q1057.1 -435.4 1047.1 -432.8Q1037 -430.3 1029.3 -424.8Q1021.6 -419.2 1017.1 -411.2Q1012.6 -403.3 1012.6 -392Q1012.6 -374.1 1025.4 -362.8Q1038.2 -351.6 1059.4 -344.1Q1080.5 -336.6 1105.2 -328.2Q1132.6 -319.8 1161.9 -309.8Q1191.3 -299.8 1216.4 -283.2Q1241.5 -266.5 1257.1 -238.8Q1272.6 -211 1272.6 -166.6Q1272.6 -118.1 1257 -84Q1241.3 -49.9 1213.4 -28.7Q1185.5 -7.5 1147.8 2.3Q1110.2 12 1066.2 12Z M1477.9 12Q1446.8 12 1418.8 4.4Q1390.8 -3.2 1369.1 -20.3Q1347.3 -37.4 1335 -65.8Q1322.7 -94.2 1322.7 -135.1Q1322.7 -186 1342.5 -221.3Q1362.4 -256.5 1400.7 -278.3Q1438.9 -300 1494.9 -309.9Q1550.8 -319.7 1622.8 -319.7V-362.6Q1622.8 -383.1 1615.8 -397.2Q1608.8 -411.3 1594.7 -419.1Q1580.6 -426.9 1557.7 -426.9Q1535.3 -426.9 1519.9 -420.2Q1504.6 -413.4 1497.2 -401.7Q1489.9 -390 1489.9 -374.1V-365.3H1342.7Q1341.7 -369.6 1341.7 -373.5Q1341.7 -377.4 1341.7 -382.5Q1341.7 -432 1367.9 -467Q1394.1 -502.1 1443.2 -520.7Q1492.4 -539.3 1561.1 -539.3Q1623.1 -539.3 1671.4 -523Q1719.8 -506.7 1747.7 -470.2Q1775.6 -433.6 1775.6 -371.8V-139.3Q1775.6 -123.1 1783.9 -113.7Q1792.1 -104.4 1806.8 -104.4H1834.8V-6.3Q1821.2 0.4 1798.4 6Q1775.6 11.5 1747 11.5Q1716.7 11.5 1694 3.3Q1671.3 -4.9 1657.1 -19.9Q1642.9 -35 1637.7 -55.2H1631.9Q1616.4 -36.2 1595 -20.9Q1573.6 -5.6 1544.9 3.2Q1516.1 12 1477.9 12ZM1536.9 -100.5Q1556 -100.5 1571.7 -107.3Q1587.5 -114.1 1598.9 -126.1Q1610.3 -138.1 1616.5 -155.1Q1622.8 -172 1622.8 -192.2V-234.2Q1573.5 -234.2 1541.3 -225.1Q1509.1 -216 1493.6 -198.7Q1478 -181.5 1478 -156.4Q1478 -137.7 1485.3 -125.2Q1492.5 -112.6 1505.8 -106.6Q1519 -100.5 1536.9 -100.5Z M1899.9 187V-527.2H2030.1L2043 -456.3H2049.6Q2074.2 -498.3 2112.8 -518.7Q2151.3 -539.2 2201.1 -539.2Q2265.4 -539.2 2310.4 -509.2Q2355.4 -479.3 2379.1 -417.9Q2402.9 -356.4 2402.9 -261.7Q2402.9 -168.7 2379 -107.9Q2355.2 -47.1 2310.8 -17.6Q2266.5 12 2204.9 12Q2174.2 12 2147.7 4.7Q2121.2 -2.6 2100.4 -17.6Q2079.7 -32.7 2065.1 -54.8H2058.8V187ZM2150 -116.1Q2183.6 -116.1 2203.7 -130.5Q2223.9 -144.9 2232.8 -173Q2241.7 -201.2 2241.7 -242.7V-285.6Q2241.7 -327.5 2232.9 -355.8Q2224 -384.1 2203.8 -398.3Q2183.6 -412.5 2149.9 -412.5Q2117.5 -412.5 2097.1 -396.5Q2076.7 -380.5 2067.3 -351.1Q2057.9 -321.6 2057.9 -281.1V-248Q2057.9 -217.8 2063.1 -193.5Q2068.4 -169.1 2079.5 -151.9Q2090.6 -134.7 2108.2 -125.4Q2125.8 -116.1 2150 -116.1Z M2775.4 12Q2684.4 12 2620.2 -17.5Q2555.9 -47 2522.2 -108Q2488.4 -169 2488.4 -263.5Q2488.4 -357.4 2521.9 -418.2Q2555.3 -479 2618 -509.1Q2680.6 -539.1 2768.8 -539.1Q2856.5 -539.1 2917.1 -510Q2977.8 -481 3009.2 -420.9Q3040.6 -360.8 3040.6 -266.5V-231.1H2655.2Q2656.2 -189.2 2668.3 -159.9Q2680.4 -130.6 2706.3 -115.9Q2732.3 -101.1 2774 -101.1Q2799.2 -101.1 2818.7 -107.1Q2838.2 -113.1 2851.7 -124.4Q2865.2 -135.8 2872.2 -152Q2879.1 -168.2 2879.2 -188.2H3040.5Q3040.5 -140 3022.3 -102.5Q3004.2 -65 2969.6 -39.6Q2935.1 -14.2 2886.1 -1.1Q2837.1 12 2775.4 12ZM2656.6 -321.9H2871.8Q2871.8 -348.1 2864.9 -367.5Q2858 -386.9 2845.2 -400Q2832.4 -413 2814.3 -419.3Q2796.1 -425.6 2773.3 -425.6Q2736.9 -425.6 2712.3 -413.6Q2687.7 -401.7 2674.4 -378.9Q2661.1 -356 2656.6 -321.9Z M3163.9 0V-527.3H3304.4L3316.4 -443H3324Q3337 -472.2 3357.2 -494.1Q3377.4 -515.9 3404.8 -527.9Q3432.2 -539.8 3464.9 -539.8Q3483.8 -539.8 3499.9 -536.5Q3515.9 -533.3 3526.3 -528.8V-384.7H3461.4Q3428.5 -384.7 3404.7 -375.2Q3380.8 -365.6 3365.5 -347.6Q3350.3 -329.6 3342.9 -304.6Q3335.5 -279.6 3335.5 -248.7V0Z M3869.1 12Q3807.8 12 3766.1 -3.2Q3724.4 -18.3 3703.2 -53.3Q3682 -88.3 3682 -147.4V-404H3589.6V-527.4H3688.4L3724.1 -683.7H3860.2V-527.4H3993.3V-404H3860.2V-183.2Q3860.2 -148.3 3874.5 -129.9Q3888.9 -111.4 3932 -111.4H3993.3V-5.8Q3979.6 -0.9 3956.7 3.3Q3933.8 7.5 3910.2 9.7Q3886.6 12 3869.1 12Z M4460.9 12Q4355.5 12 4277.3 -18.7Q4199.1 -49.5 4156 -110.7Q4112.9 -171.9 4112.9 -264Q4112.9 -356.5 4156 -417.8Q4199.1 -479.1 4277.3 -509.3Q4355.5 -539.5 4460.9 -539.5Q4566.2 -539.5 4644.4 -509.3Q4722.7 -479.1 4765.8 -417.8Q4808.9 -356.5 4808.9 -264Q4808.9 -171.9 4765.8 -110.7Q4722.7 -49.5 4644.4 -18.7Q4566.2 12 4460.9 12ZM4460.9 -113.5Q4513.1 -113.5 4548.2 -131.2Q4583.2 -148.8 4600.6 -180.5Q4618.1 -212.2 4618.1 -254V-274Q4618.1 -316.2 4600.6 -347.7Q4583.2 -379.2 4548.2 -396.6Q4513.1 -414.1 4460.9 -414.1Q4408.7 -414.1 4373.6 -396.6Q4338.6 -379.2 4321.1 -347.7Q4303.7 -316.2 4303.7 -274V-254Q4303.7 -212.2 4321.1 -180.5Q4338.6 -148.8 4373.6 -131.2Q4408.7 -113.5 4460.9 -113.5Z"/></svg>
+</span>
+    <div class="cols">
+      <div>
+        <h3>Contato</h3>
+        <span class="copiar"><span id="email-contato">contato@desaperto.com</span><button type="button" id="btn-copiar">Copiar</button></span>
+      </div>
+      <div>
+        <h3>Se o peso estiver grande</h3>
+        <p>Você não precisa carregar isso sem ajuda. <b>CVV, ligue 188</b>, 24 horas, gratuito.</p>
+      </div>
+      <div>
+        <h3>Cuidado com golpes</h3>
+        <p>O Desaperto nunca pede senha, nunca manda boleto e nunca cobra para limpar nome.</p>
+      </div>
+    </div>
+    <p class="aviso">O Desaperto ajuda você a organizar as dívidas. Ele não é consultoria financeira, não indica bancos nem empréstimos e não garante desconto. As pessoas e os valores dos exemplos são inventados. © 2026 Desaperto. <a href="/termos">Termos de uso</a> · <a href="/privacidade">Privacidade</a></p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var topo = document.getElementById('topo');
+  function aoRolar() { topo.classList.toggle('rolou', window.scrollY > 8); }
+  window.addEventListener('scroll', aoRolar, { passive: true }); aoRolar();
+
+  // A marca grande nasce apertada e se solta quando aparece na tela. Sem suporte ou com movimento reduzido, fica na forma final.
+  var marca = document.getElementById('marca-grande');
+  var calmo = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (marca && 'IntersectionObserver' in window && !calmo) {
+    marca.classList.add('aperta');
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { marca.classList.remove('aperta'); io.disconnect(); } });
+    }, { threshold: 0.35 });
+    io.observe(marca);
+    setTimeout(function () { marca.classList.remove('aperta'); }, 12000);
+  }
+
+  var btn = document.getElementById('btn-copiar');
+  btn.addEventListener('click', function () {
+    var txt = document.getElementById('email-contato').textContent;
+    function selecionar() { var r = document.createRange(); r.selectNodeContents(document.getElementById('email-contato')); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Selecionado'; }
+    try {
+      navigator.clipboard.writeText(txt).then(function () { btn.textContent = 'Copiado'; setTimeout(function () { btn.textContent = 'Copiar'; }, 1800); }, selecionar);
+    } catch (e) { selecionar(); }
+  });
+})();
+</script>
+
+</body>
+</html>
