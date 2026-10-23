@@ -1,5 +1,5 @@
-const { chromium } = require('playwright');
-(async()=>{const [,,src,out,png]=process.argv;const b=await chromium.launch();const p=await b.newPage();
+const { chromium } = (() => { try { return require('playwright'); } catch (e) { return require('playwright-core'); } })();
+(async()=>{const [,,src,out,png]=process.argv;const b=await chromium.launch(process.env.PW_CHANNEL ? { channel: process.env.PW_CHANNEL } : {});const p=await b.newPage();
 await p.goto('file://'+require('path').resolve(src));await p.waitForTimeout(600);
 await p.pdf({path:out,width:'108mm',height:'192mm',printBackground:true,preferCSSPageSize:true});
 if(png){await p.setViewportSize({width:408,height:726});const n=await p.$$eval('.pag',e=>e.length);

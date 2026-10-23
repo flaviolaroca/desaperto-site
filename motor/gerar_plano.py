@@ -10,7 +10,7 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, AQUI)
 import plano_pdf, textos_generico, motor
 
-GRAVES = {'C1', 'C6'}  # avisos que pedem um olhar humano antes do envio
+GRAVES = {'C6'}  # dados impossíveis: pedem um olhar humano antes do envio (o C1 já vai explicado no próprio plano)
 
 
 def inicio_do_plano(data):

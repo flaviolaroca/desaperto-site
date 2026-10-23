@@ -2,7 +2,7 @@
 // PUT  /api/admin/plano?id=...  corpo: o PDF          -> guarda o arquivo (apagado sozinho em 90 dias)
 // POST /api/admin/plano?id=...  { resumo } ou { erro } -> marca o plano como pronto ou com erro
 // GET  /api/admin/plano?id=...                         -> devolve o PDF (para ver na área interna)
-import { json, erro, agora, autorizado, enviarPlano, DIAS_GUARDADOS } from '../../../lib/api.js';
+import { json, erro, agora, autorizado, enviarPlano, enviarEmail, DIAS_GUARDADOS } from '../../../lib/api.js';
 
 const PDF_MAXIMO = 8_000_000;
 
@@ -33,11 +33,19 @@ export async function onRequest({ request, env }) {
     if (!corpo || typeof corpo.resumo !== 'object') return erro('Falta o resumo.');
     await env.DB.prepare("UPDATE respostas SET status = 'plano_pronto', plano_resumo = ?, plano_gerado_em = ?, plano_erro = NULL WHERE id = ?")
       .bind(JSON.stringify(corpo.resumo), agora(), id).run();
-    // Envio direto só quando ligado de propósito e o plano não tem nada que peça revisão.
-    if (env.ENVIO_AUTOMATICO === 'sim' && !corpo.resumo.precisa_revisao && !linha.teste) {
+    // Envio direto, a menos que ENVIO_AUTOMATICO = nao. Plano que pede revisão fica parado e avisa o Flávio.
+    if (env.ENVIO_AUTOMATICO !== 'nao' && !corpo.resumo.precisa_revisao) {
       const r = await enviarPlano(env, id, url.origin);
-      return json({ ok: true, enviado: r.ok, erro_envio: r.erro });
+      if (r.ok) return json({ ok: true, enviado: true });
+      await enviarEmail(env, { para: env.EMAIL_AVISO, assunto: `Plano não foi enviado: ${id.slice(0, 8)}`, texto: `O envio automático falhou: ${r.erro}\nVeja em ${url.origin}/admin` });
+      return json({ ok: true, enviado: false, erro_envio: r.erro });
     }
+    const l = await env.DB.prepare('SELECT nome, protocolo FROM respostas WHERE id = ?').bind(id).first();
+    await enviarEmail(env, {
+      para: env.EMAIL_AVISO,
+      assunto: `Revisar plano: ${(l && l.nome || '').split(' ')[0]} · ${l && l.protocolo}`,
+      texto: `Um plano ficou pronto, mas tem aviso que pede revisão antes de enviar:\n\n${(corpo.resumo.alertas || []).map((a) => '- ' + a.texto).join('\n') || '- A conta não fecha.'}\n\nConfira e envie em ${url.origin}/admin`,
+    });
     return json({ ok: true, enviado: false });
   }
 

@@ -18,11 +18,12 @@ concurrency:
 jobs:
   gerar:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 6
     env:
       SITE: https://desaperto.com
       ID: ${{ github.event.client_payload.id || inputs.id }}
       ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+      PW_CHANNEL: chrome   # usa o Google Chrome que já vem no GitHub: o plano sai em menos de 1 minuto
     steps:
       - uses: actions/checkout@v4
 
@@ -30,22 +31,16 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Navegador para gerar o PDF
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-1.48.2
-
-      - name: Instalar o Playwright
-        run: |
-          npm install --no-save --no-audit --no-fund playwright@1.48.2
-          npx playwright install --with-deps chromium
+      - name: Instalar o gerador de PDF
+        run: npm install --no-save --no-audit --no-fund playwright-core@1.48.2
 
       - name: Buscar as respostas
         run: |
           test -n "$ADMIN_TOKEN" || { echo "Falta o segredo ADMIN_TOKEN no GitHub"; exit 1; }
           mkdir -p trabalho
-          curl -sSf -H "authorization: Bearer $ADMIN_TOKEN" "$SITE/api/admin/respostas?id=$ID" -o trabalho/resposta.json
+          code=$(curl -sS -o trabalho/resposta.json -w "%{http_code}" -H "authorization: Bearer $ADMIN_TOKEN" "$SITE/api/admin/respostas?id=$ID")
+          if [ "$code" = "401" ]; then echo "::error::A chave ADMIN_TOKEN do GitHub é diferente da que está na Cloudflare."; exit 1; fi
+          test "$code" = "200" || { echo "::error::O site respondeu $code ao buscar as respostas."; exit 1; }
           python3 -c "
           import json
           r = json.load(open('trabalho/resposta.json'))['resposta']

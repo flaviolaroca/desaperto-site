@@ -52,8 +52,8 @@ export async function onRequestPost({ request, env }) {
     await enviarEmail(env, {
       para: r.email.trim(),
       assunto: 'Recebemos suas respostas',
-      texto: `${primeiroNome}, recebemos suas respostas.\n\nSeu plano de desaperto chega neste e-mail em até 3 dias úteis.\nProtocolo: ${prot}\n\nO Desaperto nunca pede senha, nunca manda boleto e nunca cobra para limpar nome.\n\nDesaperto · desaperto.com`,
-      html: `<p>${escapar(primeiroNome)}, recebemos suas respostas.</p><p>Seu plano de desaperto chega neste e-mail em até 3 dias úteis.<br>Protocolo: <b>${prot}</b></p><p style="color:#555D58;font-size:13px">O Desaperto nunca pede senha, nunca manda boleto e nunca cobra para limpar nome.</p><p><b>desaperto</b> · desaperto.com</p>`,
+      texto: `${primeiroNome}, recebemos suas respostas.\n\nSeu plano de desaperto está sendo montado e chega neste e-mail em poucos minutos.\nProtocolo: ${prot}\n\nO Desaperto nunca pede senha, nunca manda boleto e nunca cobra para limpar nome.\n\nDesaperto · desaperto.com`,
+      html: `<p>${escapar(primeiroNome)}, recebemos suas respostas.</p><p>Seu plano de desaperto está sendo montado e chega neste e-mail em poucos minutos.<br>Protocolo: <b>${prot}</b></p><p style="color:#555D58;font-size:13px">O Desaperto nunca pede senha, nunca manda boleto e nunca cobra para limpar nome.</p><p><b>desaperto</b> · desaperto.com</p>`,
     });
   }
   return json({ ok: true, id, chave, protocolo: prot }, 201);
