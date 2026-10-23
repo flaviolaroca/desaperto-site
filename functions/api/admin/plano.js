@@ -2,12 +2,12 @@
 // PUT  /api/admin/plano?id=...  corpo: o PDF          -> guarda o arquivo (apagado sozinho em 90 dias)
 // POST /api/admin/plano?id=...  { resumo } ou { erro } -> marca o plano como pronto ou com erro
 // GET  /api/admin/plano?id=...                         -> devolve o PDF (para ver na área interna)
-import { json, erro, agora, autorizado, enviarPlano, enviarEmail, DIAS_GUARDADOS } from '../../../lib/api.js';
+import { json, erro, agora, autorizado, negado, enviarPlano, enviarEmail, DIAS_GUARDADOS } from '../../../lib/api.js';
 
 const PDF_MAXIMO = 8_000_000;
 
 export async function onRequest({ request, env }) {
-  if (!autorizado(request, env)) return erro('Acesso negado.', 401);
+  if (!autorizado(request, env)) return negado(env);
   if (!env.DB) return erro('Banco de dados não configurado.', 503);
   const url = new URL(request.url);
   const id = url.searchParams.get('id');

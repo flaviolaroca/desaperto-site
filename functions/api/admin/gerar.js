@@ -1,8 +1,8 @@
 // POST /api/admin/gerar { id } -> pede ao GitHub para gerar o plano de novo.
-import { json, erro, autorizado, pedirPlano } from '../../../lib/api.js';
+import { json, erro, autorizado, negado, pedirPlano } from '../../../lib/api.js';
 
 export async function onRequestPost({ request, env }) {
-  if (!autorizado(request, env)) return erro('Acesso negado.', 401);
+  if (!autorizado(request, env)) return negado(env);
   let corpo;
   try { corpo = await request.json(); } catch { return erro('Corpo inválido.'); }
   if (!corpo || typeof corpo.id !== 'string') return erro('Falta o id.');

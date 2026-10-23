@@ -112,7 +112,7 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
   function carregar() {
     $('barra').hidden = false; $('msg').textContent = 'Carregando...';
     return api('GET').then(function (j) { lista = j.respostas || []; $('form-entrar').hidden = true; desenhar(); })
-      .catch(function (e) { $('msg').textContent = e.message === 'Acesso negado.' ? 'Chave de acesso errada.' : 'Não foi possível carregar: ' + e.message; $('form-entrar').hidden = false; });
+      .catch(function (e) { $('msg').textContent = e.message === 'Acesso negado.' ? 'Chave de acesso errada. Confira se é exatamente igual à salva na Cloudflare (maiúsculas, minúsculas e símbolos contam).' : e.message; $('form-entrar').hidden = false; });
   }
   function completa(id) { return api('GET', '?id=' + encodeURIComponent(id)).then(function (j) { return j.resposta; }); }
 

@@ -3,10 +3,10 @@
 // GET    /api/admin/respostas?id=...     -> uma resposta completa
 // POST   /api/admin/respostas            -> { id, status } (muda a situação à mão)
 // DELETE /api/admin/respostas?id=...     -> apaga (pedido de exclusão da pessoa)
-import { json, erro, agora, limparAntigas, autorizado, STATUS } from '../../../lib/api.js';
+import { json, erro, agora, limparAntigas, autorizado, negado, STATUS } from '../../../lib/api.js';
 
 export async function onRequest({ request, env }) {
-  if (!autorizado(request, env)) return erro('Acesso negado.', 401);
+  if (!autorizado(request, env)) return negado(env);
   if (!env.DB) return erro('Banco de dados não configurado.', 503);
   const url = new URL(request.url);
   const id = url.searchParams.get('id');
