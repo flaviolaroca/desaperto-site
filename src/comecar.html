@@ -1,0 +1,849 @@
+<title>Desaperto · Começar</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: uma coluna de leitura (máx. 34rem), cabeçalho com etapa e progresso, botão principal sempre ao fim da tela. Marca de cor única (papel claro), por decisão de identidade. */
+:root {
+  --papel: #F3EFE6;
+  --tinta: #16211C;
+  --verde: #16704A;
+  --verde-escuro: #0F5537;
+  --respiro: #DCEBE1;
+  --areia: #E7DFD0;
+  --ambar: #9A5B12;
+  --cinza: #5C625E;
+  --branco: #FFFFFF;
+  --linha: #D9D1C1;
+  --f-texto: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --f-num: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  background: var(--papel); color: var(--tinta);
+  font-family: var(--f-texto); font-size: 17px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.app { max-width: 34rem; margin: 0 auto; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; padding-block: 20px 28px; }
+.topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
+.logo { height: 22px; width: auto; display: block; }
+.voltar { appearance: none; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; color: var(--tinta); padding: 10px 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; }
+.voltar svg { width: 18px; height: 18px; }
+.etapa { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+.etapa-nome { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--cinza); }
+.barra { height: 6px; border-radius: 3px; background: var(--areia); overflow: hidden; }
+.barra > i { display: block; height: 100%; background: var(--verde); border-radius: 3px; transition: width .35s ease; }
+main { flex: 1; display: flex; flex-direction: column; padding-top: 26px; }
+.tela { display: flex; flex-direction: column; gap: 22px; flex: 1; }
+h1 { font-size: 30px; line-height: 1.12; font-weight: 800; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+.lead { margin: 0; font-size: 17px; color: #2E3832; }
+.acolhe { margin: 0; font-size: 15px; color: var(--verde); font-weight: 700; }
+.texto p { margin: 0 0 14px; }
+.texto p:last-child { margin-bottom: 0; }
+.texto strong { font-weight: 800; }
+.campos { display: flex; flex-direction: column; gap: 22px; }
+.campo { display: flex; flex-direction: column; gap: 8px; }
+.campo > label, .campo > .rotulo, fieldset legend { font-weight: 700; font-size: 17px; line-height: 1.3; padding: 0; }
+.ajuda { font-size: 14px; color: var(--cinza); margin: -2px 0 0; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+fieldset legend { margin-bottom: 10px; }
+input[type=text], input[type=email], input[inputmode], select, textarea {
+  width: 100%; font: inherit; font-size: 18px; color: var(--tinta); background: var(--branco);
+  border: 1.5px solid var(--linha); border-radius: 12px; padding: 13px 14px; min-height: 52px;
+}
+textarea { min-height: 96px; resize: vertical; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid var(--respiro); border-color: var(--verde); outline-offset: 0; }
+.dinheiro { position: relative; }
+.dinheiro span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-family: var(--f-num); font-weight: 600; font-size: 16px; color: var(--cinza); pointer-events: none; }
+.dinheiro input { padding-left: 46px; font-family: var(--f-num); font-weight: 600; font-variant-numeric: tabular-nums; }
+.curto { max-width: 9rem; }
+.opcoes { display: flex; flex-direction: column; gap: 10px; }
+.opcoes.lado { flex-direction: row; flex-wrap: wrap; }
+.opcoes.lado .op { flex: 1 1 8rem; }
+.op { position: relative; display: flex; }
+.op input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.op span { flex: 1; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 12px 16px; border-radius: 12px; border: 1.5px solid var(--linha); background: var(--branco); font-size: 16px; font-weight: 600; line-height: 1.3; }
+.op span::before { content: ""; flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--linha); background: var(--branco); }
+.op input[type=checkbox] + span::before { border-radius: 6px; }
+.op input:checked + span { border-color: var(--verde); background: var(--respiro); }
+.op input:checked + span::before { border-color: var(--verde); background: var(--verde); box-shadow: inset 0 0 0 3px var(--branco); }
+.op input:focus-visible + span { outline: 3px solid var(--verde); outline-offset: 2px; }
+.check { display: flex; gap: 12px; align-items: flex-start; font-size: 15px; line-height: 1.45; cursor: pointer; }
+.check input { width: 22px; height: 22px; margin: 1px 0 0; flex: none; accent-color: var(--verde); }
+.nao-sei { display: inline-flex; gap: 10px; align-items: center; font-size: 15px; color: var(--cinza); cursor: pointer; min-height: 36px; }
+.nao-sei input { width: 20px; height: 20px; accent-color: var(--verde); margin: 0; }
+.linha-dupla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.erro { color: var(--ambar); font-size: 14px; font-weight: 700; margin: 0; }
+.campo.com-erro input, .campo.com-erro select, .campo.com-erro .op span { border-color: var(--ambar); }
+.acoes { margin-top: auto; padding-top: 28px; display: flex; flex-direction: column; gap: 12px; }
+.btn { appearance: none; border: 0; font: inherit; font-size: 17px; font-weight: 700; min-height: 56px; border-radius: 16px; padding: 0 22px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+.btn-principal { background: var(--verde); color: var(--branco); }
+.btn-principal:hover { background: var(--verde-escuro); }
+.btn-sec { background: var(--branco); color: var(--tinta); border: 1.5px solid var(--linha); }
+.btn:focus-visible, .voltar:focus-visible, .link:focus-visible { outline: 3px solid var(--tinta); outline-offset: 3px; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.link { appearance: none; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 700; color: var(--verde); padding: 8px 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; min-height: 40px; }
+.nota { font-size: 14px; color: var(--cinza); text-align: center; margin: 0; }
+.total { position: sticky; bottom: 0; margin-top: 8px; background: var(--tinta); color: var(--papel); border-radius: 14px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.total b { font-family: var(--f-num); font-size: 20px; font-variant-numeric: tabular-nums; }
+.total small { font-size: 14px; }
+.cartoes { display: flex; flex-direction: column; gap: 12px; }
+.cartao { background: var(--branco); border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; border: 1.5px solid var(--areia); }
+.cartao-topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.cartao h2 { font-size: 17px; margin: 0; line-height: 1.3; }
+.cartao .quem { font-size: 14px; color: var(--cinza); margin: 2px 0 0; }
+.cartao .valor { font-family: var(--f-num); font-weight: 600; font-size: 17px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip { display: inline-block; font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--areia); color: var(--tinta); }
+.chip.atraso { color: var(--ambar); }
+.cartao-acoes { display: flex; gap: 18px; flex-wrap: wrap; }
+.vazio { border: 1.5px dashed var(--linha); border-radius: 16px; padding: 22px 18px; color: var(--cinza); font-size: 15px; text-align: center; }
+.soma { background: var(--respiro); border-radius: 16px; padding: 16px 18px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.soma b { font-family: var(--f-num); font-size: 20px; font-variant-numeric: tabular-nums; }
+.bloco { border-top: 1.5px solid var(--areia); padding-top: 18px; display: flex; flex-direction: column; gap: 22px; }
+.bloco-titulo { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--cinza); margin: 0; }
+.linhas { display: flex; flex-direction: column; gap: 12px; }
+.linha-item { background: var(--branco); border: 1.5px solid var(--areia); border-radius: 14px; padding: 12px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.linha-item .linha-dupla select, .linha-item .linha-dupla input { min-height: 48px; }
+.revisao { display: flex; flex-direction: column; gap: 14px; }
+.rev { background: var(--branco); border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.rev-topo { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.rev h2 { font-size: 16px; margin: 0; }
+.rev dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 14px; font-size: 15px; }
+.rev dt { color: var(--cinza); min-width: 0; }
+.rev dd { margin: 0; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.aviso { background: var(--areia); border-radius: 16px; padding: 16px 18px; font-size: 15px; display: flex; flex-direction: column; gap: 6px; }
+.aviso strong { color: var(--ambar); }
+.final { text-align: left; }
+.final .cvv { background: var(--branco); border-radius: 16px; padding: 16px 18px; font-size: 15px; }
+pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-size: 12px; overflow-x: auto; max-height: 60vh; }
+.oculto { display: none !important; }
+.logo-link { display: inline-flex; color: inherit; }
+.erro-envio { background: var(--branco); border-radius: 14px; padding: 14px 16px; color: var(--tinta); font-size: 15px; border-left: 4px solid #9A5B12; }
+.btn[disabled] { opacity: .65; cursor: progress; }
+.check a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.protocolo { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; letter-spacing: .04em; }
+.sr { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+@media (prefers-reduced-motion: reduce) { .barra > i { transition: none; } }
+</style>
+
+<div class="app">
+  <header class="topo">
+    <button type="button" class="voltar" id="btn-voltar" aria-label="Voltar para a tela anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Voltar</button>
+    <a class="logo-link" href="/" aria-label="desaperto, página inicial"><svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="24.6 -724.5 4784.3 911.5" aria-hidden="true" focusable="false"><path fill="currentColor" d="M154.19580078125 12.0Q107.478515625 12.0 78.706787109375 -18.402099609375Q49.93505859375 -48.80419921875 37.250244140625 -111.39111328125Q24.5654296875 -173.97802734375 24.5654296875 -269.71728515625Q24.5654296875 -364.0 36.52197265625 -423.5Q48.478515625 -483.0 75.93505859375 -511.271728515625Q103.3916015625 -539.54345703125 147.93505859375 -539.54345703125Q175.10888671875 -539.54345703125 193.380615234375 -530.5Q211.65234375 -521.45654296875 224.10888671875 -505.45654296875Q236.5654296875 -489.45654296875 244.02197265625 -468.54345703125H249.02197265625V-724.54345703125H384.1728515625V0.0H272.9130859375L264.826171875 -61.7392578125H259.826171875Q248.19580078125 -31.28271484375 223.2392578125 -9.641357421875Q198.28271484375 12.0 154.19580078125 12.0ZM206.49951171875 -108.80322265625Q223.521484375 -108.80322265625 232.71728515625 -120.86865234375Q241.9130859375 -132.93408203125 245.7392578125 -157.423583984375Q249.5654296875 -181.9130859375 249.5654296875 -219.41357421875V-299.41259765625Q249.5654296875 -329.0869140625 247.19580078125 -349.93505859375Q244.826171875 -370.783203125 239.771728515625 -384.120361328125Q234.71728515625 -397.45751953125 226.249755859375 -403.740234375Q217.7822265625 -410.02294921875 205.58642578125 -410.02294921875Q190.93408203125 -410.02294921875 181.69482421875 -398.87060546875Q172.45556640625 -387.71826171875 168.0859375 -363.728759765625Q163.71630859375 -339.7392578125 163.71630859375 -299.41259765625V-219.41357421875Q163.71630859375 -180.54345703125 167.857666015625 -156.053955078125Q171.9990234375 -131.564453125 181.466552734375 -120.183837890625Q190.93408203125 -108.80322265625 206.49951171875 -108.80322265625Z M627.6977954506874 12.0Q558.5340990424156 12.0 513.5219121873379 -15.914794921875Q468.50972533226013 -43.82958984375 446.8653567135334 -104.61421713232994Q425.22098809480667 -165.39884442090988 425.22098809480667 -263.54345703125Q425.22098809480667 -363.86625158786774 448.4630942940712 -424.4226073920727Q471.7052004933357 -484.9789631962776 517.5681563317776 -512.2138671875Q563.4311121702194 -539.4487711787224 631.1008713841438 -539.4487711787224Q698.6281745433807 -539.4487711787224 742.1179818511009 -514.5492554008961Q785.6077891588211 -489.64973962306976 806.531190186739 -431.2600708901882Q827.4545912146568 -372.87040215730667 827.4545912146568 -271.7105715870857V-237.71044921875H569.7776696681976Q569.9670413732529 -188.6419677734375 575.0522057712078 -157.08990475535393Q580.1373701691628 -125.53784173727036 593.0404260754585 -110.30635571479797Q605.9434819817543 -95.07486969232559 629.4264736771584 -95.07486969232559Q644.3827726840973 -95.07486969232559 655.1074838638306 -100.42875155806541Q665.8321950435638 -105.78263342380524 672.5203868150711 -116.98034664988518Q679.2085785865784 -128.17805987596512 682.4551402628422 -145.83060708642006Q685.701701939106 -163.483154296875 686.0635590553284 -187.98579913377762H825.8693861365318Q825.5075290203094 -136.96280938386917 813.0686455667019 -99.20397964119911Q800.6297621130943 -61.44514989852905 776.048951536417 -36.94799816608429Q751.4681409597397 -12.450846433639526 714.3061128556728 -0.22542321681976318Q677.144084751606 12.0 627.6977954506874 12.0ZM570.0797529816628 -312.84346503019333H682.4831147193909Q682.4831147193909 -346.09354639053345 679.9766856729984 -368.87797024846077Q677.470256626606 -391.6623941063881 671.6478078663349 -405.84586584568024Q665.8253591060638 -420.0293375849724 655.4552011489868 -426.1542766094208Q645.0850431919098 -432.27921563386917 629.6247566342354 -432.27921563386917Q607.2734380960464 -432.27921563386917 594.668579608202 -419.38389080762863Q582.0637211203575 -406.4885659813881 576.5338748991489 -380.3164874613285Q571.0040286779404 -354.1444089412689 570.0797529816628 -312.84346503019333Z M1066.1704061031342 12.0Q1015.6782481372356 12.0 978.270735219121 0.8949376493692398Q940.8632223010063 -10.21012470126152 916.021398961544 -30.993973270058632Q891.1795756220818 -51.77782183885574 878.7718577086926 -80.96269987523556Q866.3641397953033 -110.14757791161537 866.3641397953033 -146.4543884396553Q866.3641397953033 -150.68567404150963 866.7515111118555 -156.9659754484892Q867.1388824284077 -163.24627685546875 867.9496500492096 -169.2607421875H1001.7888753414154Q1000.9781077206135 -163.1533345580101 1000.9781077206135 -159.0378911346197Q1000.9781077206135 -154.92244771122932 1000.9781077206135 -150.58040669560432Q1001.3925974667072 -132.30278116464615 1009.2764826565981 -119.06928150355816Q1017.160367846489 -105.83578184247017 1031.929079696536 -98.89550676941872Q1046.6977915465832 -91.95523169636726 1066.5819468200207 -91.95523169636726Q1083.1329111754894 -91.95523169636726 1097.2229710966349 -96.83236335217953Q1111.3130310177803 -101.70949500799179 1120.0498006343842 -112.8331807255745Q1128.786570250988 -123.9568664431572 1128.786570250988 -141.9370544552803Q1128.786570250988 -164.63693949580193 1113.5310516655445 -177.3216903656721Q1098.275533080101 -190.0064412355423 1073.7345627397299 -198.45990650355816Q1049.1935923993587 -206.91337177157402 1020.9647299051285 -216.01234230399132Q994.9935334026814 -224.01837053894997 969.0942525863647 -234.97323961555958Q943.1949717700481 -245.9281086921692 921.6802475303411 -263.6262476295233Q900.1655232906342 -281.32438656687737 887.1392120420933 -308.7749013006687Q874.1129007935524 -336.22541603446007 874.1129007935524 -377.5260711610317Q874.1129007935524 -420.8289937376976 889.5680964142084 -451.4159713834524Q905.0232920348644 -482.00294902920723 932.4231735318899 -501.61999563872814Q959.8230550289154 -521.237042248249 995.6810826808214 -530.3136459439993Q1031.5391103327274 -539.3902496397495 1071.7592641413212 -539.3902496397495Q1111.0662048459053 -539.3902496397495 1145.0307693630457 -530.6064010709524Q1178.995333880186 -521.8225525021553 1204.6940623223782 -504.2008178830147Q1230.3927907645702 -486.57908326387405 1244.6394012868404 -460.4362584501505Q1258.8860118091106 -434.2934336364269 1258.8860118091106 -399.7647135257721Q1258.8860118091106 -393.08023273944855 1258.4986404925585 -385.02050068974495Q1258.1112691760063 -376.96076864004135 1257.3005015552044 -371.6369394958019H1124.36833396554V-386.8557841181755Q1124.36833396554 -403.5292887687683 1117.2939412593842 -414.0854060202837Q1110.2195485532284 -424.6415232717991 1097.584691375494 -430.0202581137419Q1084.9498341977596 -435.39899295568466 1068.1406779289246 -435.39899295568466Q1057.1306315660477 -435.39899295568466 1047.0500112473965 -432.8492376059294Q1036.9693909287453 -430.2994822561741 1029.285383656621 -424.7541448324919Q1021.6013763844967 -419.20880740880966 1017.1129633933306 -411.2383997887373Q1012.6245504021645 -403.26799216866493 1012.6245504021645 -391.9701446592808Q1012.6245504021645 -374.11410319805145 1025.4232630580664 -362.8332616239786Q1038.2219757139683 -351.5524200499058 1059.3855585604906 -344.0989547818899Q1080.549141407013 -336.64548951387405 1105.2008035779 -328.22831931710243Q1132.5504648387432 -319.80780133605003 1161.9228901863098 -309.78242038190365Q1191.2953155338764 -299.75703942775726 1216.404918923974 -283.1505025625229Q1241.5145223140717 -266.5439656972885 1257.0530171990395 -238.76279757916927Q1272.5915120840073 -210.98162946105003 1272.5915120840073 -166.64388325810432Q1272.5915120840073 -118.10364684462547 1256.9545161277056 -84.01532897353172Q1241.3175201714039 -49.92701110243797 1213.3875061273575 -28.7081156373024Q1185.457492083311 -7.489220172166824 1147.82773591578 2.255389913916588Q1110.197979748249 12.0 1066.1704061031342 12.0Z M1477.9271359443665 12.0Q1446.8270609378815 12.0 1418.8260335922241 4.397103905677795Q1390.8250062465668 -3.205792188644409 1369.0806906223297 -20.28838086128235Q1347.3363749980927 -37.37096953392029 1335.0108296871185 -65.79277539253235Q1322.6852843761444 -94.21458125114441 1322.6852843761444 -135.13617968559265Q1322.6852843761444 -185.97154140472412 1342.5352691411972 -221.2542999982834Q1362.38525390625 -256.53705859184265 1400.6673492193222 -278.27900195121765Q1438.9494445323944 -300.02094531059265 1494.8668261766434 -309.86957812309265Q1550.7842078208923 -319.71821093559265 1622.8002617359161 -319.71821093559265V-362.63556718826294Q1622.8002617359161 -383.0684609413147 1615.8189843893051 -397.1627246141434Q1608.837707042694 -411.25698828697205 1594.743705868721 -419.0816078186035Q1580.649704694748 -426.906227350235 1557.7246882915497 -426.906227350235Q1535.2793390750885 -426.906227350235 1519.932433605194 -420.1751574277878Q1504.5855281352997 -413.4440875053406 1497.2253699302673 -401.708328127861Q1489.865211725235 -389.97256875038147 1489.865211725235 -374.06185936927795V-365.2990906238556H1342.7364523410797Q1341.7364523410797 -369.5828695297241 1341.7364523410797 -373.51240038871765Q1341.7364523410797 -377.4419312477112 1341.7364523410797 -382.46603202819824Q1341.7364523410797 -431.95157265663147 1367.8996765613556 -467.02643632888794Q1394.0629007816315 -502.1013000011444 1443.2133238315582 -520.6804890632629Q1492.363746881485 -539.2596781253815 1561.1361343860626 -539.2596781253815Q1623.0838882923126 -539.2596781253815 1671.4428074359894 -523.0006703138351Q1719.8017265796661 -506.7416625022888 1747.6918519735336 -470.1568328142166Q1775.5819773674011 -433.5720031261444 1775.5819773674011 -371.8045859336853V-139.34117031097412Q1775.5819773674011 -123.10679531097412 1783.8656871318817 -113.73527538776398Q1792.1493968963623 -104.36375546455383 1806.7797679901123 -104.36375546455383H1834.8414437770844V-6.34659218788147Q1821.2454781532288 0.4190328121185303 1798.4322640895844 5.981244921684265Q1775.61905002594 11.54345703125 1746.956314086914 11.54345703125Q1716.745362520218 11.54345703125 1694.0028800964355 3.3316304683685303Q1671.2603976726532 -4.8801960945129395 1657.0853488445282 -19.92543125152588Q1642.9103000164032 -34.97066640853882 1637.6748609542847 -55.15980625152588H1631.9211297035217Q1616.4244968891144 -36.20921015739441 1594.995491027832 -20.91925859451294Q1573.5664851665497 -5.62930703163147 1544.8575628995895 3.185346484184265Q1516.1486406326294 12.0 1477.9271359443665 12.0ZM1536.9225804805756 -100.4751570224762Q1555.9510250091553 -100.4751570224762 1571.735649228096 -107.29746639728546Q1587.5202734470367 -114.11977577209473 1598.8898656368256 -126.10606014728546Q1610.2594578266144 -138.0923445224762 1616.5298597812653 -155.0533949136734Q1622.8002617359161 -172.0144453048706 1622.8002617359161 -192.18091249465942V-234.18311953544617Q1573.4824867248535 -234.18311953544617 1541.289276957512 -225.07606601715088Q1509.0960671901703 -215.9690124988556 1493.566864848137 -198.72737538814545Q1478.0376625061035 -181.4857382774353 1478.0376625061035 -156.43101406097412Q1478.0376625061035 -137.74709296226501 1485.2921515703201 -125.19027030467987Q1492.5466406345367 -112.63344764709473 1505.780221104622 -106.55430233478546Q1519.013801574707 -100.4751570224762 1536.9225804805756 -100.4751570224762Z M1899.9107372760773 186.9802416563034V-527.1650201380253H2030.1453692018986L2042.971446454525 -456.32587283849716H2049.6292833685875Q2074.2429497539997 -498.3030773997307 2112.7520534545183 -518.734048768878Q2151.261157155037 -539.1650201380253 2201.078455746174 -539.1650201380253Q2265.374110043049 -539.1650201380253 2310.371327742934 -509.2494244277477Q2355.3685454428196 -479.33382871747017 2379.126585289836 -417.87614926695824Q2402.8846251368523 -356.4184698164463 2402.8846251368523 -261.73641660809517Q2402.8846251368523 -168.6671185195446 2379.022907614708 -107.88468779623508Q2355.1611900925636 -47.10225707292557 2310.806466296315 -17.551128536462784Q2266.4517425000668 12.0 2204.876717507839 12.0Q2174.1616466641426 12.0 2147.6592821478844 4.722446888685226Q2121.156917631626 -2.555106222629547 2100.4111900925636 -17.61812075972557Q2079.665462553501 -32.681135296821594 2065.1270903646946 -54.80157658457756H2058.847690343857V186.9802416563034ZM2149.976009428501 -116.11523199081421Q2183.5554497539997 -116.11523199081421 2203.7238436192274 -130.50209812819958Q2223.892237484455 -144.88896426558495 2232.820917904377 -173.0244171321392Q2241.749598324299 -201.15986999869347 2241.749598324299 -242.7449993789196V-285.6049951314926Q2241.749598324299 -327.50532472133636 2232.8599709421396 -355.8225613385439Q2223.9703435599804 -384.1397979557514 2203.8019496947527 -398.34047634899616Q2183.633555829525 -412.5411547422409 2149.897903352976 -412.5411547422409Q2117.504916906357 -412.5411547422409 2097.0796639174223 -396.5294579863548Q2076.654410928488 -380.51776123046875 2067.254081338644 -351.0743207037449Q2057.8537517488003 -321.630880177021 2057.8537517488003 -281.1001794934273V-248.00668880343437Q2057.8537517488003 -217.80984616279602 2063.121564552188 -193.46591612696648Q2068.3893773555756 -169.12198609113693 2079.4714906960726 -151.91060549020767Q2090.5536040365696 -134.6992248892784 2108.1752586960793 -125.40722844004631Q2125.796913355589 -116.11523199081421 2149.976009428501 -116.11523199081421Z M2775.4124064445496 12.0Q2684.4412150382996 12.0 2620.183947443962 -17.485007166862488Q2555.9266798496246 -46.970014333724976 2522.1617000102997 -107.98500716686249Q2488.3967201709747 -169.0 2488.3967201709747 -263.54345703125Q2488.3967201709747 -357.3809726238251 2521.8647813796997 -418.19288408756256Q2555.3328425884247 -479.00479555130005 2617.962136864662 -509.0584498643875Q2680.5914311408997 -539.112104177475 2768.8249428272247 -539.112104177475Q2856.4508674144745 -539.112104177475 2917.101288676262 -510.03325974941254Q2977.7517099380493 -480.9544153213501 3009.1945810317993 -420.8800963163376Q3040.6374521255493 -360.8057773113251 3040.6374521255493 -266.4842357635498V-231.14892578125H2655.1658411026Q2656.164088487625 -189.18388152122498 2668.264848947525 -159.8905553817749Q2680.365609407425 -130.59722924232483 2706.31431388855 -115.86074423789978Q2732.2630183696747 -101.12425923347473 2773.9506056308746 -101.12425923347473Q2799.1892006397247 -101.12425923347473 2818.712869286537 -107.09906911849976Q2838.2365379333496 -113.07387900352478 2851.7338700294495 -124.42398965358734Q2865.2312021255493 -135.7741003036499 2872.1583656072617 -151.96385419368744Q2879.085529088974 -168.15360808372498 2879.161099433899 -188.17733335494995H3040.5067059993744Q3040.5067059993744 -139.96964859962463 3022.3445576429367 -102.47896957397461Q3004.182409286499 -64.98829054832458 2969.617930173874 -39.61165118217468Q2935.053451061249 -14.23501181602478 2886.0558182001114 -1.1175059080123901Q2837.058185338974 12.0 2775.4124064445496 12.0ZM2656.5720038414 -321.88760805130005H2871.773578643799Q2871.773578643799 -348.14542055130005 2864.877652168274 -367.51759111881256Q2857.981725692749 -386.8897616863251 2845.1842008829117 -399.9648697376251Q2832.3866760730743 -413.03997778892517 2814.2631232738495 -419.2982349395752Q2796.1395704746246 -425.5564920902252 2773.2829506397247 -425.5564920902252Q2736.9115691184998 -425.5564920902252 2712.28976893425 -413.6410083770752Q2687.66796875 -401.72552466392517 2674.3632506132126 -378.8518326282501Q2661.058532476425 -355.9781405925751 2656.5720038414 -321.88760805130005Z M3163.9212268590927 0.0V-527.2558327317238H3304.4128262996674L3316.445350289345 -442.99055844545364H3324.016421854496Q3337.022170305252 -472.2199818491936 3357.187880754471 -494.07162645459175Q3377.3535912036896 -515.9232710599899 3404.7675338089466 -527.8612804114819Q3432.1814764142036 -539.7992897629738 3464.934612452984 -539.7992897629738Q3483.848430812359 -539.7992897629738 3499.8854391872883 -536.5413685142994Q3515.9224475622177 -533.283447265625 3526.316719174385 -528.7989235520363V-384.7267223596573H3461.396000444889Q3428.5333518385887 -384.7267223596573 3404.6567838191986 -375.18105256557465Q3380.7802157998085 -365.635382771492 3365.524512887001 -347.6059749722481Q3350.2688099741936 -329.57656717300415 3342.882919073105 -304.595283895731Q3335.497028172016 -279.6140006184578 3335.497028172016 -248.66040283441544V0.0Z M3869.074660420418 12.0Q3807.844540119171 12.0 3766.098936498165 -3.159786343574524Q3724.353332877159 -18.319572687149048 3703.179504752159 -53.32675153017044Q3682.005676627159 -88.33393037319183 3682.005676627159 -147.44551742076874V-403.95703125H3589.609870672226V-527.3995612859726H3688.407776236534L3724.068424463272 -683.6530332565308H3860.1584043502808V-527.3995612859726H3993.3431795835495V-403.95703125H3860.1584043502808V-183.1870265007019Q3860.1584043502808 -148.25889337062836 3874.545193016529 -129.85071170330048Q3888.9319816827774 -111.4425300359726 3931.9686567783356 -111.4425300359726H3993.3431795835495V-5.771728515625Q3979.576182961464 -0.9156242609024048 3956.6939538121223 3.284156382083893Q3933.8117246627808 7.48393702507019 3910.1851610541344 9.741968512535095Q3886.558597445488 12.0 3869.074660420418 12.0Z M4460.890625 12.0Q4355.54296875 12.0 4277.336669921875 -18.728271484375Q4199.13037109375 -49.45654296875 4156.010986328125 -110.684814453125Q4112.8916015625 -171.9130859375 4112.8916015625 -264.0Q4112.8916015625 -356.54345703125 4156.010986328125 -417.815185546875Q4199.13037109375 -479.0869140625 4277.336669921875 -509.315185546875Q4355.54296875 -539.54345703125 4460.890625 -539.54345703125Q4566.23828125 -539.54345703125 4644.444580078125 -509.315185546875Q4722.65087890625 -479.0869140625 4765.770263671875 -417.815185546875Q4808.8896484375 -356.54345703125 4808.8896484375 -264.0Q4808.8896484375 -171.9130859375 4765.770263671875 -110.684814453125Q4722.65087890625 -49.45654296875 4644.444580078125 -18.728271484375Q4566.23828125 12.0 4460.890625 12.0ZM4460.890625 -113.4775390625Q4513.08642578125 -113.4775390625 4548.15185546875 -131.162353515625Q4583.21728515625 -148.84716796875 4600.641357421875 -180.54296875Q4618.0654296875 -212.23876953125 4618.0654296875 -254.0V-274.0Q4618.0654296875 -316.2177734375 4600.641357421875 -347.685302734375Q4583.21728515625 -379.15283203125 4548.15185546875 -396.609375Q4513.08642578125 -414.06591796875 4460.890625 -414.06591796875Q4408.69482421875 -414.06591796875 4373.62939453125 -396.609375Q4338.56396484375 -379.15283203125 4321.139892578125 -347.685302734375Q4303.7158203125 -316.2177734375 4303.7158203125 -274.0V-254.0Q4303.7158203125 -212.23876953125 4321.139892578125 -180.54296875Q4338.56396484375 -148.84716796875 4373.62939453125 -131.162353515625Q4408.69482421875 -113.4775390625 4460.890625 -113.4775390625Z"/></svg></a>
+  </header>
+  <div class="etapa" id="etapa">
+    <div class="etapa-nome" id="etapa-nome"></div>
+    <div class="barra" role="progressbar" aria-label="Progresso" aria-valuemin="0" aria-valuemax="100" id="barra"><i id="barra-i"></i></div>
+  </div>
+  <main id="tela" aria-live="polite"></main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var CHAVE = 'desaperto.respostas.v1';
+  var TESTE = location.hash === '#teste';
+
+  /* ---------- utilidades ---------- */
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function num(v) {
+    if (typeof v === 'number') return v;
+    var s = String(v == null ? '' : v), partes = s.split(',');
+    var inteiro = parseInt(partes[0].replace(/\D/g, ''), 10);
+    if (isNaN(inteiro)) return null;
+    var cent = partes.length > 1 ? parseInt((partes[1].replace(/\D/g, '') + '00').slice(0, 2), 10) : 0;
+    return Math.round(inteiro + cent / 100);
+  }
+  function reais(n) { if (n == null || isNaN(n)) return '—'; return 'R$ ' + Math.round(n).toLocaleString('pt-BR'); }
+  function fmtMil(s) {
+    if (typeof s === 'number') return s.toLocaleString('pt-BR');
+    var t = String(s == null ? '' : s), partes = t.split(',');
+    var inteiro = parseInt(partes[0].replace(/\D/g, ''), 10);
+    if (isNaN(inteiro)) return partes.length > 1 ? '0,' + partes[1].replace(/\D/g, '').slice(0, 2) : '';
+    return inteiro.toLocaleString('pt-BR') + (partes.length > 1 ? ',' + partes[1].replace(/\D/g, '').slice(0, 2) : '');
+  }
+  function vazio(v) { return v == null || v === '' || (Array.isArray(v) && v.length === 0); }
+  var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+  /* ---------- estado ---------- */
+  var E = { passo: 0, r: { dividas: [], extrasLista: [], anuaisLista: [], gastos: {} }, enviado: false };
+  var ui = { divida: null, idx: -1, daRevisao: false, removendo: -1, verTeste: false };
+  function salvar() { try { localStorage.setItem(CHAVE, JSON.stringify(E)); } catch (e) {} }
+  function carregar() { try { var s = localStorage.getItem(CHAVE); if (s) { var o = JSON.parse(s); if (o && o.r) E = o; } } catch (e) {} }
+  carregar();
+  var R = function () { return E.r; };
+
+  /* ---------- listas ---------- */
+  var CAUSAS = ['Perdi renda ou o emprego', 'Problema de saúde (meu ou da família)', 'Separação ou mudança na família', 'Ajudei alguém da família', 'Emprestei meu nome ou meu cartão', 'Apostas ou jogos online', 'Fui gastando mais do que ganhava, aos poucos', 'Não sei dizer, foi acontecendo', 'Outro motivo'];
+  var GASTOS = [
+    ['moradia', 'Moradia', 'Aluguel ou prestação da casa, condomínio'],
+    ['contas', 'Contas da casa', 'Luz, água, gás, internet, celular'],
+    ['mercado', 'Mercado', 'Mercado, feira, açougue, padaria'],
+    ['delivery', 'Delivery, lanches e restaurante', 'Aplicativos de comida, lanches fora, restaurantes'],
+    ['transporte', 'Transporte', 'Combustível, ônibus ou metrô, corridas por aplicativo, estacionamento, manutenção do veículo'],
+    ['educacao', 'Educação e filhos', 'Escola, faculdade, cursos, atividades dos filhos, pensão que você paga'],
+    ['saude', 'Saúde', 'Plano de saúde, remédios, consultas, exames, terapia'],
+    ['pessoal', 'Pessoal e roupas', 'Cabelo, beleza, roupas, academia'],
+    ['assinaturas', 'Assinaturas', 'Streaming, aplicativos, clubes'],
+    ['familia', 'Ajuda a familiares', 'Dinheiro que você manda ou paga para alguém da família'],
+    ['apostas', 'Apostas e jogos online', 'Bets, cassino online, loterias, rifas'],
+    ['outros', 'Outros', 'Pets, doações, tarifas do banco, anuidade, presentes, o que não coube acima']
+  ];
+  var TIPOS = ['Cartão de crédito', 'Cheque especial', 'Empréstimo pessoal no banco', 'Empréstimo em app ou financeira', 'Consignado', 'Financiamento de veículo', 'Financiamento de imóvel', 'Crediário ou carnê de loja', 'Antecipação do FGTS', 'Conta atrasada (luz, água, gás, aluguel, condomínio)', 'Pensão alimentícia atrasada', 'Impostos (DAS do MEI, IR, IPVA)', 'Dívida com parente ou conhecido', 'Outra'];
+  function grupo(t) {
+    if (t === 'Cartão de crédito') return 'cartao';
+    if (t === 'Cheque especial') return 'cheque';
+    if (['Empréstimo pessoal no banco', 'Empréstimo em app ou financeira', 'Consignado', 'Financiamento de veículo', 'Financiamento de imóvel', 'Crediário ou carnê de loja', 'Antecipação do FGTS'].indexOf(t) >= 0) return 'parcelada';
+    if (t) return 'outros';
+    return '';
+  }
+  var ATRASOS = ['Menos de 30 dias', '1 a 3 meses', '3 a 12 meses', '1 a 3 anos', '3 a 5 anos', 'Mais de 5 anos'];
+
+  /* ---------- campos ---------- */
+  // tipos: texto, email, dinheiro, dia, inteiro, unica, multipla, simnao, linhas, consent
+  function F(o) { if (o.obrig === undefined) o.obrig = true; return o; }
+
+  function emDia(d) { return d.s_status === 'Em dia'; }
+  function atrasada(d) { return d.s_status === 'Atrasada'; }
+  function recente(d) { return atrasada(d) && (d.s_tempo === 'Menos de 30 dias' || d.s_tempo === '1 a 3 meses'); }
+  function antiga(d) { return atrasada(d) && !!d.s_tempo && !recente(d); }
+  function rotativoAberto(d) { return ['Paguei uma parte', 'Paguei o mínimo', 'Não paguei'].indexOf(d.c_acao) >= 0; }
+  function financiamento(d) { return d.tipo === 'Financiamento de veículo' || d.tipo === 'Financiamento de imóvel'; }
+  var fDivida = [
+    F({ id: 'tipo', tipo: 'unica', rotulo: 'Que tipo de dívida é?', ajuda: 'Consignado é o empréstimo descontado direto do salário ou do benefício. Antecipação do FGTS é o empréstimo pago com o saque-aniversário.', ops: TIPOS }),
+    F({ id: 'credor', tipo: 'texto', rotulo: 'Com quem é essa dívida?', ajuda: 'Nome do banco, da loja ou da empresa. Se for uma pessoa, escreva só "parente" ou "conhecido".', mostrar: function (d) { return !!d.tipo; } }),
+    F({ id: 's_status', tipo: 'unica', rotulo: 'Ela está em dia ou atrasada?', ops: ['Em dia', 'Atrasada'], lado: true, mostrar: function (d) { return !!d.tipo; } }),
+    F({ id: 's_tempo', tipo: 'unica', rotulo: 'Há quanto tempo está atrasada?', ajuda: 'Conte a partir da primeira parcela ou conta que deixou de pagar.', ops: ATRASOS, mostrar: atrasada }),
+    // cartão
+    F({ id: 'c_fatura', tipo: 'dinheiro', rotulo: 'Qual foi o valor total da última fatura que fechou?', g: 'cartao', bloco: 'A última fatura', mostrar: function (d) { return !!d.s_status; } }),
+    F({ id: 'c_acao', tipo: 'unica', rotulo: 'O que você fez com essa fatura?', ops: ['Paguei tudo', 'Paguei uma parte', 'Paguei o mínimo', 'Parcelei a fatura', 'Não paguei'], g: 'cartao', mostrar: function (d) { return !!d.s_status; } }),
+    F({ id: 'c_pago', tipo: 'dinheiro', rotulo: 'Quanto você pagou?', g: 'cartao', mostrar: function (d) { return d.c_acao === 'Paguei uma parte' || d.c_acao === 'Paguei o mínimo'; } }),
+    F({ id: 'c_taxaRot', tipo: 'texto', rotulo: 'Quanto é o juro desse cartão quando a fatura não é paga inteira?', ajuda: 'Está escrito na própria fatura, perto do pagamento mínimo, como "juros do rotativo" ou "encargos do rotativo". Exemplo: 14,9% ao mês. Se não achar, deixe em branco.', g: 'cartao', obrig: false, mostrar: rotativoAberto }),
+    F({ id: 'c_ofertaParc', tipo: 'dinheiro', rotulo: 'Se você parcelar essa fatura em 12 vezes, de quanto fica cada parcela?', ajuda: 'No app, a opção "parcelar fatura" mostra a simulação antes de você confirmar. Só consulte, não contrate nada agora.', g: 'cartao', obrig: false, naoSei: 'O app não mostra', mostrar: rotativoAberto }),
+    F({ id: 'c_temParc', tipo: 'simnao', rotulo: 'Você está pagando um parcelamento de fatura antiga?', g: 'cartao', bloco: 'Parcelas que já existem', mostrar: function (d) { return !!d.c_acao; } }),
+    F({ id: 'c_parcValor', tipo: 'dinheiro', rotulo: 'Valor da parcela desse parcelamento', g: 'cartao', mostrar: function (d) { return d.c_temParc === 'Sim'; } }),
+    F({ id: 'c_parcRestam', tipo: 'inteiro', rotulo: 'Quantas parcelas faltam?', g: 'cartao', mostrar: function (d) { return d.c_temParc === 'Sim'; } }),
+    F({ id: 'c_parcReneg', tipo: 'simnao', rotulo: 'Esse parcelamento é uma renegociação ou acordo?', g: 'cartao', mostrar: function (d) { return d.c_temParc === 'Sim'; } }),
+    F({ id: 'c_parcTaxa', tipo: 'texto', rotulo: 'Qual é a taxa de juros ao mês desse parcelamento?', ajuda: 'Aparece nos detalhes do parcelamento no app. Se for sem juros, coloque 0.', g: 'cartao', naoSei: 'Não encontrei', mostrar: function (d) { return d.c_temParc === 'Sim'; } }),
+    F({ id: 'c_parcQuitar', tipo: 'dinheiro', rotulo: 'Quanto custa pagar tudo desse parcelamento hoje?', ajuda: 'No app, procure "antecipar parcelas"; se não aparecer, peça no chat.', g: 'cartao', obrig: false, naoSei: 'O app não mostra', mostrar: function (d) { return d.c_temParc === 'Sim'; } }),
+    F({ id: 'c_temFuturo', tipo: 'simnao', rotulo: 'O app já mostra algum valor lançado nas próximas faturas desse cartão?', g: 'cartao', mostrar: function (d) { return !!d.c_acao; } }),
+    F({ id: 'c_futuroLista', tipo: 'linhas', semOque: true, rotulo: 'Quanto já está lançado em cada uma das próximas faturas?', ajuda: 'No app, em "próximas faturas" ou "lançamentos futuros". Coloque o valor de cada mês do jeito que aparece, até a última fatura com valor. Se tiver parcelamento de fatura, ele já está incluído aí.', g: 'cartao', mostrar: function (d) { return d.c_temFuturo === 'Sim'; } }),
+    F({ id: 'c_limite', tipo: 'dinheiro', rotulo: 'Qual é o limite total desse cartão?', g: 'cartao', mostrar: function (d) { return !!d.c_acao; } }),
+    F({ id: 'c_venc', tipo: 'dia', rotulo: 'Em que dia a fatura vence?', g: 'cartao', mostrar: function (d) { return !!d.c_acao; } }),
+    // cheque especial
+    F({ id: 'ce_usado', tipo: 'dinheiro', rotulo: 'Quanto do cheque especial você está usando hoje?', ajuda: 'É o saldo negativo da conta. Aparece no app como saldo ou "limite utilizado".', g: 'cheque', mostrar: function (d) { return !!d.s_status; } }),
+    F({ id: 'ce_tempo', tipo: 'unica', rotulo: 'Há quanto tempo sua conta está no negativo sem sair?', ops: ['Menos de 1 mês', '1 a 3 meses', 'Mais de 3 meses'], g: 'cheque', mostrar: function (d) { return !!d.s_status; } }),
+    // parceladas em dia
+    F({ id: 'e_parcela', tipo: 'dinheiro', rotulo: 'Qual é o valor da parcela?', g: 'parcelada', bloco: 'O contrato', mostrar: emDia }),
+    F({ id: 'e_restam', tipo: 'inteiro', rotulo: 'Quantas parcelas ainda faltam?', g: 'parcelada', mostrar: emDia }),
+    F({ id: 'e_reneg', tipo: 'simnao', rotulo: 'Esse contrato é um acordo ou uma renegociação de dívida antiga?', ajuda: 'Em acordos e renegociações, adiantar parcelas muitas vezes quase não diminui o que você deve. Por isso a resposta muda a ordem do plano.', g: 'parcelada', mostrar: emDia }),
+    // parceladas atrasadas
+    F({ id: 'a_cobrado', tipo: 'dinheiro', rotulo: 'Quanto estão cobrando hoje para quitar?', ajuda: 'Aparece no Serasa, no app ou site de quem cobra, ou na mensagem da cobrança.', g: 'parcelada', naoSei: 'Não sei', bloco: 'O valor cobrado', mostrar: antiga }),
+    // atraso recente: o caminho é pôr em dia, não quitar
+    F({ id: 'e_parcelaAtr', tipo: 'dinheiro', rotulo: 'Qual é o valor da parcela?', g: 'parcelada', mostrar: function (d) { return recente(d) || (antiga(d) && !!d.a_cobrado_naoSei); } }),
+    F({ id: 'a_qtdAtr', tipo: 'inteiro', rotulo: 'Quantas parcelas estão atrasadas?', g: 'parcelada', mostrar: recente }),
+    F({ id: 'e_restamAtr', tipo: 'inteiro', rotulo: 'Quantas parcelas faltam pagar, contando as atrasadas?', g: 'parcelada', mostrar: function (d) { return recente(d) || (antiga(d) && !!d.a_cobrado_naoSei); } }),
+    F({ id: 'a_porEmDia', tipo: 'dinheiro', rotulo: 'Quanto custa pagar só as parcelas atrasadas, para ficar em dia?', ajuda: 'No app ou site de quem cobra, aparece como "parcelas em atraso", "pagar atrasadas" ou "regularizar". O valor já vem com multa e juros. Só consulte, não pague nada agora.', g: 'parcelada', obrig: false, naoSei: 'O app não mostra', mostrar: recente }),
+    F({ id: 'e_taxa', tipo: 'texto', rotulo: 'Qual é a taxa de juros ao mês desse contrato?', ajuda: 'Está no contrato e nos detalhes do empréstimo no app, como "taxa de juros" ao mês. Use a taxa de juros, não o "custo efetivo total". Exemplo: 1,99%. Se for um acordo sem juros, coloque 0.', g: 'parcelada', naoSei: 'Não encontrei', mostrar: function (d) { return emDia(d) || recente(d); } }),
+    F({ id: 'e_quitar', tipo: 'dinheiro', rotulo: 'Quanto custa pagar tudo hoje?', ajuda: 'No app, procure "quitar contrato" ou "antecipar parcelas"; se não aparecer, peça no chat ou ao gerente. Com esse valor o plano sabe exatamente quanto você economiza adiantando.', g: 'parcelada', obrig: false, naoSei: 'Não consegui ver', mostrar: emDia }),
+    F({ id: 'e_total', tipo: 'inteiro', rotulo: 'Em quantas parcelas foi o contrato, no total?', g: 'parcelada', obrig: false, mostrar: function (d) { return emDia(d) && !!d.e_taxa_naoSei && !!d.e_quitar_naoSei; } }),
+    F({ id: 'e_recebido', tipo: 'dinheiro', rotulo: function (d) { return financiamento(d) ? 'Qual foi o valor financiado, sem contar a entrada?' : 'Quanto caiu na sua conta quando você pegou esse empréstimo?'; }, ajuda: 'Sem a taxa e sem o valor para quitar, isso ajuda a estimar. A dívida fica marcada para você confirmar antes de adiantar.', g: 'parcelada', obrig: false, naoSei: 'Não lembro', mostrar: function (d) { return emDia(d) && !!d.e_taxa_naoSei && !!d.e_quitar_naoSei; } }),
+    F({ id: 'e_venc', tipo: 'dia', rotulo: 'Em que dia a parcela vence?', g: 'parcelada', mostrar: function (d) { return emDia(d) && d.tipo !== 'Consignado'; } }),
+    F({ id: 'e_debito', tipo: 'simnao', rotulo: 'A parcela sai sozinha da sua conta (débito automático)?', g: 'parcelada', mostrar: function (d) { return emDia(d) && d.tipo !== 'Consignado'; } }),
+    F({ id: 'e_descontado', tipo: 'simnao', rotulo: 'Essa parcela é descontada do salário antes de ele cair na sua conta?', ajuda: 'Se sim, o plano não cobra ela de novo, porque a renda que você informou já vem sem ela.', g: 'parcelada', mostrar: function (d) { return emDia(d) && d.tipo === 'Consignado'; } }),
+    F({ id: 'e_veicTrab', tipo: 'simnao', rotulo: 'Esse veículo é usado para trabalhar?', g: 'parcelada', mostrar: function (d) { return !!d.s_status && d.tipo === 'Financiamento de veículo'; } }),
+    // outras
+    F({ id: 'o_total', tipo: 'dinheiro', rotulo: 'Quanto é devido hoje, já com multas e juros?', g: 'outros', mostrar: function (d) { return !!d.s_status; } }),
+    F({ id: 'o_juros', tipo: 'unica', rotulo: 'Essa pessoa cobra juros?', ops: ['Não cobra', 'Cobra'], g: 'outros', mostrar: function (d) { return d.tipo === 'Dívida com parente ou conhecido'; } }),
+    F({ id: 'o_jurosQuanto', tipo: 'texto', rotulo: 'Quanto de juros ela cobra?', ajuda: 'Exemplo: 5% ao mês, ou R$ 100 por mês.', g: 'outros', mostrar: function (d) { return d.tipo === 'Dívida com parente ou conhecido' && d.o_juros === 'Cobra'; } }),
+    F({ id: 'o_pressao', tipo: 'unica', rotulo: 'Essa pessoa está pressionando para receber?', ops: ['Não', 'Sim, está cobrando', 'Sim, com ameaças'], g: 'outros', mostrar: function (d) { return d.tipo === 'Dívida com parente ou conhecido'; } }),
+    // atraso
+    F({ id: 's_quem', tipo: 'unica', bloco: 'O atraso', rotulo: 'Quem está cobrando essa dívida hoje?', ops: ['O próprio banco ou loja', 'Uma empresa de cobrança', 'Ninguém está cobrando', 'Não sei'], mostrar: atrasada }),
+    F({ id: 's_proposta', tipo: 'unica', rotulo: 'Você já recebeu alguma proposta de acordo?', ops: ['Não', 'Sim'], lado: true, mostrar: atrasada }),
+    F({ id: 's_propostaTexto', tipo: 'texto', rotulo: 'Qual foi a proposta?', ajuda: 'Valor e condições. Exemplo: R$ 900 à vista, ou 10 de R$ 120.', mostrar: function (d) { return atrasada(d) && d.s_proposta === 'Sim'; } }),
+    F({ id: 's_serasa', tipo: 'unica', rotulo: 'Essa dívida deixou seu nome sujo no Serasa?', ops: ['Sim', 'Não', 'Não consultei'], lado: true, mostrar: function (d) { return !!d.s_status; } }),
+    F({ id: 's_justica', tipo: 'unica', rotulo: 'Existe processo na Justiça ou bloqueio de conta por essa dívida?', ops: ['Sim', 'Não', 'Não sei'], lado: true, mostrar: function (d) { return (atrasada(d) && ATRASOS.indexOf(d.s_tempo) >= 2) || d.s_serasa === 'Sim'; } })
+  ];
+  fDivida.forEach(function (f) { if (f.g) { var g = f.g, m = f.mostrar; f.mostrar = function (d) { return grupo(d.tipo) === g && (!m || m(d)); }; } });
+
+  /* ---------- telas ---------- */
+  var ETAPAS = ['', 'Você', 'Sua renda', 'Seus gastos', 'Suas dívidas', 'Para fechar'];
+  var TELAS = [
+    { id: 'acolhimento', etapa: 0, especial: 'acolhimento' },
+    { id: 'compromisso', etapa: 0, especial: 'compromisso' },
+    { id: 'contato', etapa: 1, acolhe: 'Vamos começar por você.', titulo: 'Como podemos te chamar?', campos: [
+      F({ id: 'nome', tipo: 'texto', rotulo: 'Seu primeiro nome', auto: 'given-name' }),
+      F({ id: 'email', tipo: 'email', rotulo: 'Seu e-mail', ajuda: 'É para onde vamos enviar o seu plano.', auto: 'email' })
+    ] },
+    { id: 'causas', etapa: 1, titulo: 'O que aconteceu para as dívidas crescerem?', lead: 'Pode marcar mais de uma.', campos: [
+      F({ id: 'causas', tipo: 'multipla', rotulo: 'O que aconteceu', ops: CAUSAS, semRotulo: true }),
+      F({ id: 'causaOutro', tipo: 'texto', rotulo: 'Conte em poucas palavras', mostrar: function (r) { return (r.causas || []).indexOf('Outro motivo') >= 0; } })
+    ] },
+    { id: 'ainda', etapa: 1, titulo: 'Dessas situações, qual ainda acontece hoje?', lead: 'Pode marcar mais de uma.', campos: [
+      F({ id: 'ainda', tipo: 'multipla', rotulo: 'O que ainda acontece', semRotulo: true, ops: function (r) { return (r.causas || []).concat(['Nenhuma, já passou']); }, unicoFinal: true })
+    ] },
+    { id: 'fimMes', etapa: 1, titulo: 'No fim do mês, o que normalmente acontece?', campos: [
+      F({ id: 'fimMes', tipo: 'unica', rotulo: 'No fim do mês', semRotulo: true, ops: ['Sobra dinheiro', 'Fica zerado', 'Falta dinheiro'] }),
+      F({ id: 'sobra', tipo: 'dinheiro', rotulo: 'Quanto sobra, em média?', mostrar: function (r) { return r.fimMes === 'Sobra dinheiro'; } }),
+      F({ id: 'falta', tipo: 'dinheiro', rotulo: 'Quanto falta, em média?', ajuda: 'Se não souber o valor exato, chute o mais próximo.', mostrar: function (r) { return r.fimMes === 'Falta dinheiro'; } }),
+      F({ id: 'cobre', tipo: 'multipla', rotulo: 'Como você cobre o que falta?', ops: ['Cartão de crédito', 'Cheque especial', 'Empréstimo', 'Ajuda de alguém', 'Atrasando contas', 'Outro'], mostrar: function (r) { return r.fimMes === 'Falta dinheiro'; } })
+    ] },
+    { id: 'renda', etapa: 2, acolhe: 'Agora, o que entra.', titulo: 'Quanto você recebe?', campos: [
+      F({ id: 'renda', tipo: 'dinheiro', rotulo: 'Quanto cai de fato na sua conta por mês?', ajuda: 'É o valor depositado, depois do INSS, do imposto de renda e das parcelas de empréstimo consignado descontadas do salário. Confira no extrato quanto entrou. Se sua renda varia, informe o menor valor dos últimos 3 meses.' }),
+      F({ id: 'rendaTipo', tipo: 'unica', rotulo: 'Sua renda é:', ops: ['Fixa, quase igual todo mês', 'Varia de um mês para outro'] }),
+      F({ id: 'va', tipo: 'dinheiro', rotulo: 'Quanto você recebe por mês de vale-alimentação ou vale-refeição?', ajuda: 'Se não recebe, coloque 0.' })
+    ] },
+    { id: 'quando', etapa: 2, titulo: 'Quando e onde o dinheiro cai?', campos: [
+      F({ id: 'diaPag', tipo: 'dia', rotulo: 'Em que dia do mês cai o pagamento principal?' }),
+      F({ id: 'temAdiant', tipo: 'simnao', rotulo: 'Você recebe uma segunda parte em outro dia, como um adiantamento?' }),
+      F({ id: 'diaAdiant', tipo: 'dia', rotulo: 'Em que dia cai essa segunda parte?', mostrar: function (r) { return r.temAdiant === 'Sim'; } }),
+      F({ id: 'banco', tipo: 'texto', rotulo: 'Em qual banco cai o seu salário ou a sua renda?' })
+    ] },
+    { id: 'trabalho', etapa: 2, titulo: 'Como você trabalha hoje?', campos: [
+      F({ id: 'trabalho', tipo: 'unica', rotulo: 'Como você trabalha', semRotulo: true, ops: ['Carteira assinada (CLT)', 'Servidor público', 'Aposentado ou pensionista do INSS', 'Autônomo ou MEI', 'Sem renda fixa no momento', 'Outro'] }),
+      F({ id: 'margem', tipo: 'dinheiro', rotulo: 'Quanto do seu salário ainda pode ter desconto de empréstimo em folha?', ajuda: 'Esse valor se chama margem consignável. CLT: app Carteira de Trabalho Digital, em Crédito do Trabalhador. INSS: app Meu INSS. Servidor: portal do seu órgão.', obrig: false, naoSei: 'Não sei', mostrar: function (r) { return ['Carteira assinada (CLT)', 'Servidor público', 'Aposentado ou pensionista do INSS'].indexOf(r.trabalho) >= 0; } })
+    ] },
+    { id: 'extras', etapa: 2, titulo: 'Vai entrar algum dinheiro extra nos próximos 6 meses?', lead: 'Por exemplo: 13º salário, férias, rescisão, restituição do Imposto de Renda.', campos: [
+      F({ id: 'extras', tipo: 'simnao', rotulo: 'Dinheiro extra', semRotulo: true }),
+      F({ id: 'extrasLista', tipo: 'linhas', rotulo: 'O que vai receber, quanto e em que mês?', item: 'Ex.: 13º salário', mostrar: function (r) { return r.extras === 'Sim'; } })
+    ] },
+    { id: 'casa', etapa: 2, titulo: 'Alguém divide as contas da casa com você?', campos: [
+      F({ id: 'divide', tipo: 'simnao', rotulo: 'Divide as contas', semRotulo: true }),
+      F({ id: 'contrib', tipo: 'dinheiro', rotulo: 'Com quanto essa pessoa contribui por mês?', mostrar: function (r) { return r.divide === 'Sim'; } }),
+      F({ id: 'parcDividas', tipo: 'unica', rotulo: 'Essa pessoa tem dívidas pagas com o dinheiro da casa?', ops: ['Sim', 'Não', 'Não sei'], lado: true, mostrar: function (r) { return r.divide === 'Sim'; } }),
+      F({ id: 'parcDividasValor', tipo: 'dinheiro', rotulo: 'Quanto sai por mês do dinheiro da casa para essas dívidas?', mostrar: function (r) { return r.divide === 'Sim' && r.parcDividas === 'Sim'; } })
+    ] },
+    { id: 'gastos1', etapa: 3, acolhe: 'Você já passou da metade. Agora, os gastos.', titulo: 'Quanto saiu no último mês?', lead: 'Abra o app do banco e a fatura do cartão. Vale qualquer forma de pagamento: Pix, débito, boleto ou cartão. Se não tem esse gasto, coloque 0. Não conte as parcelas de compras antigas do cartão (as que aparecem na fatura como 3/10 ou 5/12) nem parcelas de empréstimos: elas entram na parte das dívidas.', gastos: [0, 6] },
+    { id: 'gastos2', etapa: 3, titulo: 'E o restante dos gastos', gastos: [6, 12] },
+    { id: 'gastosDetalhe', etapa: 3, titulo: 'Sobre esses gastos', campos: [
+      F({ id: 'protegidos', tipo: 'multipla', rotulo: 'Quais você não pode reduzir de jeito nenhum?', ops: function () { return GASTOS.map(function (g) { return g[1]; }).concat(['Nenhum']); }, unicoFinal: true }),
+      F({ id: 'noCartao', tipo: 'multipla', rotulo: 'Quais você costuma pagar no cartão de crédito?', ops: function () { return GASTOS.map(function (g) { return g[1]; }).concat(['Nenhum']); }, unicoFinal: true })
+    ] },
+    { id: 'anuais', etapa: 3, titulo: 'Gastos que não são de todo mês', campos: [
+      F({ id: 'anuais', tipo: 'simnao', rotulo: 'Você tem gastos que vêm uma vez por ano ou poucas vezes?', ajuda: 'IPVA, IPTU, seguro, matrícula, material escolar.' }),
+      F({ id: 'anuaisLista', tipo: 'linhas', rotulo: 'Quais são, quanto custam e em que mês vencem?', item: 'Ex.: IPVA', mostrar: function (r) { return r.anuais === 'Sim'; } }),
+      F({ id: 'veiculo', tipo: 'simnao', rotulo: 'Você tem carro ou moto?', ajuda: 'Se for financiado, a parcela entra na parte das dívidas.' }),
+      F({ id: 'fipe', tipo: 'dinheiro', rotulo: 'Qual é o valor aproximado dele pela tabela FIPE?', ajuda: 'Pesquise "tabela FIPE" com o modelo e o ano.', mostrar: function (r) { return r.veiculo === 'Sim'; } }),
+      F({ id: 'veiculoTrab', tipo: 'simnao', rotulo: 'Ele é usado para trabalhar?', mostrar: function (r) { return r.veiculo === 'Sim'; } })
+    ] },
+    { id: 'serasa', etapa: 4, acolhe: 'Agora, as dívidas. Respira: é daqui que sai o caminho.', titulo: 'Antes, uma consulta rápida', lead: 'Abra o app do Serasa (é gratuito) e veja se há dívidas no seu CPF. Ele mostra até as que a gente esquece. Se quiser ir além, o Registrato, um site gratuito do Banco Central que você acessa com a conta gov.br, lista todos os seus empréstimos e quanto falta pagar em cada um. Você não precisa enviar nada.', campos: [
+      F({ id: 'serasa', tipo: 'unica', rotulo: 'Você consultou o Serasa?', ops: ['Sim, consultei', 'Não consegui agora'] }),
+      F({ id: 'nomeLimpo', tipo: 'unica', rotulo: 'Você precisa do nome limpo para algo nos próximos meses?', ops: ['Não', 'Sim, para alugar um imóvel', 'Sim, para um financiamento', 'Sim, para uma vaga de emprego', 'Sim, para outra coisa'] })
+    ] },
+    { id: 'dividas', etapa: 4, especial: 'dividas' },
+    { id: 'recursos', etapa: 5, acolhe: 'Falta pouco.', titulo: 'Duas últimas perguntas', campos: [
+      F({ id: 'guardado', tipo: 'dinheiro', rotulo: 'Você tem algum dinheiro guardado hoje? Quanto?', ajuda: 'Se não tem, coloque 0.' }),
+      F({ id: 'emprestPagar', tipo: 'simnao', rotulo: 'Nos últimos 12 meses, você pegou algum empréstimo para pagar outra dívida?' })
+    ] },
+    { id: 'revisao', etapa: 5, especial: 'revisao' },
+    { id: 'fim', etapa: 6, especial: 'fim' }
+  ];
+  function indice(id) { for (var i = 0; i < TELAS.length; i++) if (TELAS[i].id === id) return i; return 0; }
+
+  /* ---------- render de campos ---------- */
+  function rotuloDe(f, obj) { return typeof f.rotulo === 'function' ? f.rotulo(obj) : f.rotulo; }
+  function opsDe(f, obj) { return typeof f.ops === 'function' ? f.ops(obj) : f.ops; }
+  function visivel(f, obj) { return !f.mostrar || f.mostrar(obj); }
+
+  function htmlCampo(f, obj, pref) {
+    var id = pref + f.id, v = obj[f.id], h = '', aj = f.ajuda ? '<p class="ajuda" id="' + id + '-aj">' + esc(f.ajuda) + '</p>' : '';
+    var desc = f.ajuda ? ' aria-describedby="' + id + '-aj"' : '';
+    var oc = visivel(f, obj) ? '' : ' oculto';
+    var blocoAbre = f.bloco ? '<div class="bloco" data-bloco-de="' + f.id + '"><p class="bloco-titulo">' + esc(f.bloco) + '</p>' : '';
+    if (f.tipo === 'unica' || f.tipo === 'multipla' || f.tipo === 'simnao') {
+      var ops = f.tipo === 'simnao' ? ['Sim', 'Não'] : opsDe(f, obj);
+      var multi = f.tipo === 'multipla';
+      var lado = f.lado || f.tipo === 'simnao';
+      h += '<fieldset class="campo' + oc + '" data-campo="' + f.id + '"' + desc + '><legend' + (f.semRotulo ? ' class="sr"' : '') + '>' + esc(rotuloDe(f, obj)) + '</legend>' + aj + '<div class="opcoes' + (lado ? ' lado' : '') + '">';
+      ops.forEach(function (o, i) {
+        var marcado = multi ? (v || []).indexOf(o) >= 0 : v === o;
+        h += '<label class="op"><input type="' + (multi ? 'checkbox' : 'radio') + '" name="' + id + '" id="' + id + '-' + i + '" value="' + esc(o) + '"' + (marcado ? ' checked' : '') + '><span>' + esc(o) + '</span></label>';
+      });
+      h += '</div></fieldset>';
+    } else if (f.tipo === 'linhas') {
+      var lista = v && v.length ? v : [{}];
+      h += '<div class="campo' + oc + '" data-campo="' + f.id + '"><span class="rotulo">' + esc(rotuloDe(f, obj)) + '</span><div class="linhas">';
+      lista.forEach(function (it, i) {
+        h += '<div class="linha-item" data-linha="' + i + '">' +
+          (f.semOque ? '' : '<label class="sr" for="' + id + '-o' + i + '">O quê</label><input type="text" id="' + id + '-o' + i + '" data-l="oque" placeholder="' + esc(f.item) + '" value="' + esc(it.oque) + '">') +
+          '<div class="linha-dupla"><div class="dinheiro"><span>R$</span><label class="sr" for="' + id + '-v' + i + '">Valor</label><input inputmode="numeric" id="' + id + '-v' + i + '" data-l="valor" data-dinheiro placeholder="0" value="' + esc(fmtMil(it.valor)) + '"></div>' +
+          '<label class="sr" for="' + id + '-m' + i + '">Mês</label><select id="' + id + '-m' + i + '" data-l="mes"><option value="">Mês</option>' + MESES.map(function (m) { return '<option' + (it.mes === m ? ' selected' : '') + '>' + m + '</option>'; }).join('') + '</select></div>' +
+          '<button type="button" class="link" data-remover-linha="' + i + '">' + (lista.length > 1 ? 'Remover' : 'Apagar') + '</button>' + '</div>';
+      });
+      h += '</div><button type="button" class="link" data-add-linha>' + (f.semOque ? '+ Adicionar outro mês' : '+ Adicionar outro') + '</button></div>';
+    } else {
+      var tipoIn = f.tipo === 'email' ? 'email' : 'text';
+      var modo = (f.tipo === 'dinheiro' || f.tipo === 'dia' || f.tipo === 'inteiro') ? ' inputmode="numeric"' : '';
+      var val = f.tipo === 'dinheiro' ? fmtMil(v) : (v == null ? '' : v);
+      var naoSeiMarcado = f.naoSei && obj[f.id + '_naoSei'];
+      var input = '<input type="' + tipoIn + '"' + modo + ' id="' + id + '" value="' + esc(val) + '"' + desc + (f.auto ? ' autocomplete="' + f.auto + '"' : '') + (f.tipo === 'dinheiro' ? ' data-dinheiro placeholder="0"' : '') + (f.tipo === 'dia' ? ' placeholder="1 a 31" maxlength="2"' : '') + (f.tipo === 'inteiro' ? ' maxlength="3"' : '') + (naoSeiMarcado ? ' disabled' : '') + '>';
+      if (f.tipo === 'dinheiro') input = '<div class="dinheiro"><span>R$</span>' + input + '</div>';
+      if (f.tipo === 'dia' || f.tipo === 'inteiro') input = '<div class="curto">' + input + '</div>';
+      h += '<div class="campo' + oc + '" data-campo="' + f.id + '"><label for="' + id + '">' + esc(rotuloDe(f, obj)) + '</label>' + aj + input +
+        (f.naoSei ? '<label class="nao-sei"><input type="checkbox" id="' + id + '-ns" data-nao-sei' + (naoSeiMarcado ? ' checked' : '') + '>' + esc(f.naoSei) + '</label>' : '') + '</div>';
+    }
+    if (f.bloco) h = blocoAbre + h + '</div>';
+    return h;
+  }
+
+  function ligarCampos(raiz, campos, obj, pref, aoMudar) {
+    campos.forEach(function (f) {
+      var el = raiz.querySelector('[data-campo="' + f.id + '"]');
+      if (!el) return;
+      if (f.tipo === 'unica' || f.tipo === 'simnao') {
+        el.addEventListener('change', function (e) { obj[f.id] = e.target.value; limparErro(el); aoMudar(f); });
+      } else if (f.tipo === 'multipla') {
+        el.addEventListener('change', function (e) {
+          var marcados = [].slice.call(el.querySelectorAll('input:checked')).map(function (i) { return i.value; });
+          if (f.unicoFinal) {
+            var ultimo = opsDe(f, obj); ultimo = ultimo[ultimo.length - 1];
+            if (e.target.value === ultimo && e.target.checked) { marcados = [ultimo]; }
+            else { marcados = marcados.filter(function (m) { return m !== ultimo; }); }
+            [].forEach.call(el.querySelectorAll('input'), function (i) { i.checked = marcados.indexOf(i.value) >= 0; });
+          }
+          obj[f.id] = marcados; limparErro(el); aoMudar(f);
+        });
+      } else if (f.tipo === 'linhas') {
+        el.addEventListener('input', function (e) {
+          var l = e.target.closest('[data-linha]'); if (!l) return;
+          var i = +l.getAttribute('data-linha'); var lista = obj[f.id] = obj[f.id] && obj[f.id].length ? obj[f.id] : [{}];
+          lista[i] = lista[i] || {};
+          var k = e.target.getAttribute('data-l');
+          if (k === 'valor') { var p = e.target.selectionStart; e.target.value = fmtMil(e.target.value); lista[i].valor = num(e.target.value); } else lista[i][k] = e.target.value;
+          limparErro(el); salvar();
+        });
+        el.addEventListener('change', function (e) {
+          if (e.target.tagName === 'SELECT') { var l = e.target.closest('[data-linha]'); var lista = obj[f.id] = obj[f.id] || [{}]; lista[+l.getAttribute('data-linha')] = lista[+l.getAttribute('data-linha')] || {}; lista[+l.getAttribute('data-linha')].mes = e.target.value; salvar(); }
+        });
+        el.addEventListener('click', function (e) {
+          if (e.target.hasAttribute('data-add-linha')) { obj[f.id] = (obj[f.id] && obj[f.id].length ? obj[f.id] : [{}]).concat([{}]); aoMudar(f, true); }
+          var r = e.target.getAttribute('data-remover-linha'); if (r != null) { obj[f.id] = (obj[f.id] || []).slice(); obj[f.id].splice(+r, 1); if (!obj[f.id].length) obj[f.id] = [{}]; salvar(); aoMudar(f, true); }
+        });
+      } else {
+        var inp = el.querySelector('input:not([data-nao-sei])');
+        inp.addEventListener('input', function () {
+          if (f.tipo === 'dinheiro') { inp.value = fmtMil(inp.value); obj[f.id] = num(inp.value); }
+          else if (f.tipo === 'dia' || f.tipo === 'inteiro') { inp.value = inp.value.replace(/\D/g, ''); obj[f.id] = num(inp.value); }
+          else obj[f.id] = inp.value;
+          limparErro(el); aoMudar(f);
+        });
+        var ns = el.querySelector('[data-nao-sei]');
+        if (ns) ns.addEventListener('change', function () { obj[f.id + '_naoSei'] = ns.checked; inp.disabled = ns.checked; if (ns.checked) { inp.value = ''; obj[f.id] = null; } limparErro(el); aoMudar(f); });
+      }
+    });
+  }
+
+  function atualizarVisiveis(raiz, campos, obj) {
+    campos.forEach(function (f) {
+      var el = raiz.querySelector('[data-campo="' + f.id + '"]'); if (!el) return;
+      var vis = visivel(f, obj);
+      el.classList.toggle('oculto', !vis);
+      var b = raiz.querySelector('[data-bloco-de="' + f.id + '"]'); if (b) b.classList.toggle('oculto', !vis);
+    });
+  }
+
+  function validar(raiz, campos, obj) {
+    var primeiro = null;
+    campos.forEach(function (f) {
+      if (!visivel(f, obj) || !f.obrig) return;
+      if (f.naoSei && obj[f.id + '_naoSei']) return;
+      var v = obj[f.id], msg = '';
+      if (f.tipo === 'linhas') {
+        var ok = (v || []).some(function (it) { return it && (f.semOque || it.oque) && it.valor != null && it.mes; });
+        if (!ok) msg = f.semOque ? 'Preencha pelo menos um mês com o valor.' : 'Preencha pelo menos um item com o que é, o valor e o mês.';
+      } else if (vazio(v)) {
+        msg = f.tipo === 'dinheiro' ? 'Coloque um valor. Se não tiver, coloque 0.' : (f.tipo === 'unica' || f.tipo === 'simnao' || f.tipo === 'multipla') ? 'Escolha uma opção para continuar.' : 'Preencha este campo para continuar.';
+      } else if (f.tipo === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) {
+        msg = 'Confira o e-mail. Ele precisa ter o formato nome@exemplo.com.';
+      } else if (f.tipo === 'dia' && (v < 1 || v > 31)) {
+        msg = 'Use um dia de 1 a 31.';
+      }
+      if (msg) {
+        var el = raiz.querySelector('[data-campo="' + f.id + '"]');
+        mostrarErro(el, msg);
+        if (!primeiro) primeiro = el;
+      }
+    });
+    if (primeiro) { primeiro.scrollIntoView({ block: 'center', behavior: 'smooth' }); var foco = primeiro.querySelector('input:not([disabled]), select'); if (foco) foco.focus({ preventScroll: true }); }
+    return !primeiro;
+  }
+  function mostrarErro(el, msg) { limparErro(el); el.classList.add('com-erro'); var p = document.createElement('p'); p.className = 'erro'; p.setAttribute('role', 'alert'); p.textContent = msg; el.appendChild(p); }
+  function limparErro(el) { el.classList.remove('com-erro'); var p = el.querySelector(':scope > .erro'); if (p) p.remove(); }
+
+  /* ---------- cálculos ---------- */
+  function totalGastos() { var g = R().gastos || {}; return GASTOS.reduce(function (s, x) { return s + (g[x[0]] || 0); }, 0); }
+  function pvAnuidade(P, i, n) { return i === 0 ? P * n : P * (1 - Math.pow(1 + i, -n)) / i; }
+  // Juro real ao mês a partir da parcela, do total de parcelas e do valor recebido (ou financiado).
+  function taxaImplicita(P, n, S) {
+    if (!P || !n || !S || P * n <= S) return null;
+    var lo = 1e-7, hi = 1;
+    for (var k = 0; k < 200; k++) { var m = (lo + hi) / 2; if (pvAnuidade(P, m, n) > S) lo = m; else hi = m; }
+    return (lo + hi) / 2;
+  }
+  // Próximas faturas, em ordem a partir do mês atual: [valor lançado, distância em meses].
+  function proximas(d) {
+    var hoje = new Date().getMonth(), por = {};
+    (d.c_futuroLista || []).forEach(function (x) { if (x && x.valor && x.mes) { var k = (MESES.indexOf(x.mes) - hoje + 12) % 12; por[k] = (por[k] || 0) + x.valor; } });
+    return Object.keys(por).map(Number).sort(function (a, b) { return a - b; }).map(function (k) { return por[k]; });
+  }
+  // Compras parceladas sem juros = o que está lançado, menos a parcela do parcelamento de fatura (que já aparece lá dentro).
+  function futuroTotal(d) {
+    var P = d.c_temParc === 'Sim' ? (d.c_parcValor || 0) : 0, n = d.c_parcRestam || 0;
+    var l = proximas(d);
+    return l.length ? l.reduce(function (s, v, k) { return s + Math.max(0, v - (k < n ? P : 0)); }, 0) : (d.c_futuro || 0);
+  }
+  function valorDivida(d) {
+    var g = grupo(d.tipo);
+    if (g === 'cartao') return faturaEmAberto(d) + (d.c_temParc === 'Sim' ? (d.c_parcQuitar || (d.c_parcValor || 0) * (d.c_parcRestam || 0)) : 0);
+    if (g === 'cheque') return d.ce_usado || 0;
+    if (g === 'parcelada') {
+      if (atrasada(d)) return d.a_cobrado || (d.e_parcelaAtr || 0) * (d.e_restamAtr || 0);
+      if (d.e_quitar) return d.e_quitar;
+      var tx = parseFloat(String(d.e_taxa || '').replace('%', '').replace(',', '.'));
+      if (!isNaN(tx) && d.e_taxa !== '' && d.e_taxa != null && d.e_restam) return Math.round(tx > 0 ? pvAnuidade(d.e_parcela, tx / 100, d.e_restam) : d.e_parcela * d.e_restam);
+      var i = taxaImplicita(d.e_parcela, d.e_total, d.e_recebido);
+      if (i && d.e_restam) return Math.round(pvAnuidade(d.e_parcela, i, d.e_restam));
+      return (d.e_parcela || 0) * (d.e_restam || 0);
+    }
+    return d.o_total || 0;
+  }
+  function parcelaMensal(d) {
+    var g = grupo(d.tipo);
+    if (g === 'parcelada') return atrasada(d) || d.e_descontado === 'Sim' ? 0 : (d.e_parcela || 0);
+    if (g === 'cartao') return d.c_temParc === 'Sim' ? (d.c_parcValor || 0) : 0;
+    return 0;
+  }
+  // Quanto da última fatura ainda está devendo, conforme o que a pessoa fez com ela.
+  function faturaEmAberto(d) {
+    var f = d.c_fatura || 0;
+    if (d.c_acao === 'Paguei tudo' || d.c_acao === 'Parcelei a fatura') return 0;
+    if (d.c_acao === 'Paguei uma parte' || d.c_acao === 'Paguei o mínimo') return Math.max(0, f - (d.c_pago || 0));
+    return f;
+  }
+  function comoSomou(d) {
+    var g = grupo(d.tipo), p = [];
+    if (g === 'parcelada') {
+      if (atrasada(d)) return d.a_cobrado ? 'Valor cobrado hoje' : 'Parcelas que faltam, contando as atrasadas';
+      if (d.e_quitar) return 'Valor para pagar tudo hoje';
+      if (d.e_taxa !== '' && d.e_taxa != null) return 'Calculado pela taxa do contrato';
+      if (taxaImplicita(d.e_parcela, d.e_total, d.e_recebido)) return 'Estimativa: confirme a taxa';
+      return reais(d.e_parcela) + ' × ' + (d.e_restam || 0) + ' parcelas';
+    }
+    if (g === 'cartao') {
+      if (faturaEmAberto(d)) p.push('fatura em aberto ' + reais(faturaEmAberto(d)));
+      if (d.c_temParc === 'Sim') p.push('parcelamento ' + (d.c_parcQuitar ? reais(d.c_parcQuitar) : reais(d.c_parcValor) + ' × ' + (d.c_parcRestam || 0)));
+      var txt = p.length ? p.join(' + ') : 'Fatura paga, nada em aberto';
+      return futuroTotal(d) ? txt + ' · fora da soma: compras parceladas de ' + reais(futuroTotal(d)) + ', sem juros' : txt;
+    }
+    if (g === 'cheque') return 'Valor usado hoje';
+    return 'Valor total devido';
+  }
+  // Mesma conta do motor: renda − (gastos − parte paga com vale) − tudo o que sai para dívidas no mês.
+  function proximaFatura(d) { var l = proximas(d); return l.length ? l[0] : (d.c_futuro || 0); }
+  function fluxoMes() {
+    var r = R(), g = r.gastos || {};
+    var entra = (r.renda || 0) + (r.divide === 'Sim' ? (r.contrib || 0) : 0);
+    var va = r.va || 0, abate = Math.min(va, g.mercado || 0); abate += Math.min(va - abate, g.delivery || 0);
+    var gastos = totalGastos() - abate;
+    var parcelas = 0, cartao = 0, cheque = 0, cartoes = [];
+    var noCartao = (r.noCartao || []).reduce(function (s, nome) { var x = GASTOS.filter(function (k) { return k[1] === nome; })[0]; return s + (x ? (g[x[0]] || 0) : 0); }, 0);
+    var nCartoes = (r.dividas || []).filter(function (d) { return grupo(d.tipo) === 'cartao'; }).length || 1;
+    (r.dividas || []).forEach(function (d) {
+      var t = grupo(d.tipo);
+      if (t === 'parcelada') parcelas += parcelaMensal(d);
+      else if (t === 'cheque') cheque += (d.ce_usado || 0) * 0.0792;
+      else if (t === 'cartao') {
+        var parc = d.c_temParc === 'Sim' ? (d.c_parcValor || 0) : 0, prox = proximaFatura(d) || parc;
+        var tx = parseFloat(String(d.c_taxaRot || '').replace(',', '.')); tx = tx > 0 ? tx / 100 : 0.1522;
+        var rot = faturaEmAberto(d) * tx;
+        cartao += prox + rot;
+        if (d.c_acao === 'Paguei tudo') cartoes.push({ nome: d.credor || 'de crédito', fatura: d.c_fatura || 0, esperado: noCartao / nCartoes + prox });
+      }
+    });
+    var casa = r.divide === 'Sim' && r.parcDividas === 'Sim' ? (r.parcDividasValor || 0) : 0;
+    var partes = [['gastos', gastos], ['parcelas de empréstimos', parcelas], ['cartão (parcelas e juros da fatura em aberto)', cartao]];
+    if (cheque) partes.push(['juros do cheque especial', cheque]);
+    if (casa) partes.push(['dívidas de quem divide a casa', casa]);
+    var sai = partes.reduce(function (s, x) { return s + x[1]; }, 0);
+    return { entra: entra, sai: sai, partes: partes, cartoes: cartoes };
+  }
+  function totalParceladas() { return (R().dividas || []).reduce(function (s, d) { return s + (grupo(d.tipo) === 'cartao' ? futuroTotal(d) : 0); }, 0); }
+  function totalDividas() { return (R().dividas || []).reduce(function (s, d) { return s + valorDivida(d); }, 0); }
+
+  /* ---------- navegação ---------- */
+  var $tela = document.getElementById('tela');
+  function ir(n) {
+    E.passo = Math.max(0, Math.min(TELAS.length - 1, n));
+    salvar(); render(); window.scrollTo(0, 0);
+    var h = $tela.querySelector('h1'); if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
+  }
+  function avancar() {
+    if (ui.daRevisao) { ui.daRevisao = false; ir(indice('revisao')); return; }
+    ir(E.passo + 1);
+  }
+  document.getElementById('btn-voltar').addEventListener('click', function () {
+    if (ui.divida) { ui.divida = null; render(); return; }
+    if (ui.daRevisao) { ui.daRevisao = false; ir(indice('revisao')); return; }
+    ir(E.passo - 1);
+  });
+
+  function cabecalho(t) {
+    var voltar = document.getElementById('btn-voltar');
+    voltar.style.visibility = (E.passo === 0 && !ui.divida) || t.especial === 'fim' ? 'hidden' : 'visible';
+    var etapa = document.getElementById('etapa');
+    etapa.classList.toggle('oculto', t.etapa === 0 || t.etapa === 6);
+    if (t.etapa >= 1 && t.etapa <= 5) {
+      document.getElementById('etapa-nome').textContent = 'Etapa ' + t.etapa + ' de 5 · ' + ETAPAS[t.etapa];
+      var ini = indice('contato'), fim = indice('revisao');
+      var pct = Math.round(((E.passo - ini) / (fim - ini)) * 100);
+      document.getElementById('barra-i').style.width = Math.max(4, pct) + '%';
+      document.getElementById('barra').setAttribute('aria-valuenow', pct);
+    }
+  }
+
+  function botoes(rotulo, extra) {
+    return '<div class="acoes">' + (extra || '') + '<button type="button" class="btn btn-principal" id="btn-seguir">' + esc(ui.daRevisao ? 'Salvar e voltar à revisão' : rotulo) + '</button></div>';
+  }
+
+  /* ---------- render ---------- */
+  function render() {
+    var t = TELAS[E.passo];
+    if (E.enviado && t.especial !== 'fim') { E.passo = indice('fim'); t = TELAS[E.passo]; }
+    cabecalho(t);
+    $tela.onclick = null;
+    if (ui.divida) return renderDivida();
+    if (t.especial === 'acolhimento') return renderAcolhimento();
+    if (t.especial === 'compromisso') return renderCompromisso();
+    if (t.especial === 'dividas') return renderDividas();
+    if (t.especial === 'revisao') return renderRevisao();
+    if (t.especial === 'fim') return renderFim();
+    if (t.gastos) return renderGastos(t);
+    renderPadrao(t);
+  }
+
+  function topoTela(t) {
+    return (t.acolhe ? '<p class="acolhe">' + esc(t.acolhe) + '</p>' : '') + '<h1>' + esc(t.titulo) + '</h1>' + (t.lead ? '<p class="lead">' + esc(t.lead) + '</p>' : '');
+  }
+
+  function renderPadrao(t) {
+    var obj = R();
+    $tela.innerHTML = '<section class="tela"><div class="campos">' + topoTela(t) + t.campos.map(function (f) { return htmlCampo(f, obj, 'q-'); }).join('') + '</div>' + botoes('Continuar') + '</section>';
+    ligarCampos($tela, t.campos, obj, 'q-', function (f, rerender) {
+      salvar();
+      if (rerender) { renderPadrao(t); return; }
+      atualizarVisiveis($tela, t.campos, obj);
+    });
+    document.getElementById('btn-seguir').addEventListener('click', function () { if (validar($tela, t.campos, obj)) avancar(); });
+  }
+
+  function renderAcolhimento() {
+    $tela.innerHTML = '<section class="tela"><h1>Antes de tudo: respira.</h1><div class="texto">' +
+      '<p>Se você chegou até aqui, provavelmente carrega um peso que pouca gente vê. A sensação de que isso nunca vai acabar. De que você errou e atrasou a própria vida. O aperto no peito quando o celular toca ou quando a fatura chega.</p>' +
+      '<p>Queremos te dizer uma coisa com toda a honestidade: <strong>dívida é uma situação, não é quem você é.</strong> Ela tem começo, tem tamanho e pode ter fim.</p>' +
+      '<p>E se até hoje você evitou olhar para ela, não abriu a fatura, não somou, não anotou no caderno, saiba que isso é muito comum. Não é fraqueza. É cansaço. É a forma que a gente encontra de se proteger.</p>' +
+      '<p>Hoje você fez diferente: veio procurar um caminho. Esse é o passo mais difícil, e ele já foi dado. <strong>É o seu primeiro desaperto.</strong></p></div>' +
+      '<div class="acoes"><button type="button" class="btn btn-principal" id="btn-seguir">Continuar</button>' +
+      (TESTE ? '<button type="button" class="btn btn-sec" id="btn-exemplo">Preencher com exemplo (teste)</button>' : '') + '</div></section>';
+    document.getElementById('btn-seguir').addEventListener('click', function () { ir(1); });
+    var ex = document.getElementById('btn-exemplo'); if (ex) ex.addEventListener('click', preencherExemplo);
+  }
+
+  function renderCompromisso() {
+    var r = R();
+    $tela.innerHTML = '<section class="tela"><h1>Agora, vamos olhar juntos.</h1><div class="texto">' +
+      '<p>Nas próximas telas, vamos te pedir os números da sua vida real: quanto entra, quanto sai e o que você deve. Pode ser desconfortável ver o valor total. Tudo bem sentir isso. Respira e continua: é a partir desse número que o caminho aparece.</p>' +
+      '<p>Os detalhes fazem toda a diferença. Um valor esquecido pode mudar a ordem certa de pagar. Uma data de vencimento pode te fazer economizar todo mês. Quanto mais real e completa for a sua resposta, mais o seu plano vai ser feito para você, e não para qualquer pessoa.</p>' +
+      '<p>Separe uns 15 minutos tranquilos. Deixe aberto o app do seu banco e o do Serasa. Se bater o cansaço no meio, respira e segue no seu tempo. Seu progresso fica salvo neste aparelho.</p></div>' +
+      '<div class="campo" data-campo="consent"><label class="check"><input type="checkbox" id="q-consent"' + (r.consent ? ' checked' : '') + '><span>Concordo que minhas respostas sejam usadas apenas para montar o meu plano, com análise apoiada por inteligência artificial, e apagadas em até 90 dias. Entendo que o Desaperto é uma ferramenta educacional e não substitui consultoria profissional. Li os <a href="/termos" target="_blank" rel="noopener">termos de uso</a> e a <a href="/privacidade" target="_blank" rel="noopener">política de privacidade</a>.</span></label></div>' +
+      botoes('Começar', '').replace('</div>', '<p class="nota">Não pedimos CPF, senha nem extrato. Só os números.</p></div>') + '</section>';
+    var c = document.getElementById('q-consent'), campo = $tela.querySelector('[data-campo="consent"]');
+    c.addEventListener('change', function () { r.consent = c.checked; limparErro(campo); salvar(); });
+    document.getElementById('btn-seguir').addEventListener('click', function () {
+      if (!r.consent) { mostrarErro(campo, 'Para montar o plano, precisamos que você marque que concorda.'); return; }
+      avancar();
+    });
+  }
+
+  function renderGastos(t) {
+    var g = R().gastos = R().gastos || {};
+    var lista = GASTOS.slice(t.gastos[0], t.gastos[1]);
+    var campos = lista.map(function (x) { return F({ id: x[0], tipo: 'dinheiro', rotulo: x[1], ajuda: x[2] }); });
+    $tela.innerHTML = '<section class="tela"><div class="campos">' + topoTela(t) + campos.map(function (f) { return htmlCampo(f, g, 'g-'); }).join('') + '</div>' +
+      '<div class="total" aria-live="polite"><small>Total de gastos no mês</small><b id="total-gastos">' + reais(totalGastos()) + '</b></div>' + botoes('Continuar') + '</section>';
+    ligarCampos($tela, campos, g, 'g-', function () { salvar(); document.getElementById('total-gastos').textContent = reais(totalGastos()); });
+    document.getElementById('btn-seguir').addEventListener('click', function () { if (validar($tela, campos, g)) avancar(); });
+  }
+
+  /* ---------- dívidas ---------- */
+  function renderDividas() {
+    var ds = R().dividas = R().dividas || [];
+    var h = '<section class="tela"><h1>Suas dívidas</h1><p class="lead">Adicione uma por vez: cartões, empréstimos, cheque especial, contas atrasadas e dívidas com pessoas. Cada cartão de crédito conta como uma dívida.</p>';
+    if (!ds.length) h += '<div class="vazio">Nenhuma dívida adicionada ainda. Comece pela que você lembrar primeiro.</div>';
+    else {
+      h += '<div class="cartoes">' + ds.map(function (d, i) {
+        var atraso = d.s_status === 'Atrasada';
+        return '<article class="cartao"><div class="cartao-topo"><div><h2>' + esc(d.tipo) + '</h2><p class="quem">' + esc(d.credor || '') + '</p><p class="quem">' + esc(comoSomou(d)) + '</p></div><span class="valor">' + reais(valorDivida(d)) + '</span></div>' +
+          '<div><span class="chip' + (atraso ? ' atraso' : '') + '">' + (atraso ? 'Atrasada' + (d.s_tempo ? ' · ' + esc(d.s_tempo.toLowerCase()) : '') : 'Em dia') + '</span></div>' +
+          '<div class="cartao-acoes"><button type="button" class="link" data-editar="' + i + '">Editar</button>' +
+          (ui.removendo === i ? '<button type="button" class="link" data-confirmar="' + i + '">Confirmar remoção</button><button type="button" class="link" data-cancelar>Cancelar</button>' : '<button type="button" class="link" data-remover="' + i + '">Remover</button>') + '</div></article>';
+      }).join('') + '</div>';
+      h += '<div class="soma"><span>Soma aproximada do que você deve</span><b>' + reais(totalDividas()) + '</b></div>';
+      if (totalParceladas()) h += '<p class="nota" style="text-align:left">Fora dessa soma: ' + reais(totalParceladas()) + ' em parcelas de compras no cartão, que não cobram juros. Elas entram no seu mês, não na lista de dívidas.</p>';
+    }
+    h += '<div class="campo" data-campo="dividas"></div><div class="acoes"><button type="button" class="btn btn-sec" id="btn-add">+ Adicionar ' + (ds.length ? 'outra dívida' : 'uma dívida') + '</button>' +
+      '<button type="button" class="btn btn-principal" id="btn-seguir">' + (ui.daRevisao ? 'Salvar e voltar à revisão' : 'Já coloquei todas') + '</button></div></section>';
+    $tela.innerHTML = h;
+    document.getElementById('btn-add').addEventListener('click', function () { ui.divida = {}; ui.idx = -1; render(); window.scrollTo(0, 0); });
+    $tela.onclick = function (e) {
+      var a = e.target.getAttribute('data-editar'); if (a != null) { ui.divida = JSON.parse(JSON.stringify(ds[+a])); ui.idx = +a; render(); window.scrollTo(0, 0); }
+      var r = e.target.getAttribute('data-remover'); if (r != null) { ui.removendo = +r; renderDividas(); }
+      var c = e.target.getAttribute('data-confirmar'); if (c != null) { ds.splice(+c, 1); ui.removendo = -1; salvar(); renderDividas(); }
+      if (e.target.hasAttribute('data-cancelar')) { ui.removendo = -1; renderDividas(); }
+    };
+    document.getElementById('btn-seguir').addEventListener('click', function () {
+      if (!ds.length) { mostrarErro($tela.querySelector('[data-campo="dividas"]'), 'Adicione pelo menos uma dívida para continuar.'); return; }
+      avancar();
+    });
+  }
+
+  function renderDivida() {
+    var d = ui.divida, n = ui.idx >= 0 ? ui.idx + 1 : (R().dividas.length + 1);
+    $tela.innerHTML = '<section class="tela"><div class="campos"><h1>Dívida ' + n + '</h1>' + fDivida.map(function (f) { return htmlCampo(f, d, 'd-'); }).join('') + '</div>' +
+      '<div class="acoes"><button type="button" class="btn btn-principal" id="btn-salvar">Salvar esta dívida</button><button type="button" class="link" id="btn-cancelar">Cancelar</button></div></section>';
+    ligarCampos($tela, fDivida, d, 'd-', function (f, rr) { if (f.id === 'tipo' || rr) { renderDivida(); return; } atualizarVisiveis($tela, fDivida, d); });
+    document.getElementById('btn-salvar').addEventListener('click', function () {
+      if (!validar($tela, fDivida, d)) return;
+      var problema = null;
+      if (grupo(d.tipo) === 'parcelada' && emDia(d)) {
+        if (d.e_total && d.e_restam && d.e_restam > d.e_total) problema = ['e_restam', 'Faltam mais parcelas (' + d.e_restam + ') do que o total do contrato (' + d.e_total + '). Confira os dois números.'];
+        else if (d.e_recebido && d.e_parcela && d.e_total && d.e_recebido >= d.e_parcela * d.e_total) problema = ['e_recebido', 'O valor ' + (financiamento(d) ? 'financiado' : 'recebido') + ' (' + reais(d.e_recebido) + ') está maior que todas as parcelas do contrato somadas (' + reais(d.e_parcela * d.e_total) + '). Confira o valor, a parcela ou o total de parcelas.'];
+      }
+      if (problema) { var cp = $tela.querySelector('[data-campo="' + problema[0] + '"]'); mostrarErro(cp, problema[1]); cp.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+      if (grupo(d.tipo) === 'parcelada' && d.s_status === 'Em dia' && d.e_quitar && d.e_parcela && d.e_restam && d.e_quitar > d.e_parcela * d.e_restam) {
+        var cq = $tela.querySelector('[data-campo="e_quitar"]');
+        mostrarErro(cq, 'O valor para pagar tudo hoje (' + reais(d.e_quitar) + ') está maior que todas as parcelas que faltam somadas (' + reais(d.e_parcela * d.e_restam) + '). Isso não acontece numa dívida em dia. Confira esse valor, a parcela ou quantas faltam.');
+        cq.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        return;
+      }
+      fDivida.forEach(function (f) { if (!visivel(f, d)) { delete d[f.id]; delete d[f.id + '_naoSei']; } });
+      if (ui.idx >= 0) R().dividas[ui.idx] = d; else R().dividas.push(d);
+      ui.divida = null; salvar(); render(); window.scrollTo(0, 0);
+    });
+    document.getElementById('btn-cancelar').addEventListener('click', function () { ui.divida = null; render(); window.scrollTo(0, 0); });
+  }
+
+  /* ---------- revisão ---------- */
+  function renderRevisao() {
+    var r = R(), fx = fluxoMes(), entra = fx.entra, sai = fx.sai;
+    var saldo = entra - sai;
+    var disse = r.fimMes === 'Sobra dinheiro' ? (r.sobra || 0) : r.fimMes === 'Falta dinheiro' ? -(r.falta || 0) : 0;
+    var diferenca = Math.abs(saldo - disse);
+    var aviso = diferenca > Math.max(300, entra * 0.15)
+      ? '<div class="aviso"><strong>Os números não fecham com o que você contou.</strong><span>Pelas respostas, entra ' + reais(entra) + ' e sai ' + reais(sai) + ' por mês: ' + fx.partes.map(function (x) { return x[0] + ' ' + reais(x[1]); }).join(', ') + '. Isso dá ' + (saldo >= 0 ? 'uma sobra de ' + reais(saldo) : 'uma falta de ' + reais(-saldo)) + '. Antes, você disse que no fim do mês ' + (r.fimMes || '').toLowerCase().replace(' dinheiro', '') + (r.fimMes === 'Fica zerado' ? '' : ' cerca de ' + reais(Math.abs(disse))) + '.</span><span>Vale conferir os gastos e as parcelas. Às vezes falta algum gasto, ou algum valor saiu errado. Se estiver tudo certo, pode enviar assim mesmo.</span></div>'
+      : '';
+    var zerados = (r.noCartao || []).filter(function (nome) { var g = GASTOS.filter(function (x) { return x[1] === nome; })[0]; return g && !(r.gastos || {})[g[0]]; });
+    var acima = (r.dividas || []).filter(function (d) { return grupo(d.tipo) === 'parcelada' && d.s_status === 'Em dia' && d.e_quitar && d.e_parcela && d.e_restam && d.e_quitar > d.e_parcela * d.e_restam; });
+    if (acima.length) aviso += '<div class="aviso"><strong>Confira ' + (acima.length > 1 ? 'estas dívidas' : 'esta dívida') + '</strong>' + acima.map(function (d) { return '<span>' + esc(d.credor || d.tipo) + ': o valor para quitar (' + reais(d.e_quitar) + ') está maior que todas as parcelas que faltam somadas (' + reais(d.e_parcela * d.e_restam) + '). Numa dívida em dia isso não acontece.</span>'; }).join('') + '</div>';
+    fx.cartoes.forEach(function (c) {
+      if (c.esperado && c.fatura > c.esperado + Math.max(300, c.fatura * 0.15)) aviso += '<div class="aviso"><strong>Faltou gasto no cartão ' + esc(c.nome) + '?</strong><span>A última fatura foi de ' + reais(c.fatura) + '. Os gastos que você disse pagar no cartão, mais as parcelas, somam ' + reais(c.esperado) + '. A diferença, ' + reais(c.fatura - c.esperado) + ', costuma ser gasto que ficou de fora. Confira os gastos do mês.</span></div>';
+    });
+    var descont = (r.dividas || []).filter(function (d) { return d.e_descontado === 'Sim' && !atrasada(d); });
+    if (descont.length) { var somaDesc = descont.reduce(function (s, d) { return s + (d.e_parcela || 0); }, 0);
+      aviso += '<div class="aviso"><strong>Confira a sua renda</strong><span>Você informou ' + reais(r.renda) + ' caindo na conta e ' + reais(somaDesc) + ' de consignado descontado do salário. Os ' + reais(r.renda) + ' já vêm sem esse desconto? Se não, toque em Editar na Renda e coloque o valor que entra de fato.</span></div>'; }
+    if (zerados.length) aviso += '<div class="aviso"><strong>Faltou algum gasto?</strong><span>Você marcou que paga no cartão: ' + esc(zerados.join(', ')) + '. Mas colocou R$ 0 ' + (zerados.length > 1 ? 'nesses gastos' : 'nesse gasto') + '. O que você paga no cartão também conta como gasto do mês.</span></div>';
+    function sec(titulo, tela, linhas) {
+      return '<section class="rev"><div class="rev-topo"><h2>' + titulo + '</h2><button type="button" class="link" data-ir="' + tela + '">Editar</button></div><dl>' +
+        linhas.filter(Boolean).map(function (l) { return '<dt>' + esc(l[0]) + '</dt><dd>' + esc(l[1]) + '</dd>'; }).join('') + '</dl></section>';
+    }
+    var h = '<section class="tela"><h1>Confira antes de enviar</h1><p class="lead">Se algo estiver errado, toque em Editar. Você volta direto para cá.</p>' + aviso + '<div class="revisao">' +
+      sec('Você', 'contato', [['Nome', r.nome], ['E-mail', r.email], ['Fim do mês', r.fimMes]]) +
+      sec('Renda', 'renda', [['Cai na conta', reais(r.renda)], ['Vale-alimentação', reais(r.va)], ['Dia do pagamento', r.diaPag ? 'dia ' + r.diaPag + (r.temAdiant === 'Sim' && r.diaAdiant ? ' e dia ' + r.diaAdiant : '') : '—'], r.divide === 'Sim' ? ['Contribuição da casa', reais(r.contrib)] : null]) +
+      sec('Gastos', 'gastos1', [['Total no mês', reais(totalGastos())], ['Maior gasto', (function () { var g = r.gastos || {}, m = GASTOS.slice().sort(function (a, b) { return (g[b[0]] || 0) - (g[a[0]] || 0); })[0]; return m[1] + ' · ' + reais(g[m[0]]); })()]]) +
+      sec('Dívidas', 'dividas', [['Quantidade', String((r.dividas || []).length)], ['Soma aproximada', reais(totalDividas())], totalParceladas() ? ['Compras parceladas, sem juros', reais(totalParceladas())] : null, ['Atrasadas', String((r.dividas || []).filter(function (d) { return d.s_status === 'Atrasada'; }).length)]]) +
+      sec('Para fechar', 'recursos', [['Dinheiro guardado', reais(r.guardado)], ['Empréstimo para pagar dívida', r.emprestPagar || '—']]) +
+      '</div>' + '<div class="acoes"><div id="erro-envio" class="erro-envio oculto" role="alert"></div><button type="button" class="btn btn-principal" id="btn-enviar">' + (E.envio ? 'Enviar a correção' : 'Enviar e receber meu plano') + '</button><p class="nota">Suas respostas são apagadas em até 90 dias.</p></div></section>';
+    $tela.innerHTML = h;
+    $tela.querySelectorAll('[data-ir]').forEach(function (b) { b.addEventListener('click', function () { ui.daRevisao = true; ir(indice(b.getAttribute('data-ir'))); }); });
+    document.getElementById('btn-enviar').addEventListener('click', enviar);
+  }
+
+  // Envia as respostas para o servidor. Se já foram enviadas antes, manda como correção do mesmo envio.
+  function enviar() {
+    var btn = document.getElementById('btn-enviar'), caixa = document.getElementById('erro-envio');
+    var rotulo = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Enviando...'; caixa.classList.add('oculto');
+    var corrigindo = !!(E.envio && E.envio.id && E.envio.chave);
+    var corpo = corrigindo ? { id: E.envio.id, chave: E.envio.chave, respostas: R() } : { respostas: R(), teste: TESTE };
+    function falhou(msg) {
+      btn.disabled = false; btn.textContent = rotulo;
+      caixa.textContent = (msg || 'Não conseguimos enviar agora.') + ' Suas respostas continuam salvas neste aparelho. Confira a internet e tente de novo.';
+      caixa.classList.remove('oculto');
+    }
+    var pedido;
+    try {
+      pedido = fetch('/api/respostas', { method: corrigindo ? 'PUT' : 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) });
+    } catch (e) { falhou(); return; }
+    pedido.then(function (resp) {
+      return resp.json().catch(function () { return {}; }).then(function (j) {
+        if (resp.ok && j.ok) {
+          E.envio = { id: j.id || E.envio.id, chave: corrigindo ? E.envio.chave : j.chave, protocolo: j.protocolo };
+          E.enviado = true; E.enviadoEm = new Date().toISOString(); salvar(); ir(indice('fim'));
+        } else if (corrigindo && resp.status === 404) {
+          E.envio = null; salvar(); falhou('Não encontramos o envio anterior. Toque em enviar de novo para mandar como novo.');
+        } else falhou(j.erro);
+      });
+    }, function () { falhou(); });
+  }
+
+  function renderFim() {
+    var r = R();
+    $tela.innerHTML = '<section class="tela final"><h1>Pronto, ' + esc(r.nome || 'tudo certo') + '.</h1><div class="texto">' +
+      '<p>Você fez a parte que muita gente adia: olhar para os números.</p>' +
+      '<p>Seu plano de desaperto chega no seu e-mail em até 3 dias úteis. Se precisarmos confirmar alguma informação antes, vamos te escrever.</p>' +
+      (E.envio && E.envio.protocolo ? '<p>Seu protocolo é <span class="protocolo">' + esc(E.envio.protocolo) + '</span>. Se precisar falar com a gente, escreva para contato@desaperto.com com esse código.</p>' : '') + '</div>' +
+      '<div class="cvv">Se o peso estiver grande demais, você não precisa carregar isso sozinho. <strong>CVV: ligue 188</strong>, 24 horas, gratuito.</div>' +
+      '<div class="acoes"><button type="button" class="btn btn-sec" id="btn-corrigir">Corrigir minhas respostas</button></div>' +
+      (TESTE ? '<div class="acoes"><button type="button" class="btn btn-principal" id="btn-copiar">Copiar respostas (teste)</button><button type="button" class="btn btn-sec" id="btn-ver">' + (ui.verTeste ? 'Esconder respostas' : 'Ver respostas (teste)') + '</button>' + (ui.verTeste ? '<pre class="teste">' + esc(JSON.stringify(r, null, 2)) + '</pre>' : '') + '<button type="button" class="link" id="btn-zerar">Apagar e recomeçar</button></div>' : '') + '</section>';
+    document.getElementById('btn-corrigir').addEventListener('click', function () { E.enviado = false; ui.verTeste = false; ir(indice('revisao')); });
+    var v = document.getElementById('btn-ver'); if (v) v.addEventListener('click', function () { ui.verTeste = !ui.verTeste; renderFim(); });
+    var cp = document.getElementById('btn-copiar'); if (cp) cp.addEventListener('click', function () {
+      var txt = JSON.stringify(r);
+      var ok = function () { cp.textContent = 'Copiado'; };
+      var falha = function () { ui.verTeste = true; renderFim(); var pre = $tela.querySelector('pre.teste'); if (pre) { var s = window.getSelection(), rg = document.createRange(); rg.selectNodeContents(pre); s.removeAllRanges(); s.addRange(rg); } };
+      try { navigator.clipboard.writeText(txt).then(ok, falha); } catch (e) { falha(); }
+    });
+    var z = document.getElementById('btn-zerar'); if (z) z.addEventListener('click', function () { try { localStorage.removeItem(CHAVE); } catch (e) {} E = { passo: 0, r: { dividas: [], extrasLista: [], anuaisLista: [], gastos: {} }, enviado: false }; ui.verTeste = false; ir(0); });
+  }
+
+  /* ---------- exemplo (só no modo teste) ---------- */
+  function preencherExemplo() {
+    E.r = {
+      consent: true, nome: 'Carla', email: 'carla.exemplo@email.com', causas: ['Separação ou mudança na família', 'Problema de saúde (meu ou da família)'], ainda: ['Nenhuma, já passou'],
+      fimMes: 'Fica zerado', renda: 3800, rendaTipo: 'Fixa, quase igual todo mês', va: 600,
+      diaPag: 5, temAdiant: 'Não', banco: 'Banco A', trabalho: 'Carteira assinada (CLT)', margem: null, margem_naoSei: true, extras: 'Sim', extrasLista: [{ oque: '13º salário', valor: 1700, mes: 'novembro' }],
+      divide: 'Não', gastos: { moradia: 1100, contas: 320, mercado: 750, delivery: 180, transporte: 260, educacao: 150, saude: 120, pessoal: 90, assinaturas: 55, familia: 0, apostas: 0, outros: 80 },
+      protegidos: ['Moradia', 'Mercado'], noCartao: ['Mercado', 'Delivery, lanches e restaurante'], anuais: 'Não', veiculo: 'Não', serasa: 'Sim, consultei', nomeLimpo: 'Não',
+      dividas: [
+        { tipo: 'Cartão de crédito', credor: 'Banco A', s_status: 'Em dia', c_fatura: 2900, c_acao: 'Paguei o mínimo', c_pago: 435, c_taxaRot: '14,9', c_ofertaParc: 309, c_temParc: 'Sim', c_parcValor: 289, c_parcRestam: 10, c_parcReneg: 'Não', c_parcTaxa: '7,3', c_parcQuitar: null, c_parcQuitar_naoSei: true, c_temFuturo: 'Sim', c_futuroLista: [{ valor: 489, mes: 'novembro' }, { valor: 409, mes: 'dezembro' }, { valor: 369, mes: 'janeiro' }, { valor: 289, mes: 'fevereiro' }, { valor: 289, mes: 'março' }, { valor: 289, mes: 'abril' }, { valor: 289, mes: 'maio' }, { valor: 289, mes: 'junho' }, { valor: 289, mes: 'julho' }, { valor: 289, mes: 'agosto' }], c_limite: 3000, c_venc: 2, s_serasa: 'Não' },
+        { tipo: 'Cheque especial', credor: 'Banco A', s_status: 'Em dia', ce_usado: 700, ce_tempo: 'Mais de 3 meses', s_serasa: 'Não' },
+        { tipo: 'Empréstimo pessoal no banco', credor: 'Banco A', s_status: 'Em dia', e_parcela: 480, e_restam: 20, e_reneg: 'Não', e_taxa: '2,9', e_quitar: null, e_quitar_naoSei: true, e_venc: 15, e_debito: 'Sim', s_serasa: 'Não' },
+        { tipo: 'Empréstimo em app ou financeira', credor: 'App de crédito', s_status: 'Atrasada', a_cobrado: 1800, s_tempo: '3 a 12 meses', s_quem: 'Uma empresa de cobrança', s_proposta: 'Não', s_serasa: 'Sim', s_justica: 'Não' }
+      ],
+      guardado: 0, emprestPagar: 'Não'
+    };
+    E.passo = indice('revisao'); salvar(); render(); window.scrollTo(0, 0);
+  }
+
+  $tela.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' || e.target.tagName !== 'INPUT' || e.target.type === 'checkbox' || e.target.type === 'radio') return;
+    var b = document.getElementById('btn-seguir') || document.getElementById('btn-salvar');
+    if (b) { e.preventDefault(); b.click(); }
+  });
+
+  render();
+})();
+</script>

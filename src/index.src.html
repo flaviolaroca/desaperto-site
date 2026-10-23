@@ -1,0 +1,598 @@
+<title>Desaperto</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Responda sobre seu salário, seus gastos e suas dívidas. O Desaperto faz a conta e entrega um plano com a ordem certa de pagar e o mês em que você sai das dívidas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: coluna editorial no celular; no computador, abertura em duas colunas (promessa + capa do plano) e faixas largas de papel e verde. Uma só aparência, a da marca (papel claro), por decisão de identidade. */
+:root {
+  --papel: #F3EFE6;
+  --tinta: #16211C;
+  --verde: #16704A;
+  --verde-escuro: #0F5537;
+  --respiro: #DCEBE1;
+  --areia: #E7DFD0;
+  --areia-esc: #CFC4AE;
+  --ambar: #9A5B12;
+  --cinza: #555D58;
+  --branco: #FFFFFF;
+  --sombra: 0 1px 0 rgba(22, 33, 28, .04), 0 18px 40px -18px rgba(22, 33, 28, .28);
+  --f-marca: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --f-texto: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-num: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --larg: 72rem;
+  --gutter-l: max(20px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(20px, env(safe-area-inset-right, 0px));
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; background: var(--papel); color: var(--tinta); font-family: var(--f-texto); font-size: 1.0625rem; line-height: 1.55; font-stretch: 100%; -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--papel); }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { font-family: var(--f-marca); text-wrap: balance; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--verde); outline-offset: 3px; border-radius: 6px; }
+.faixa { padding-left: var(--gutter-l); padding-right: var(--gutter-r); }
+.miolo { max-width: var(--larg); margin: 0 auto; }
+.num { font-family: var(--f-num); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.rotulo, .cab .rotulo { font-family: var(--f-num); font-weight: 600; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--verde); }
+
+/* ---------- topo ---------- */
+.topo { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--papel) 92%, transparent); backdrop-filter: saturate(1.2) blur(8px); -webkit-backdrop-filter: saturate(1.2) blur(8px); border-bottom: 1px solid transparent; transition: border-color .2s; }
+.topo.rolou { border-bottom-color: var(--areia); }
+.topo .miolo { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; }
+.topo .logo { display: block; height: 24px; width: auto; color: var(--tinta); }
+.topo .logo svg { height: 100%; width: auto; display: block; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .5em; font-family: var(--f-marca); font-weight: 700; font-size: 1.0625rem; text-decoration: none; border-radius: 999px; padding: .95em 1.6em; border: 0; cursor: pointer; transition: background-color .15s, transform .15s; }
+.btn-principal { background: var(--verde); color: var(--branco); }
+.btn-principal:hover { background: var(--verde-escuro); }
+.btn-principal:active { transform: translateY(1px); }
+.btn-peq { font-size: .9375rem; padding: .6em 1.15em; }
+.btn .seta { display: inline-block; transition: transform .2s; }
+.btn:hover .seta { transform: translateX(3px); }
+
+/* ---------- abertura ---------- */
+.abertura .miolo { display: grid; gap: 44px; padding-block: 36px 64px; }
+.promessa { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.abertura h1 { font-size: clamp(2.6rem, 9.6vw, 4.6rem); line-height: .98; letter-spacing: -0.03em; font-weight: 800; font-stretch: 100%; }
+.abertura h1 em { font-style: normal; color: var(--verde); }
+.solta { animation: soltar 1.6s cubic-bezier(.2, .7, .1, 1) .15s both; }
+@keyframes soltar { from { font-stretch: 66%; letter-spacing: -0.05em; } to { font-stretch: 100%; letter-spacing: -0.03em; } }
+.lead { font-size: 1.1875rem; line-height: 1.5; max-width: 34rem; color: #2B3530; }
+.lead b { font-weight: 700; color: var(--tinta); }
+.cta-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+.garantias { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0; padding: 0; list-style: none; font-size: .9375rem; color: var(--cinza); }
+.garantias li { display: flex; align-items: center; gap: 7px; }
+.garantias li::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--verde); flex: none; }
+
+/* a capa do plano (exemplo) */
+.capa-ex { position: relative; justify-self: center; width: min(100%, 380px); }
+.folha { background: var(--papel); border-radius: 22px; box-shadow: var(--sombra), 0 0 0 1px rgba(22, 33, 28, .06); padding: 26px 22px 24px; display: flex; flex-direction: column; gap: 14px; position: relative; }
+.capa-ex .folha { background: #F7F4EC; }
+.folha .f-topo { display: flex; justify-content: space-between; align-items: center; }
+.folha .f-topo svg { height: 15px; width: auto; color: var(--tinta); }
+.selo { font-family: var(--f-num); font-weight: 600; font-size: .625rem; letter-spacing: .12em; text-transform: uppercase; color: var(--verde); border: 1.5px solid var(--verde); border-radius: 99px; padding: 4px 9px; }
+.folha .olho { font-weight: 600; color: var(--cinza); font-size: .9375rem; }
+.folha .data { font-family: var(--f-marca); font-weight: 800; font-size: 2.05rem; line-height: 1.02; letter-spacing: -0.03em; }
+.folha .data em { font-style: normal; color: var(--verde); }
+.folha .sub { font-size: .8125rem; color: var(--cinza); line-height: 1.4; }
+.bloco-n { background: var(--branco); border-radius: 12px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px; }
+.bloco-n span { font-size: .75rem; color: var(--cinza); }
+.bloco-n b { font-family: var(--f-num); font-weight: 600; font-size: 1.25rem; letter-spacing: -0.02em; }
+.passos-ex { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; counter-reset: p; }
+.passos-ex li { counter-increment: p; background: var(--branco); border-radius: 12px; padding: 9px 12px 9px 40px; position: relative; font-weight: 700; font-size: .875rem; line-height: 1.25; }
+.passos-ex li::before { content: counter(p); position: absolute; left: 11px; top: 9px; width: 20px; height: 20px; border-radius: 50%; background: var(--verde); color: var(--branco); font-size: .75rem; display: grid; place-items: center; }
+.passos-ex small { display: block; font-family: var(--f-num); font-weight: 600; font-size: .625rem; color: var(--verde); letter-spacing: .04em; margin-top: 2px; }
+.etiqueta { position: absolute; top: -12px; right: 18px; background: var(--tinta); color: var(--papel); font-family: var(--f-num); font-size: .6875rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; padding: 5px 10px; border-radius: 99px; }
+.legenda { margin-top: 12px; font-size: .8125rem; color: var(--cinza); text-align: center; }
+
+/* ---------- reconhecer ---------- */
+.reconhece { background: var(--tinta); color: var(--papel); }
+.reconhece .miolo { padding-block: 72px; display: grid; gap: 36px; }
+.reconhece .rotulo { color: #9FD1B6; }
+.frases { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.frases li { font-family: var(--f-marca); font-weight: 700; font-size: clamp(1.35rem, 5vw, 2.35rem); line-height: 1.12; letter-spacing: -0.02em; border-bottom: 1px solid rgba(243, 239, 230, .14); padding-block: 14px; }
+.frases li:nth-child(1) { font-stretch: 64%; }
+.frases li:nth-child(2) { font-stretch: 69%; }
+.frases li:nth-child(3) { font-stretch: 74%; }
+.frases li:nth-child(4) { font-stretch: 79%; }
+.frases li:nth-child(5) { font-stretch: 84%; }
+.frases li:nth-child(6) { font-stretch: 89%; }
+.frases li:nth-child(7) { font-stretch: 94%; }
+.frases li:nth-child(8) { font-stretch: 100%; border-bottom: 0; }
+.reconhece .virada { font-size: 1.1875rem; max-width: 36rem; color: #D5DCD7; }
+.reconhece .virada b { color: var(--papel); }
+
+/* ---------- cabeçalho das seções ---------- */
+.cab { display: flex; flex-direction: column; gap: 14px; max-width: 40rem; }
+.cab h2 { font-size: clamp(2rem, 7vw, 3.3rem); line-height: 1.02; letter-spacing: -0.03em; font-weight: 800; }
+.cab p { font-size: 1.125rem; color: #2B3530; }
+
+/* ---------- o caminho ---------- */
+.caminho .miolo { padding-block: 80px; display: grid; gap: 40px; }
+.trajeto { background: var(--branco); border-radius: 24px; padding: 24px 20px 22px; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 0 0 1px rgba(22, 33, 28, .06); min-width: 0; }
+.tr-topo { font-size: .875rem; color: var(--cinza); }
+.anos { display: flex; gap: 10px; font-family: var(--f-num); font-weight: 600; font-size: .75rem; }
+.grafico-c { position: relative; display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 6px; height: 190px; padding-top: 26px; align-items: end; }
+.grafico-c .b { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; gap: 6px; min-width: 0; }
+.grafico-c .b i { display: block; background: var(--verde); border-radius: 5px 5px 2px 2px; }
+.grafico-c .b0 i { background: var(--areia-esc); }
+.grafico-c .bz i { background: var(--verde); opacity: .45; }
+.grafico-c .b span { font-family: var(--f-num); font-weight: 500; font-size: .6875rem; color: var(--cinza); text-align: center; line-height: 1; }
+.grafico-c .v-ini { position: absolute; left: 0; top: 0; font-size: .875rem; }
+.grafico-c .v-fim { position: absolute; right: 0; bottom: 34px; font-size: .875rem; color: var(--verde); }
+.conquistas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border-top: 1px solid var(--areia); }
+.conquistas li { display: grid; grid-template-columns: 64px 1fr; gap: 12px; padding-block: 10px; border-bottom: 1px solid var(--papel); font-size: .9375rem; line-height: 1.35; }
+.conquistas li .num { color: var(--verde); font-size: .8125rem; padding-top: 2px; }
+.conquistas li.fim { font-weight: 700; color: var(--verde); border-bottom: 0; }
+.juros-ano { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.juros-ano > div { background: var(--areia); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+.juros-ano .com { background: var(--respiro); }
+.juros-ano span { font-size: .8125rem; color: var(--cinza); line-height: 1.3; }
+.juros-ano b { font-size: 1.375rem; }
+.juros-ano > div:first-child b { color: var(--cinza); }
+.trajeto .nota { font-size: .8125rem; color: var(--cinza); }
+
+/* ---------- como funciona ---------- */
+.como { background: var(--areia); }
+.como .miolo { padding-block: 80px; display: grid; gap: 40px; }
+.etapas { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; counter-reset: e; }
+.etapas li { counter-increment: e; background: var(--papel); border-radius: 22px; padding: 24px 22px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.etapas li::before { content: counter(e); font-family: var(--f-marca); font-weight: 800; font-size: 2.6rem; line-height: 1; color: var(--verde); }
+.etapas h3 { font-size: 1.375rem; letter-spacing: -0.015em; }
+.etapas p { color: #2B3530; }
+.etapas .tempo { font-family: var(--f-num); font-weight: 600; font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--cinza); margin-top: auto; padding-top: 6px; }
+
+/* ---------- o que vem no plano ---------- */
+.plano .miolo { padding-block: 80px 64px; display: grid; gap: 34px; }
+.trilho { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(250px, 78%); gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 6px var(--gutter-r) 22px var(--gutter-l); margin-inline: calc(-1 * var(--gutter-l)) calc(-1 * var(--gutter-r)); scrollbar-width: thin; scrollbar-color: var(--areia-esc) transparent; }
+.trilho > figure { scroll-snap-align: start; margin: 0; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.pg { min-height: 330px; max-width: 100%; background: #F7F4EC; border-radius: 16px; box-shadow: var(--sombra), 0 0 0 1px rgba(22, 33, 28, .06); padding: 18px 16px; display: flex; flex-direction: column; gap: 9px; overflow: hidden; font-size: .75rem; line-height: 1.35; }
+.pg .sec { font-family: var(--f-num); font-weight: 600; font-size: .5625rem; letter-spacing: .12em; text-transform: uppercase; color: var(--verde); }
+.pg h4 { margin: 0; font-family: var(--f-marca); font-weight: 800; font-size: 1.05rem; line-height: 1.1; letter-spacing: -0.015em; text-wrap: balance; }
+.pg .card { background: var(--branco); border-radius: 9px; padding: 7px 9px; display: flex; flex-direction: column; gap: 2px; }
+.pg .card b { font-size: .75rem; }
+.pg .card small { color: var(--cinza); font-size: .6563rem; line-height: 1.3; }
+.pg .linha-o { display: flex; gap: 8px; align-items: flex-start; }
+.pg .pos { flex: none; width: 17px; height: 17px; border-radius: 50%; background: var(--tinta); color: var(--papel); font-family: var(--f-num); font-weight: 600; font-size: .5625rem; display: grid; place-items: center; }
+.pg .tres { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.pg .tres div { background: var(--branco); border-radius: 8px; padding: 6px 7px; display: flex; flex-direction: column; gap: 1px; }
+.pg .tres span { font-size: .5313rem; color: var(--cinza); font-weight: 600; }
+.pg .tres b { font-family: var(--f-num); font-weight: 600; font-size: .75rem; }
+.pg .barras { display: flex; align-items: flex-end; gap: 4px; height: 92px; padding-top: 6px; }
+.pg .barras i { flex: 1; background: var(--verde); border-radius: 3px 3px 1px 1px; }
+.pg .barras i:first-child { background: var(--areia-esc); }
+.pg .mes { background: var(--branco); border-radius: 9px; padding: 7px 9px; display: grid; grid-template-columns: 34px 1fr; gap: 6px; }
+.pg .mes .m { font-family: var(--f-num); font-weight: 600; font-size: .625rem; color: var(--verde); }
+.pg .mes p { font-size: .6563rem; }
+.pg .mes .marco { color: var(--verde); font-weight: 700; }
+.pg ol.roteiro { margin: 0; padding-left: 15px; display: flex; flex-direction: column; gap: 5px; font-size: .6563rem; }
+.pg .caixa { background: var(--respiro); border-radius: 9px; padding: 8px 9px; font-size: .6563rem; }
+.pg .tab { width: 100%; border-collapse: collapse; background: var(--branco); border-radius: 8px; overflow: hidden; font-size: .5938rem; }
+.pg .tab td { padding: 4px 6px; border-bottom: 1px solid var(--papel); }
+.pg .tab td:last-child { text-align: right; font-family: var(--f-num); font-weight: 600; white-space: nowrap; }
+.pg .tab tr:last-child td { background: var(--respiro); font-weight: 800; border-bottom: 0; }
+figcaption { display: flex; flex-direction: column; gap: 4px; padding-inline: 2px; }
+figcaption b { font-family: var(--f-marca); font-size: 1.125rem; letter-spacing: -0.01em; }
+figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
+.dica-trilho { font-size: .875rem; color: var(--cinza); }
+
+/* ---------- feito para ---------- */
+.vida { background: var(--respiro); }
+.vida .miolo { padding-block: 80px; display: grid; gap: 40px; }
+.grade { display: grid; gap: 1px; background: rgba(22, 112, 74, .22); border-radius: 22px; overflow: hidden; }
+.grade > div { background: var(--respiro); padding: 22px 20px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.grade h3 { font-size: 1.1875rem; letter-spacing: -0.01em; }
+.grade p { color: #24332B; font-size: 1rem; }
+
+/* ---------- nunca ---------- */
+.nunca .miolo { padding-block: 80px; display: grid; gap: 36px; }
+.lista-nunca { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-top: 2px solid var(--tinta); }
+.lista-nunca li { display: grid; grid-template-columns: 1fr; gap: 6px; padding-block: 20px; border-bottom: 1px solid var(--areia-esc); }
+.lista-nunca b { font-family: var(--f-marca); font-size: 1.375rem; letter-spacing: -0.015em; line-height: 1.2; }
+.lista-nunca span { color: #2B3530; }
+
+/* ---------- perguntas ---------- */
+.perguntas { background: var(--areia); }
+.perguntas .miolo { padding-block: 80px; display: grid; gap: 32px; }
+.faq { display: flex; flex-direction: column; gap: 10px; }
+.faq details { background: var(--papel); border-radius: 18px; padding: 0 20px; }
+.faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-block: 18px; font-family: var(--f-marca); font-weight: 700; font-size: 1.125rem; line-height: 1.3; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: ""; flex: none; width: 12px; height: 12px; border-right: 2.5px solid var(--verde); border-bottom: 2.5px solid var(--verde); transform: rotate(45deg) translate(-3px, -3px); transition: transform .2s; }
+.faq details[open] summary::after { transform: rotate(-135deg) translate(-3px, -3px); }
+.faq details p { padding-bottom: 20px; color: #2B3530; max-width: 44rem; }
+
+/* ---------- final ---------- */
+.final { background: var(--verde); color: var(--branco); overflow: hidden; }
+.final .miolo { padding-block: 88px 80px; display: flex; flex-direction: column; gap: 30px; align-items: flex-start; }
+.final .marca-grande { font-family: var(--f-marca); font-weight: 800; font-size: clamp(3.4rem, 17vw, 10.5rem); line-height: .9; color: var(--papel); white-space: nowrap; display: flex; max-width: 100%; }
+.marca-grande span { display: inline-block; transition: font-stretch 1.1s cubic-bezier(.2, .7, .1, 1), letter-spacing 1.1s cubic-bezier(.2, .7, .1, 1); }
+.marca-grande span:nth-child(1) { font-stretch: 62%; letter-spacing: -0.025em; transition-delay: 0s; }
+.marca-grande span:nth-child(2) { font-stretch: 69.9%; letter-spacing: -0.016em; transition-delay: .07s; }
+.marca-grande span:nth-child(3) { font-stretch: 77.8%; letter-spacing: -0.006em; transition-delay: .14s; }
+.marca-grande span:nth-child(4) { font-stretch: 85.6%; letter-spacing: .003em; transition-delay: .21s; }
+.marca-grande span:nth-child(5) { font-stretch: 93.5%; letter-spacing: .013em; transition-delay: .28s; }
+.marca-grande span:nth-child(6) { font-stretch: 101.4%; letter-spacing: .022em; transition-delay: .35s; }
+.marca-grande span:nth-child(7) { font-stretch: 109.3%; letter-spacing: .031em; transition-delay: .42s; }
+.marca-grande span:nth-child(8) { font-stretch: 117.1%; letter-spacing: .041em; transition-delay: .49s; }
+.marca-grande span:nth-child(9) { font-stretch: 125%; letter-spacing: .05em; transition-delay: .56s; }
+.marca-grande.aperta span { font-stretch: 62%; letter-spacing: -0.04em; }
+.final h2 { font-size: clamp(1.8rem, 6vw, 3rem); line-height: 1.05; letter-spacing: -0.025em; max-width: 30rem; }
+.final p { font-size: 1.125rem; color: #E2F0E7; max-width: 32rem; }
+.btn-claro { background: var(--papel); color: var(--tinta); }
+.btn-claro:hover { background: var(--branco); }
+.final :focus-visible { outline-color: var(--papel); }
+
+/* ---------- rodapé ---------- */
+.rodape { background: var(--tinta); color: #C9D0CB; font-size: .9375rem; }
+.rodape .miolo { padding-block: 48px; display: grid; gap: 28px; }
+.rodape .logo { height: 22px; color: var(--papel); }
+.rodape .logo svg { height: 100%; width: auto; display: block; }
+.rodape .cols { display: grid; gap: 22px; }
+.rodape h3 { font-family: var(--f-num); font-weight: 600; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: #8FA399; margin-bottom: 6px; }
+.rodape .copiar { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rodape .copiar button { font: inherit; font-size: .8125rem; font-weight: 600; color: var(--papel); background: transparent; border: 1px solid rgba(243, 239, 230, .3); border-radius: 99px; padding: 3px 11px; cursor: pointer; }
+.rodape .copiar button:hover { border-color: var(--papel); }
+.rodape .aviso { font-size: .8125rem; color: #9AA59F; border-top: 1px solid rgba(243, 239, 230, .12); padding-top: 22px; }
+.rodape b { color: var(--papel); }
+.rodape .aviso a { color: var(--papel); }
+
+/* ---------- telas maiores ---------- */
+@media (min-width: 760px) {
+  .abertura .miolo { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: center; padding-block: 64px 96px; gap: 56px; }
+  .capa-ex { justify-self: end; }
+  .reconhece .miolo { grid-template-columns: minmax(0, .35fr) minmax(0, 1fr); align-items: start; padding-block: 96px; }
+  .reconhece .virada { grid-column: 2; }
+  .caminho .miolo { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: center; padding-block: 104px; gap: 56px; }
+  .grafico-c { height: 230px; gap: 10px; }
+  .etapas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .trilho { grid-auto-columns: minmax(250px, 1fr); grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; margin-inline: 0; padding-inline: 0; gap: 34px 24px; }
+  .dica-trilho { display: none; }
+  .grade { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lista-nunca li { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 28px; align-items: baseline; }
+  .nunca .miolo { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); align-items: start; gap: 56px; }
+  .perguntas .miolo { grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr); align-items: start; gap: 56px; }
+  .rodape .cols { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1100px) {
+  .pg { font-size: .8125rem; padding: 22px 20px; gap: 11px; }
+  .pg h4 { font-size: 1.25rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .solta { animation: none; }
+  .marca-grande span { transition: none; }
+}
+</style>
+
+<header class="topo faixa" id="topo">
+  <div class="miolo">
+    <a class="logo" href="#inicio" aria-label="Desaperto, início">{{LOGO}}</a>
+    <a class="btn btn-principal btn-peq" href="comecar.html">Montar meu plano</a>
+  </div>
+</header>
+
+<main id="inicio">
+  <!-- abertura -->
+  <section class="abertura faixa">
+    <div class="miolo">
+      <div class="promessa">
+        <h1 class="solta">Descubra o mês em que você <em>sai das dívidas.</em></h1>
+        <p class="lead">Você conta quanto ganha, quanto gasta e quanto deve. O <b>Desaperto</b> faz as contas e te entrega um plano: <b>qual dívida pagar primeiro, quanto pagar em cada mês e o que falar com o banco.</b></p>
+        <div class="cta-linha">
+          <a class="btn btn-principal" href="comecar.html">Montar meu plano <span class="seta" aria-hidden="true">→</span></a>
+        </div>
+        <ul class="garantias" aria-label="Como funciona o questionário">
+          <li>Leva de 15 a 20 minutos</li>
+          <li>Dá para fazer pelo celular</li>
+          <li>Não pede CPF, senha nem extrato</li>
+        </ul>
+      </div>
+
+      <div class="capa-ex">
+        <div class="folha" role="img" aria-label="Exemplo da capa do plano: Ana sai das dívidas em julho de 2027, com três passos para a primeira semana.">
+          <span class="etiqueta">Exemplo</span>
+          <div class="f-topo">{{LOGO}}<span class="selo">Plano de desaperto</span></div>
+          <p class="olho">Ana, este é o seu caminho.</p>
+          <p class="data">Você sai das dívidas em <em>julho de 2027.</em></p>
+          <p class="sub">Se algum mês apertar, no máximo em novembro de 2027.</p>
+          <div class="bloco-n"><span>Depois de pagar as contas e as parcelas, sobram</span><b>R$ 57</b></div>
+          <ol class="passos-ex">
+            <li>Ponha em dia o empréstimo do app<small>Esta semana · 15 minutos</small></li>
+            <li>Baixe o limite do cartão para R$ 1.000<small>Hoje · 5 minutos</small></li>
+            <li>Parcele o que ficou sem pagar da fatura<small>Hoje · 10 minutos</small></li>
+          </ol>
+        </div>
+        <p class="legenda">Exemplo de plano. O seu é feito com os seus números.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- reconhecer -->
+  <section class="reconhece faixa" aria-labelledby="t-reconhece">
+    <div class="miolo">
+      <p class="rotulo" id="t-reconhece">Se alguma dessas é sua</p>
+      <ul class="frases">
+        <li>Você recebe o salário e em três dias ele já foi.</li>
+        <li>Paga a fatura do cartão e a do mês seguinte já vem maior.</li>
+        <li>Acorda para trabalhar e sente que vive só para pagar dívida.</li>
+        <li>Pegou um empréstimo para pagar outro.</li>
+        <li>O celular toca e vem a angústia: é mais uma cobrança?</li>
+        <li>Tem vergonha de olhar para a própria vida financeira.</li>
+        <li>Sente que a vida está parada até as dívidas acabarem.</li>
+        <li>Não consegue ver um caminho em que tudo esteja quitado.</li>
+      </ul>
+      <p class="virada">Não é falta de esforço. São os juros, que crescem em cima dos juros. <b>Quando você sabe qual dívida pagar primeiro, o aperto começa a soltar.</b></p>
+    </div>
+  </section>
+
+  <!-- o caminho -->
+  <section class="caminho faixa" aria-labelledby="t-caminho">
+    <div class="miolo">
+      <div class="cab">
+        <p class="rotulo">Um exemplo</p>
+        <h2 id="t-caminho">Do jeito que está, não tem fim. Com um plano, tem data.</h2>
+        <p>A Ana ganha R$ 2.900 e deve R$ 8.122 no cartão, no cheque especial e em dois empréstimos. Ela não ganhou mais nem cortou tudo. Só passou a pagar as dívidas na ordem certa.</p>
+      </div>
+      <div class="trajeto">
+        <p class="tr-topo">Quanto a Ana deve em cada mês</p>
+        <div class="grafico-c" role="img" aria-label="A dívida da Ana cai de 8.122 reais hoje para zero em julho de 2027.">
+          <b class="v-ini num">R$ 8.122</b>
+          <div class="b b0"><i style="height:100.0%"></i><span>hoje</span></div><div class="b"><i style="height:78.4%"></i><span>nov</span></div><div class="b"><i style="height:55.7%"></i><span>dez</span></div><div class="b"><i style="height:47.2%"></i><span>jan</span></div><div class="b"><i style="height:39.0%"></i><span>fev</span></div><div class="b"><i style="height:30.3%"></i><span>mar</span></div><div class="b"><i style="height:23.8%"></i><span>abr</span></div><div class="b"><i style="height:13.5%"></i><span>mai</span></div><div class="b"><i style="height:2.8%"></i><span>jun</span></div><div class="b bz"><i style="height:1.5%"></i><span>jul</span></div>
+          <b class="v-fim num">R$ 0</b>
+        </div>
+        <ol class="conquistas">
+          <li><span class="num">nov/26</span>Paga o empréstimo atrasado. O nome não vai para o Serasa.</li>
+          <li><span class="num">dez/26</span>Usa o 13º e termina de pagar o cartão.</li>
+          <li><span class="num">mar/27</span>Sai do cheque especial. Acabam os juros mais caros.</li>
+          <li><span class="num">abr/27</span>Já tem um dinheiro guardado para emergências.</li>
+          <li class="fim"><span class="num">jul/27</span>Última dívida paga.</li>
+        </ol>
+        <div class="juros-ano">
+          <div><span>Juros em 1 ano, se nada mudar</span><b class="num">R$ 6.187</b></div>
+          <div class="com"><span>Com o plano</span><b class="num">R$ 1.596</b></div>
+        </div>
+        <p class="nota">São R$ 4.591 que ficam no bolso da Ana. A Ana não existe, mas as contas foram feitas do mesmo jeito que as do seu plano.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- como funciona -->
+  <section class="como faixa" aria-labelledby="t-como">
+    <div class="miolo">
+      <div class="cab">
+        <p class="rotulo">Como funciona</p>
+        <h2 id="t-como">Você responde. A gente faz as contas. O plano chega.</h2>
+      </div>
+      <ol class="etapas">
+        <li>
+          <h3>Você conta como está</h3>
+          <p>Quanto você recebe, quanto gasta com casa, mercado e contas, e o que deve. Deixe o app do banco aberto: quase tudo está lá.</p>
+          <span class="tempo">15 a 20 minutos</span>
+        </li>
+        <li>
+          <h3>O Desaperto faz as contas</h3>
+          <p>Descobre qual dívida custa mais caro e deve ser paga primeiro, quanto sobra no seu mês e quando cada dívida termina.</p>
+          <span class="tempo">Com os seus números</span>
+        </li>
+        <li>
+          <h3>O plano chega no seu e-mail</h3>
+          <p>Um arquivo fácil de ler no celular, com a data em que você sai das dívidas e o que fazer em cada mês.</p>
+          <span class="tempo">Em até 3 dias úteis</span>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- o plano -->
+  <section class="plano faixa" aria-labelledby="t-plano">
+    <div class="miolo">
+      <div class="cab">
+        <p class="rotulo">O que vem no plano</p>
+        <h2 id="t-plano">Um caminho que você consegue seguir.</h2>
+        <p>Nada de dica pronta. Tudo é feito com as suas respostas. Veja páginas de um plano de exemplo.</p>
+      </div>
+      <div class="trilho" tabindex="0" aria-label="Páginas de um plano de exemplo">
+        <figure>
+          <div class="pg" aria-hidden="true">
+            <p class="sec">Sua primeira semana</p>
+            <h4>Três passos para esta semana.</h4>
+            <div class="card"><b>Ponha em dia o empréstimo do app</b><small>Pague as 2 parcelas atrasadas, R$ 610, e a deste mês. Assim seu nome não vai para o Serasa.</small></div>
+            <div class="card"><b>Baixe o limite do cartão</b><small>De R$ 2.500 para R$ 1.000, perto do que você gasta no mês.</small></div>
+            <div class="card"><b>Parcele o que ficou da fatura</b><small>Os juros caem e a dívida vira 12 parcelas de R$ 265.</small></div>
+          </div>
+          <figcaption><b>A primeira semana</b><span>Três coisas simples para fazer já, com o tempo que cada uma leva.</span></figcaption>
+        </figure>
+        <figure>
+          <div class="pg" aria-hidden="true">
+            <p class="sec">A ordem</p>
+            <h4>Uma dívida de cada vez.</h4>
+            <div class="linha-o"><span class="pos">1</span><div class="card" style="flex:1"><b>Cartão · fatura parcelada</b><small>8,4% ao mês. É a mais cara.</small></div></div>
+            <div class="linha-o"><span class="pos">2</span><div class="card" style="flex:1"><b>Cheque especial</b><small>7,9% ao mês. Quase o máximo permitido.</small></div></div>
+            <div class="linha-o"><span class="pos">3</span><div class="card" style="flex:1"><b>Empréstimo do app</b><small>6,9% ao mês. Vem depois.</small></div></div>
+            <div class="linha-o"><span class="pos">4</span><div class="card" style="flex:1"><b>Empréstimo pessoal</b><small>3,8% ao mês. Fica por último.</small></div></div>
+          </div>
+          <figcaption><b>A ordem certa</b><span>Qual dívida pagar primeiro e por quê. Quando uma acaba, o dinheiro dela vai para a próxima.</span></figcaption>
+        </figure>
+        <figure>
+          <div class="pg" aria-hidden="true">
+            <p class="sec">O caminho, mês a mês</p>
+            <h4>O que pagar, quanto e onde.</h4>
+            <div class="barras"><i style="height:100%"></i><i style="height:82%"></i><i style="height:66%"></i><i style="height:58%"></i><i style="height:47%"></i><i style="height:38%"></i><i style="height:28%"></i><i style="height:14%"></i><i style="height:4%"></i></div>
+            <div class="mes"><span class="m">dez/26</span><p>Com o 13º, pague R$ 1.013 a mais no cartão.<br><span class="marco">Conquista: cartão pago.</span></p></div>
+            <div class="mes"><span class="m">mar/27</span><p>Deposite R$ 120 e saia do cheque especial.<br><span class="marco">Conquista: fim dos juros mais caros.</span></p></div>
+          </div>
+          <figcaption><b>Mês a mês</b><span>Quanto pagar em cada dívida, em cada mês. O 13º e as férias também entram na conta.</span></figcaption>
+        </figure>
+        <figure>
+          <div class="pg" aria-hidden="true">
+            <p class="sec">Negociação</p>
+            <h4>Acordo da Loja Lar: o roteiro.</h4>
+            <div class="tres"><div><span>Cobrado hoje</span><b>R$ 4.800</b></div><div><span>Você oferece</span><b>R$ 1.440</b></div><div><span>Aceita até</span><b>R$ 2.000</b></div></div>
+            <ol class="roteiro">
+              <li><b>Quando:</b> em maio de 2027, quando tiver o dinheiro.</li>
+              <li><b>O que dizer:</b> "Tenho R$ 1.440 para pagar à vista hoje. Consegue fechar nesse valor?"</li>
+              <li><b>Antes de pagar:</b> peça o acordo por escrito.</li>
+            </ol>
+          </div>
+          <figcaption><b>Como negociar a dívida atrasada</b><span>Quanto oferecer, até quanto aceitar e o que falar. Dívida antiga costuma ter desconto grande.</span></figcaption>
+        </figure>
+        <figure>
+          <div class="pg" aria-hidden="true">
+            <p class="sec">Direitos que quase ninguém usa</p>
+            <h4>O que a lei já garante a você.</h4>
+            <div class="card"><b>Desconto ao adiantar parcelas</b><small>Pagou antes, paga menos juros. É lei.</small></div>
+            <div class="card"><b>Cheque especial tem teto</b><small>Os juros não podem passar de 8% ao mês.</small></div>
+            <div class="card"><b>Nome limpo em até 5 dias úteis</b><small>Pagou o acordo, a empresa tem que tirar seu nome do Serasa.</small></div>
+            <div class="card"><b>Receber o salário em outro banco</b><small>De graça e sem pedir nada para a empresa.</small></div>
+          </div>
+          <figcaption><b>Seus direitos</b><span>Só os que servem para o seu caso, explicados de um jeito simples.</span></figcaption>
+        </figure>
+        <figure>
+          <div class="pg" aria-hidden="true">
+            <p class="sec">Se a conta não fecha</p>
+            <h4>Uma proposta só para todas as dívidas.</h4>
+            <table class="tab"><tbody><tr><td>Banco Verde</td><td>R$ 453</td></tr><tr><td>CrediJá</td><td>R$ 92</td></tr><tr><td>Loja Bela</td><td>R$ 38</td></tr><tr><td>Proposta por mês</td><td>R$ 583</td></tr></tbody></table>
+            <div class="caixa"><b>Existe uma lei para isso.</b> O plano monta a proposta e os papéis para você levar ao Procon ou à Defensoria Pública. É de graça.</div>
+          </div>
+          <figcaption><b>Quando o salário não dá para tudo</b><span>Primeiro vêm casa, comida e contas. Depois, o plano mostra como renegociar todas as dívidas juntas.</span></figcaption>
+        </figure>
+      </div>
+      <p class="dica-trilho">Arraste para o lado para ver as outras páginas.</p>
+    </div>
+  </section>
+
+  <!-- feito para -->
+  <section class="vida faixa" aria-labelledby="t-vida">
+    <div class="miolo">
+      <div class="cab">
+        <p class="rotulo">Feito para quem vive de salário</p>
+        <h2 id="t-vida">Ele entende a sua realidade.</h2>
+      </div>
+      <div class="grade">
+        <div><h3>"Tenho medo de falar com o banco."</h3><p>O plano te dá o valor para oferecer e a frase pronta. Você chega na conversa sabendo o que dizer.</p></div>
+        <div><h3>"Vou receber 13º ou férias."</h3><p>O plano mostra em qual dívida usar esse dinheiro para ele render mais.</p></div>
+        <div><h3>"Recebo vale-alimentação."</h3><p>O mercado já é pago pelo vale. O plano não pede para cortar o que não sai do seu bolso.</p></div>
+        <div><h3>"Meu cartão virou uma bola de neve."</h3><p>O plano separa a fatura, o que foi parcelado e as compras em várias vezes, e mostra quanto você deve de verdade.</p></div>
+        <div><h3>"Estou com o nome sujo."</h3><p>O plano diz quanto oferecer para quitar e até quanto vale aceitar.</p></div>
+        <div><h3>"Tem gasto que não dá para cortar."</h3><p>Você escolhe o que não pode mexer, como aluguel ou remédio. O plano respeita.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- nunca -->
+  <section class="nunca faixa" aria-labelledby="t-nunca">
+    <div class="miolo">
+      <div class="cab">
+        <p class="rotulo">Pode confiar</p>
+        <h2 id="t-nunca">O que o Desaperto nunca faz.</h2>
+      </div>
+      <ul class="lista-nunca">
+        <li><b>Pedir CPF, senha ou extrato.</b><span>Você informa só os valores. Ninguém entra na sua conta.</span></li>
+        <li><b>Emprestar dinheiro.</b><span>O Desaperto não é banco, não indica banco e não oferece empréstimo.</span></li>
+        <li><b>Cobrar para "limpar seu nome".</b><span>Isso é golpe. O plano mostra onde negociar de forma segura e o que é de graça.</span></li>
+        <li><b>Guardar suas respostas para sempre.</b><span>Elas são apagadas em até 90 dias depois que o plano chega.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- perguntas -->
+  <section class="perguntas faixa" aria-labelledby="t-perg">
+    <div class="miolo">
+      <div class="cab">
+        <p class="rotulo">Perguntas</p>
+        <h2 id="t-perg">Antes de começar.</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Preciso saber os valores exatos?</summary>
+          <p>Quanto mais certo o valor, mais certa a data. Quase tudo está no app do banco. Se não achar algum valor, marque "não encontrei". O plano faz uma conta aproximada e avisa onde fez isso.</p>
+        </details>
+        <details>
+          <summary>Meu nome já está sujo. Ainda serve?</summary>
+          <p>Serve, e ajuda muito. Dívida antiga costuma ter desconto grande. O plano diz quanto oferecer, até quanto aceitar e quando você vai ter o dinheiro.</p>
+        </details>
+        <details>
+          <summary>E se o salário não der para tudo?</summary>
+          <p>O plano mostra isso com clareza. Primeiro garante casa, comida e contas. Depois mostra a saída: vender um bem, quando vale a pena, ou renegociar todas as dívidas juntas por uma lei feita para isso. Ele já monta a proposta e os papéis.</p>
+        </details>
+        <details>
+          <summary>Vou ter que pegar outro empréstimo?</summary>
+          <p>Não. O plano usa o que você já tem: o que sobra no mês, o 13º, as férias e o que você guardou.</p>
+        </details>
+        <details>
+          <summary>Alguém vai me ligar ou o banco vai saber?</summary>
+          <p>Não. O Desaperto não fala com bancos nem com cobradores, e você não informa CPF. Você decide com quem falar e quando, com o plano na mão.</p>
+        </details>
+        <details>
+          <summary>Isso é um consultor financeiro?</summary>
+          <p>Não. O Desaperto faz as contas com o que você informa e mostra um caminho. A decisão é sempre sua.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- final -->
+  <section class="final faixa" aria-labelledby="t-final">
+    <div class="miolo">
+      <p class="marca-grande" id="marca-grande" aria-label="desaperto"><span>d</span><span>e</span><span>s</span><span>a</span><span>p</span><span>e</span><span>r</span><span>t</span><span>o</span></p>
+      <h2 id="t-final">O primeiro desaperto é olhar para ela.</h2>
+      <p>Separe 20 minutos e abra o app do banco. Em até 3 dias úteis, o plano chega no seu e-mail.</p>
+      <a class="btn btn-claro" href="comecar.html">Montar meu plano <span class="seta" aria-hidden="true">→</span></a>
+    </div>
+  </section>
+</main>
+
+<footer class="rodape faixa">
+  <div class="miolo">
+    <span class="logo" aria-label="desaperto">{{LOGO}}</span>
+    <div class="cols">
+      <div>
+        <h3>Contato</h3>
+        <span class="copiar"><span id="email-contato">contato@desaperto.com</span><button type="button" id="btn-copiar">Copiar</button></span>
+      </div>
+      <div>
+        <h3>Se o peso estiver grande</h3>
+        <p>Você não precisa carregar isso sem ajuda. <b>CVV, ligue 188</b>, 24 horas, gratuito.</p>
+      </div>
+      <div>
+        <h3>Cuidado com golpes</h3>
+        <p>O Desaperto nunca pede senha, nunca manda boleto e nunca cobra para limpar nome.</p>
+      </div>
+    </div>
+    <p class="aviso">O Desaperto ajuda você a organizar as dívidas. Ele não é consultoria financeira, não indica bancos nem empréstimos e não garante desconto. As pessoas e os valores dos exemplos são inventados. © 2026 Desaperto. <a href="/termos">Termos de uso</a> · <a href="/privacidade">Privacidade</a></p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var topo = document.getElementById('topo');
+  function aoRolar() { topo.classList.toggle('rolou', window.scrollY > 8); }
+  window.addEventListener('scroll', aoRolar, { passive: true }); aoRolar();
+
+  // A marca grande nasce apertada e se solta quando aparece na tela. Sem suporte ou com movimento reduzido, fica na forma final.
+  var marca = document.getElementById('marca-grande');
+  var calmo = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (marca && 'IntersectionObserver' in window && !calmo) {
+    marca.classList.add('aperta');
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { marca.classList.remove('aperta'); io.disconnect(); } });
+    }, { threshold: 0.35 });
+    io.observe(marca);
+    setTimeout(function () { marca.classList.remove('aperta'); }, 12000);
+  }
+
+  var btn = document.getElementById('btn-copiar');
+  btn.addEventListener('click', function () {
+    var txt = document.getElementById('email-contato').textContent;
+    function selecionar() { var r = document.createRange(); r.selectNodeContents(document.getElementById('email-contato')); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Selecionado'; }
+    try {
+      navigator.clipboard.writeText(txt).then(function () { btn.textContent = 'Copiado'; setTimeout(function () { btn.textContent = 'Copiar'; }, 1800); }, selecionar);
+    } catch (e) { selecionar(); }
+  });
+})();
+</script>

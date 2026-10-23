@@ -9,7 +9,7 @@ Site do Desaperto, publicado pela Cloudflare Pages a partir deste repositório.
 - `lib/api.js`: funções comuns (validação, limite de envios, limpeza de 90 dias, e-mail opcional).
 - `schema.sql`: a tabela do banco. Rodar uma vez no console do D1.
 - `src/`: termos, privacidade, área interna e o estilo dessas páginas.
-- As fontes da página inicial e do questionário ficam em `../site/` no projeto completo; `build.py` junta tudo.
+- Para mudar o site: edite os arquivos de `src/`, rode `python3 build.py` e envie as mudanças (inclusive `public/`).
 
 ## Configuração na Cloudflare (uma vez)
 1. Workers & Pages → Create → Pages → Connect to Git → este repositório.

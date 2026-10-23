@@ -1,16 +1,17 @@
 """Monta a pasta public/ que a Cloudflare publica.
 
-Fontes:
-  ../site/index.src.html   página inicial
-  ../site/comecar.html     questionário
-  src/*.html               termos, privacidade, área interna
+Fontes (tudo em src/):
+  index.src.html   página inicial
+  comecar.html     questionário
+  logo.svg         logo
+  termos.html, privacidade.html, admin.html, legal.css
 Rodar: python3 build.py
 """
 import os, re, shutil, json
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
-SITE = os.path.join(AQUI, '..', 'site')
-LOGO_SVG = os.path.join(AQUI, '..', 'logo', 'desaperto-logo.svg')
+SITE = os.path.join(AQUI, 'src')
+LOGO_SVG = os.path.join(AQUI, 'src', 'logo.svg')
 PUB = os.path.join(AQUI, 'public')
 URL = 'https://desaperto.com'
 
