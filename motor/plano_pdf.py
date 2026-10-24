@@ -533,7 +533,7 @@ def montar(r, textos, inicio=(2026, 11)):
         if saida_t and t == saida_t and not cenario:
             vitoria = ('Mês do desaperto.', 'A última dívida da lista acaba aqui. A partir de agora, o seu salário volta a ser seu.')
         elif t == primeira_t and n_div > 1 and t != saida_t:
-            vitoria = ('Primeira dívida paga.', 'É a prova de que o plano funciona. Daqui em diante, cada uma acaba mais rápido que a anterior.')
+            vitoria = ('Primeira dívida paga.', 'É a prova de que o plano funciona. Agora é repetir o que deu certo, uma de cada vez.')
         elif t == metade_t:
             vitoria = ('Metade do caminho.', f'Você já tirou {brl(res["T"] - m["saldo_total"])} das costas. Falta menos do que você já pagou.')
         return {'m': m, 'de': de, 'subiu': subiu, 'acoes': acoes_m, 'marcos': marcos_m, 'vitoria': vitoria,
