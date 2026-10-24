@@ -488,7 +488,7 @@ def rodar(r, inicio, _cenario=False):
         para_reserva = 0.0
         if sobra < 0:
             meses.append({'ano': ano, 'mes': mes, 'entra': entra, 'sobra': sobra, 'pagamentos': pagamentos, 'alvo': None, 'extra': 0,
-                          'colchao': colchao, 'saldo_total': sum(d['saldo_sim'] for d in ativos if d['sub'] != 'futuro'), 'juros': juros_mes, 'deficit': True})
+                          'colchao': colchao, 'saldos': {d['nome']: d['saldo_sim'] for d in ativos}, 'saldo_total': sum(d['saldo_sim'] for d in ativos if d['sub'] != 'futuro'), 'juros': juros_mes, 'deficit': True})
         else:
             restante = sobra
             # colchão: depois que o juro explosivo zerar; antes disso, 20% se estancar demorar
@@ -540,7 +540,7 @@ def rodar(r, inicio, _cenario=False):
                 colchao += restante
                 para_reserva += restante
             meses.append({'ano': ano, 'mes': mes, 'entra': entra, 'sobra': sobra, 'pagamentos': pagamentos, 'alvo': alvo_nome, 'extra': extra_pago,
-                          'extras': extras_mes, 'para_reserva': para_reserva, 'do_guardado': do_guardado, 'extras_entrada': extras_entrada, 'colchao': colchao, 'saldo_total': sum(d['saldo_sim'] for d in ativos if d['sub'] != 'futuro'), 'juros': juros_mes, 'deficit': False})
+                          'extras': extras_mes, 'para_reserva': para_reserva, 'do_guardado': do_guardado, 'extras_entrada': extras_entrada, 'colchao': colchao, 'saldos': {d['nome']: d['saldo_sim'] for d in ativos}, 'saldo_total': sum(d['saldo_sim'] for d in ativos if d['sub'] != 'futuro'), 'juros': juros_mes, 'deficit': False})
         if explosivo_zerado is None and tinha_explosivo and not [d for d in fila if d['banda'] == 'P1' and not d.get('grupo_atraso') and not d['quitada_em']]:
             explosivo_zerado = (ano, mes)
             marcos.append(((ano, mes), 'Juro explosivo zerado'))

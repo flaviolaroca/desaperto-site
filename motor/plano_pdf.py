@@ -43,6 +43,34 @@ def nome_exibicao(d):
     return curtos.get(d['tipo'], d['tipo']), d['credor'].replace(' · parcelado', '')
 
 
+def objeto(d):
+    """Nome da dívida com artigo, para frases como 'antecipe parcelas do empréstimo'."""
+    sub, tipo = d['sub'], d['tipo']
+    if sub == 'parcelamento_formal': return 'a fatura parcelada do cartão'
+    if sub == 'parcelamento': return 'o parcelamento antigo do cartão'
+    if sub == 'futuro': return 'as compras parceladas do cartão'
+    if sub == 'rotativo': return 'a fatura do cartão'
+    if sub == 'cheque': return 'o cheque especial'
+    fixos = {'Empréstimo em app ou financeira': 'o empréstimo', 'Empréstimo pessoal no banco': 'o empréstimo pessoal',
+             'Impostos (DAS do MEI, IR, IPVA)': 'o imposto parcelado', 'Conta atrasada (luz, água, gás, aluguel, condomínio)': 'a conta atrasada',
+             'Crediário ou carnê de loja': 'o crediário', 'Pensão alimentícia atrasada': 'a pensão atrasada', 'Dívida com parente ou conhecido': 'a dívida',
+             'Financiamento de veículo': 'o financiamento do veículo', 'Financiamento de imóvel': 'o financiamento do imóvel'}
+    return fixos.get(tipo, 'o ' + nome_exibicao(d)[0].lower())
+
+
+def de_(obj):
+    """'o empréstimo' -> 'do empréstimo'; 'a conta' -> 'da conta'."""
+    art, resto = obj.split(' ', 1)
+    return {'o': 'do', 'a': 'da', 'os': 'dos', 'as': 'das'}[art] + ' ' + resto
+
+
+def tem_app(d):
+    if d['tipo'] in ('Impostos (DAS do MEI, IR, IPVA)', 'Crediário ou carnê de loja', 'Dívida com parente ou conhecido', 'Pensão alimentícia atrasada',
+                     'Conta atrasada (luz, água, gás, aluguel, condomínio)'): return False
+    return d['sub'] in ('parcelamento_formal', 'parcelamento', 'rotativo', 'parcelada', 'em_atraso', 'cheque') or d['tipo'] in (
+        'Empréstimo em app ou financeira', 'Empréstimo pessoal no banco', 'Financiamento de veículo', 'Financiamento de imóvel') or 'consign' in d['tipo'].lower()
+
+
 def paginas_repactuacao(rep, res, r, e, T, nome_ex, inicio):
     pags = []
     # O que proteger
@@ -349,81 +377,136 @@ def montar(r, textos, inicio=(2026, 11)):
         else:
             d = next(d for d in plano if t == d['nome'] + ' quitada')
             tt, cc = nome_exibicao(d)
-            texto = f'{nome_exibicao({**d, "sub": "parcelada"})[0]} {cc} em dia' if d['sub'] == 'em_atraso' else f'{tt} {cc} quitado'
+            texto = f'{nome_exibicao({**d, "sub": "parcelada"})[0]} {cc} em dia' if d['sub'] == 'em_atraso' else (lambda o: f'{o.split(" ",1)[1][0].upper()}{o.split(" ",1)[1][1:]} {cc} ' + {'o': 'quitado', 'a': 'quitada', 'os': 'quitados', 'as': 'quitadas'}[o.split(" ",1)[0]])(objeto(d))
         marcos_txt.append(f'<li><span>{mes_curto((a, m))}</span>{e(texto)}</li>')
         marcos_mes.setdefault((a, m), []).append(texto)
     grafico_html = f'<svg class="grafico" viewBox="0 0 {W} {H}" role="img" aria-label="Dívida total caindo de {brl(res['T'])} hoje{(' até zero em ' + mes_longo(res['saida'])) if res['saida'] else ''}">{"".join(barras)}</svg>'
 
     # 6b. Mês a mês: o que pagar
+    def mes_ant(m):
+        return (m['ano'], m['mes'] - 1) if m['mes'] > 1 else (m['ano'] - 1, 12)
+
+    foco_visto = set()
+    ultimo_mes = res['meses'][-1] if res['meses'] else None
+
     def linha_mes(m):
-        partes = []
+        """Devolve (rótulo, linhas de 'de onde vem', ações) — cada ação é (texto fixo, nome da dívida ou None)."""
+        de = []
         sobra_mes = m['sobra'] - m.get('do_guardado', 0) - sum(v for _, v in m.get('extras_entrada', []))
-        if sobra_mes > 0.5: partes.append(f'sobra do mês {brl(sobra_mes)}')
-        if m.get('do_guardado'): partes.append(f'{brl(m["do_guardado"])} do dinheiro guardado')
-        for nome_x, v in m.get('extras_entrada', []): partes.append(f'{e(nome_x)} {brl(v)}')
+        if sobra_mes > 0.5: de.append(f'sobra do salário {brl(sobra_mes)}')
+        if m.get('do_guardado'): de.append(f'{brl(m["do_guardado"])} do dinheiro guardado')
+        for nome_x, v in m.get('extras_entrada', []): de.append(f'{e(nome_x)} {brl(v)}')
+        # o dinheiro que sobra cresce quando uma dívida acaba: a parcela dela passa a trabalhar nas outras
+        liberadas = [x for x in plano if x.get('quitada_em') == mes_ant(m) and x.get('caixa') and (x.get('parcela') or 0) > 0.5
+                     and x['sub'] in ('parcelada', 'parcelamento', 'parcelamento_formal')]
+        subiu = ''
+        if liberadas and not m.get('deficit'):
+            nomes = ' e '.join(f'{brl(x["parcela"])} do {e(nome_exibicao(x)[1])}' for x in liberadas)
+            if len(liberadas) == 1:
+                subiu = f'O valor subiu: a parcela de {nomes} acabou, e esse dinheiro agora vai para a próxima dívida.'
+            else:
+                subiu = f'O valor subiu: as parcelas de {nomes} acabaram, e esse dinheiro agora vai para a próxima dívida.'
         acoes_m = []
         if sobra_mes < -0.5:
             fonte = (f'o {e(m["extras_entrada"][0][0])}' if m.get('extras_entrada') else 'o dinheiro guardado' if m.get('do_guardado') else 'cortes no que não for essencial')
-            acoes_m.append(f'As contas e as parcelas passam do salário em <b>{brl(-sobra_mes)}</b>: cubra com {fonte}')
+            acoes_m.append((f'As contas e as parcelas passam do salário em <b>{brl(-sobra_mes)}</b>: cubra com {fonte}', None))
         for nome_d, v in m.get('extras', {}).items():
             if v < 1: continue
             d = next(x for x in plano if x['nome'] == nome_d)
             t_, c_ = nome_exibicao(d)
+            fecha = d.get('quitada_em') == (m['ano'], m['mes'])
             if d['sub'] == 'atrasada':
-                fecha = d.get('quitada_em') == (m['ano'], m['mes'])
                 if d.get('acordo_oferta'):
-                    acoes_m.append(f'Feche o acordo do {e(c_)} e pague <b>{brl(d["acordo_oferta"])}</b> de uma vez' if fecha else f'Separe <b>{brl(v)}</b> para o acordo do {e(c_)}')
+                    acoes_m.append((f'Feche o acordo do {e(c_)} e pague <b>{brl(d["acordo_oferta"])}</b> de uma vez' if fecha else f'Separe <b>{brl(v)}</b> para o acordo do {e(c_)}, numa conta onde você não mexa', None if fecha else nome_d))
                 else:
-                    acoes_m.append(f'Quite o {e(t_.lower())} {e(c_)}: pague os <b>{brl(d["saldo"])}</b> cobrados. Peça antes o valor atualizado' if fecha else f'Separe <b>{brl(v)}</b> para quitar o {e(t_.lower())} {e(c_)}')
+                    acoes_m.append((f'Quite o {e(t_.lower())} {e(c_)}: pague os <b>{brl(d["saldo"])}</b> cobrados. Peça antes o valor atualizado' if fecha else f'Separe <b>{brl(v)}</b> para quitar o {e(t_.lower())} {e(c_)}', None))
             elif d['sub'] == 'outros':
-                if d.get('quitada_em') == (m['ano'], m['mes']):
-                    acoes_m.append(f'Pague {"o que falta da" if v < d["saldo"] - 0.5 else "a"} {e(t_.lower())} {e(c_)}: <b>{brl(v)}</b>')
-                else:
-                    acoes_m.append(f'Pague <b>{brl(v)}</b> da {e(t_.lower())} {e(c_)}')
+                acoes_m.append((f'Pague {"o que falta da" if v < d["saldo"] - 0.5 else "a"} {e(t_.lower())} {e(c_)}: <b>{brl(v)}</b>' if fecha else f'Pague <b>{brl(v)}</b> da {e(t_.lower())} {e(c_)}', None))
             elif d['sub'] == 'em_atraso':
                 t0 = nome_exibicao({**d, 'sub': 'parcelada'})[0].lower()
-                if d.get('quitada_em') == (m['ano'], m['mes']) and v >= d['saldo'] - 0.5:
-                    acoes_m.append(f'Ponha em dia o {e(t0)} {e(c_)}: pague as {d["qtd_atr"]} parcelas atrasadas, <b>{brl(v)}</b>, além da parcela do mês')
-                elif d.get('quitada_em') == (m['ano'], m['mes']):
-                    acoes_m.append(f'Pague o resto das parcelas atrasadas do {e(t0)} {e(c_)}, <b>{brl(v)}</b>. Ele fica em dia')
+                if fecha and v >= d['saldo'] - 0.5:
+                    acoes_m.append((f'Ponha em dia o {e(t0)} {e(c_)}: pague as {d["qtd_atr"]} parcelas atrasadas, <b>{brl(v)}</b>, além da parcela do mês', None))
+                elif fecha:
+                    acoes_m.append((f'Pague o resto das parcelas atrasadas do {e(t0)} {e(c_)}, <b>{brl(v)}</b>. Ele fica em dia', None))
                 else:
-                    acoes_m.append(f'Pague <b>{brl(v)}</b> das parcelas atrasadas do {e(t0)} {e(c_)}, começando pela mais antiga')
+                    acoes_m.append((f'Pague <b>{brl(v)}</b> das parcelas atrasadas do {e(t0)} {e(c_)}, começando pela mais antiga', None))
             elif d['sub'] == 'cheque':
-                acoes_m.append(f'Cubra o cheque especial {e(c_)}: deposite <b>{brl(v)}</b> para a conta sair do negativo' if d.get('quitada_em') == (m['ano'], m['mes']) else f'Diminua o cheque especial {e(c_)} em <b>{brl(v)}</b>')
-            elif d.get('quitada_em') == (m['ano'], m['mes']):
-                acoes_m.append(f'Quite o {e(t_.lower())} {e(c_)}: pague <b>{brl(v)}</b> além da parcela. Peça antes o valor exato para quitar')
+                acoes_m.append((f'Deposite <b>{brl(v)}</b> na conta do {e(c_)} e saia do cheque especial. Depois, peça para reduzir o limite dele' if fecha else f'Deposite <b>{brl(v)}</b> na conta do {e(c_)} para diminuir o cheque especial', None if fecha else nome_d))
+            elif fecha:
+                onde = 'no app ou no chat' if tem_app(d) else 'no atendimento'
+                acoes_m.append((f'Quite {e(objeto(d))} {e(c_)}: além da parcela, pague <b>{brl(v)}</b>. Antes, peça {onde} o valor exato para quitar hoje', None))
+            elif tem_app(d):
+                acoes_m.append((f'No app do {e(c_)}, antecipe <b>{brl(v)}</b> em parcelas {e(de_(objeto(d)))}, sempre as últimas', nome_d))
+            elif d['tipo'] == 'Impostos (DAS do MEI, IR, IPVA)':
+                acoes_m.append((f'Use <b>{brl(v)}</b> para adiantar {e(objeto(d))}, {e(c_)}: pague as últimas parcelas antes. Se o site não deixar, pergunte no atendimento como fazer', nome_d))
+            elif d['tipo'] == 'Dívida com parente ou conhecido':
+                acoes_m.append((f'Pague <b>{brl(v)}</b> a mais para {e(c_)}, além do combinado. Avise que é para encurtar o prazo', nome_d))
             else:
-                acoes_m.append(f'Adiante <b>{brl(v)}</b> no {e(t_.lower())} {e(c_)}')
+                acoes_m.append((f'Pague <b>{brl(v)}</b> a mais n{e(objeto(d))} {e(c_)}. Peça no atendimento para descontar das últimas parcelas', nome_d))
         res_tot = (min(r.get('guardado') or 0, res['meta_colchao']) if m is res['meses'][0] else 0) + m.get('para_reserva', 0)
         if res_tot > 0.5:
             if cenario and m is res['meses'][0] and res_tot > 2 * res['meta_colchao']:
-                acoes_m.append(f'O resto da venda, <b>{brl(res_tot)}</b>, fica guardado com você: é a sua reserva e pode virar a entrada de um carro mais barato, à vista')
+                acoes_m.append((f'O resto da venda, <b>{brl(res_tot)}</b>, fica guardado com você: é a sua reserva e pode virar a entrada de um carro mais barato, à vista', None))
+            elif m is ultimo_mes and res.get('saida') == (m['ano'], m['mes']) and not m.get('extras'):
+                acoes_m.append((f'Último mês com dívida: pague só a última parcela. A partir daqui, os <b>{brl(res_tot)}</b> que iam para as dívidas ficam com você. Use os primeiros meses para montar uma reserva de 3 meses de contas e, depois, escolha um objetivo seu', None))
             else:
-                acoes_m.append(f'Guarde <b>{brl(res_tot)}</b> na reserva para imprevistos')
+                acoes_m.append((f'Guarde <b>{brl(res_tot)}</b> na reserva para imprevistos', None))
         if m.get('deficit'):
-            acoes_m = ['Só as parcelas. Neste mês não sobra nada para adiantar']
-        acoes_m += [f'<span class="marco">Conquista: {e(x)}</span>' for x in marcos_mes.get((m['ano'], m['mes']), [])]
-        rot_m = 'Na venda' if (cenario and m is res['meses'][0]) else mes_curto((m["ano"], m["mes"]))
-        return (f'<li><span class="m">{rot_m}</span><div><p class="de">Dinheiro disponível: {" + ".join(partes) if partes else "nenhum além das parcelas"}</p><ul>{"".join("<li>" + x + ".</li>" for x in acoes_m)}</ul></div></li>', (tuple(partes), tuple(acoes_m)))
-    # meses iguais em sequência viram um bloco só ("fev/27 a mai/27")
+            acoes_m = [('Só as parcelas. Neste mês não sobra nada para adiantar', None)]
+        marcos_m = marcos_mes.get((m['ano'], m['mes']), [])
+        return {'m': m, 'de': de, 'subiu': subiu, 'acoes': acoes_m, 'marcos': marcos_m,
+                'chave': (tuple(de), tuple(a for a in acoes_m)) if not marcos_m and not subiu else None}
+
+    def complemento(nome, ms, primeiro):
+        """Quanto falta da dívida depois do(s) mês(es) e quando ela termina."""
+        d = next(x for x in plano if x['nome'] == nome)
+        quando = f' Nesse ritmo, acaba em {mes_longo(d["quitada_em"])}.' if (d.get('quitada_em') and primeiro) else ''
+        if d['sub'] == 'atrasada' and d.get('acordo_oferta'):
+            # para acordo, o que importa é quanto já foi separado, não o saldo cobrado
+            juntado = 0
+            for mm in res['meses']:
+                juntado += mm.get('extras', {}).get(nome, 0)
+                if mm is ms[-1]: break
+            falta = max(d['acordo_oferta'] - juntado, 0)
+            q = f' O acordo sai em {mes_longo(d["quitada_em"])}.' if (d.get('quitada_em') and primeiro) else ''
+            return f' Já separados: <b>{brl(juntado)}</b> dos {brl(d["acordo_oferta"])}.{q}' if falta > 0.5 else q
+        fim = ms[-1]['saldos'].get(nome, 0)
+        if len(ms) == 1:
+            return f' Depois disso, faltam <b>{brl(fim)}</b>.{quando}' if fim > 0.5 else ''
+        ini = ms[0]['saldos'].get(nome, 0)
+        return f' O que falta cai de <b>{brl(ini)}</b> para <b>{brl(fim)}</b>.{quando}'
+
+    def html_linha(itens):
+        m0, m1 = itens[0]['m'], itens[-1]['m']
+        base = itens[0]
+        ms = [x['m'] for x in itens]
+        if len(itens) == 1:
+            rot_m = 'Na venda' if (cenario and m0 is res['meses'][0]) else mes_curto((m0['ano'], m0['mes']))
+            cab = ('Para usar neste mês: ' + ' + '.join(base['de'])) if base['de'] else 'Neste mês, só as parcelas'
+        else:
+            rot_m = f'{mes_curto((m0["ano"], m0["mes"]))}<br>a {mes_curto((m1["ano"], m1["mes"]))}'
+            cab = f'Todo mês, por {len(itens)} meses: ' + ' + '.join(base['de'])
+        linhas = []
+        for texto, nome in base['acoes']:
+            extra = ''
+            if nome:
+                extra = complemento(nome, ms, nome not in foco_visto)
+                foco_visto.add(nome)
+            linhas.append(texto + '.' + extra)
+        linhas += [f'<span class="marco">Conquista: {e(x)}.</span>' for x in base['marcos']]
+        sub = f'<p class="subiu">{base["subiu"]}</p>' if base['subiu'] else ''
+        return f'<li><span class="m">{rot_m}</span><div><p class="de">{cab}</p>{sub}<ul>{"".join("<li>" + x + "</li>" for x in linhas)}</ul></div></li>'
+
+    # meses iguais em sequência viram um bloco só ("fev/27 a mai/27"), mostrando quanto a dívida cai no período
     linhas_mes, grupo = [], []
-    def fecha_grupo():
-        if not grupo: return
-        if len(grupo) == 1:
-            linhas_mes.append(grupo[0][1][0])
-        else:
-            m0, m1 = grupo[0][0], grupo[-1][0]
-            partes, acoes_m = grupo[0][1][1]
-            linhas_mes.append(f'<li><span class="m">{mes_curto((m0["ano"], m0["mes"]))}<br>a {mes_curto((m1["ano"], m1["mes"]))}</span><div><p class="de">Todo mês ({len(grupo)} meses): {" + ".join(partes)}</p><ul>{"".join("<li>" + x + ".</li>" for x in acoes_m)}</ul></div></li>')
-        grupo.clear()
     for m in res['meses']:
-        html_m, chave_m = linha_mes(m)
-        if grupo and chave_m == grupo[-1][1][1] and not any('marco' in x for x in chave_m[1]):
-            grupo.append((m, (html_m, chave_m)))
+        item = linha_mes(m)
+        if grupo and item['chave'] is not None and item['chave'] == grupo[-1]['chave']:
+            grupo.append(item)
         else:
-            fecha_grupo()
-            grupo.append((m, (html_m, chave_m)))
-    fecha_grupo()
+            if grupo: linhas_mes.append(html_linha(grupo))
+            grupo = [item]
+    if grupo: linhas_mes.append(html_linha(grupo))
     mblocos = [linhas_mes[:3]] + [linhas_mes[i:i + 6] for i in range(3, len(linhas_mes), 6)]
     for bi, bloco in enumerate(mblocos):
         pags.append(f'''
@@ -578,6 +661,7 @@ p {{ margin: 0; }}
 .mes ul li {{ font-size: 8.2pt; line-height: 1.35; }}
 
 .mes .marco {{ color: var(--verde); font-weight: 700; }}
+.mes .subiu {{ font-size: 7.2pt; color: var(--verde); font-weight: 600; line-height: 1.35; margin-top: .4mm; }}
 .mes ul li b {{ font-family: Plex; font-weight: 600; }}
 .tira {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6mm; }}
 .tira > div, .tres .n {{ background: var(--branco); border-radius: 2.6mm; padding: 2.4mm 2.6mm; display: flex; flex-direction: column; gap: .6mm; }}
