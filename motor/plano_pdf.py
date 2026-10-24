@@ -3,7 +3,7 @@
 Uso: python3 plano_pdf.py casos/carla.json saida.html
 Depois o HTML é impresso em PDF pelo Chromium (ver gerar_pdf.js).
 """
-import json, sys, html
+import json, sys, html, re
 import motor
 
 import os
@@ -41,6 +41,58 @@ def nome_exibicao(d):
               'Crediário ou carnê de loja': 'Crediário', 'Pensão alimentícia atrasada': 'Pensão atrasada', 'Dívida com parente ou conhecido': 'Dívida com pessoa',
               'Financiamento de veículo': 'Financiamento do veículo', 'Financiamento de imóvel': 'Financiamento do imóvel'}
     return curtos.get(d['tipo'], d['tipo']), d['credor'].replace(' · parcelado', '')
+
+
+PAGINAR = r'''<script>
+// Paginação: se o conteúdo passar do tamanho da página, os últimos itens da lista vão para uma página "(continua)".
+function paginar() {
+  const sobra = (p) => p.scrollHeight - p.clientHeight > 1;
+  for (let i = 0, guarda = 0; i < document.querySelectorAll('.pag').length && guarda < 300; i++, guarda++) {
+    const pag = document.querySelectorAll('.pag')[i];
+    if (!sobra(pag)) continue;
+    const listas = [...pag.querySelectorAll('[data-flui]')];
+    const lista = listas[listas.length - 1];
+    if (!lista || lista.children.length < 2) continue;
+    const nova = document.createElement('section');
+    nova.className = pag.className.replace('capa', '').trim();
+    const sec = pag.querySelector('.secao');
+    if (sec) { const s2 = document.createElement('p'); s2.className = 'secao'; s2.textContent = sec.textContent.replace(/ \(continua\)$/, '') + ' (continua)'; nova.appendChild(s2); }
+    const nl = lista.cloneNode(false);
+    nova.appendChild(nl);
+    let x = lista.nextElementSibling; const depois = [];
+    while (x) { depois.push(x); x = x.nextElementSibling; }
+    depois.forEach((y) => nova.appendChild(y));
+    pag.after(nova);
+    while (sobra(pag) && lista.children.length > 1) nl.prepend(lista.lastElementChild);
+    if (lista.tagName === 'OL') nl.start = (lista.start || 1) + lista.children.length;
+    if (!nl.children.length) nl.remove();
+  }
+  document.body.dataset.pronto = '1';
+}
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(() => setTimeout(paginar, 50));
+</script>'''
+
+def nomes_credores(res):
+    """A pessoa costuma digitar 'Sicredi 2' para a segunda dívida no mesmo banco. No plano isso vira
+    'Sicredi · parcela R$ 547', que ela reconhece no app. Só mexe no nome exibido (credor), nunca no 'nome' interno."""
+    itens = {id(x): x for lista in (res['plano'], res['fila'], res.get('dividas_hoje') or []) for x in lista}.values()
+    bases = {(x['credor'] or '').strip().lower() for x in itens}
+    for x in itens:
+        c = (x['credor'] or '').strip()
+        m = re.match(r'^(.*\S)\s+\d{1,2}$', c)
+        if m and m.group(1).lower() in bases:
+            x['credor'] = m.group(1)
+    grupos = {}
+    for x in itens:
+        if x['sub'] == 'futuro': continue
+        grupos.setdefault(((x['credor'] or '').lower(), nome_exibicao(x)[0], x['id']), x)
+    por_nome = {}
+    for (c, t, i), x in grupos.items():
+        por_nome.setdefault((c, t), []).append(i)
+    for x in itens:
+        ids = por_nome.get(((x['credor'] or '').lower(), nome_exibicao(x)[0]), [])
+        if len(ids) > 1 and (x.get('parcela') or 0) > 0.5:
+            x['credor'] = f'{x["credor"]} · parcela {brl(x["parcela"])}'
 
 
 def objeto(d):
@@ -101,7 +153,7 @@ def paginas_repactuacao(rep, res, r, e, T, nome_ex, inicio):
 <section class="pag">
   <p class="secao">A ordem</p>
   <h2>Primeiro o que garante a sua vida. Depois, as dívidas.</h2>
-  <ol class="ordem">{''.join(f'<li><span class="pos">{k}</span><div><h3>{a}</h3><p>{b}</p></div></li>' for k, (a, b) in enumerate(itens, 1))}</ol>
+  <ol class="ordem" data-flui>{''.join(f'<li><span class="pos">{k}</span><div><h3>{a}</h3><p>{b}</p></div></li>' for k, (a, b) in enumerate(itens, 1))}</ol>
 </section>''')
     # A proposta
     if rep['proposta']:
@@ -197,6 +249,7 @@ def montar(r, textos, inicio=(2026, 11)):
     fila = res['fila']
     plano = res['plano']
     e = html.escape
+    nomes_credores(res)
 
     # compras parceladas que acabam em até 3 meses não entram no retrato do mês (somem logo)
     fut_curto = all(len(d.get('agenda') or {}) <= 3 for d in plano if d['sub'] == 'futuro')
@@ -232,6 +285,11 @@ def montar(r, textos, inicio=(2026, 11)):
             t_, c_ = nome_exibicao(d)
             fora_txt += f' O {t_.lower()} {e(c_)}, que cobra menos juros, segue normal até {mes_longo(fim)}.'
     acoes = T['acoes']
+    qs = [d['quitada_em'] for d in plano if d.get('quitada_em') and d['sub'] != 'futuro']
+    primeira_txt = ''
+    if qs and min(qs) != res.get('saida') and not cenario:
+        n_ate = 1 + (min(qs)[0] * 12 + min(qs)[1]) - (inicio[0] * 12 + inicio[1])
+        primeira_txt = f'A primeira dívida acaba já em {mes_longo(min(qs))}, {"no primeiro mês" if n_ate == 1 else f"daqui a {n_ate} meses"}. '
     if rep:
         if rep['proposta']:
             capa_h1 = 'A conta não fecha. <em>A saída é renegociar tudo junto.</em>'
@@ -259,7 +317,7 @@ def montar(r, textos, inicio=(2026, 11)):
   <div class="topo">{LOGO}<span class="selo-doc">Plano de desaperto</span></div>
   <p class="olho">{e(nome)}, este é o seu caminho.</p>
   <h1 class="data">{('Vendendo o carro, você <em>quita todas as dívidas</em> no mês da venda.' if (cenario and res['saida'] == inicio) else (('Vendendo o carro, você' if cenario else 'Você') + ' sai das dívidas em <em>' + mes_longo(res['saida']) + '</em>.'))}</h1>
-  <p class="sub">{('Sem vender, a conta não fecha: faltam ' + brl(original['diferenca']) + ' por mês. A página "A decisão do carro" mostra os dois caminhos. ') if cenario else ''}{('Se o mês apertar além do previsto, a data pode ir até ' + mes_longo(cons["saida"]) + '. Nada além disso.') if cons["saida"] != res["saida"] else 'Mesmo se o mês apertar um pouco, a data se mantém.'}{fora_txt}</p>
+  <p class="sub">{('Sem vender, a conta não fecha: faltam ' + brl(original['diferenca']) + ' por mês. A página "A decisão do carro" mostra os dois caminhos. ') if cenario else ''}{primeira_txt}{('Se o mês apertar além do previsto, a data pode ir até ' + mes_longo(cons["saida"]) + '. Nada além disso.') if cons["saida"] != res["saida"] else 'Mesmo se o mês apertar um pouco, a data se mantém.'}{fora_txt}</p>
   <div class="claro">
     <div><span class="rot">Todo mês, você paga em parcelas</span><b>{brl(parcelas_plano)}</b></div>
     {capa_sobra}
@@ -335,13 +393,13 @@ def montar(r, textos, inicio=(2026, 11)):
 <section class="pag">
   <p class="secao">A ordem{' (continua)' if bi else ''}</p>
   {'<h2>Uma dívida de cada vez, começando pela que cobra mais juros.</h2>' if bi == 0 else ''}
-  <ol class="ordem">{''.join(bloco)}</ol>
+  <ol class="ordem" data-flui>{''.join(bloco)}</ol>
 </section>''')
     pags.append(f'''
 <section class="pag">
   <p class="secao">A ordem{' (continua)' if len(blocos) > 1 else ''}</p>
   {'' if len(blocos) > 1 else '<h2>Uma dívida de cada vez, começando pela que cobra mais juros.</h2>'}
-  <ol class="ordem" start="{len(itens) - len(blocos[-1]) + 1}">{''.join(blocos[-1])}</ol>
+  <ol class="ordem" data-flui start="{len(itens) - len(blocos[-1]) + 1}">{''.join(blocos[-1])}</ol>
 </section>''')
 
     # 6. Calendário (gráfico de barras do saldo total)
@@ -388,6 +446,22 @@ def montar(r, textos, inicio=(2026, 11)):
 
     foco_visto = set()
     ultimo_mes = res['meses'][-1] if res['meses'] else None
+    # progresso: quantas dívidas (como a pessoa contou no questionário) já acabaram
+    ids_div = {}
+    for x in plano:
+        if x['sub'] != 'futuro' and x['banda'] != 'fora': ids_div.setdefault(x['id'], []).append(x)
+    n_div = len(ids_div)
+
+    def pagas_ate(t):
+        return sum(1 for xs in ids_div.values() if all(y.get('quitada_em') and y['quitada_em'] <= t for y in xs))
+
+    def meses_ate(t, fim):
+        return (fim[0] * 12 + fim[1]) - (t[0] * 12 + t[1])
+
+    saida_t = res.get('saida')
+    metade_t = next(((mm['ano'], mm['mes']) for mm in res['meses'] if mm['saldo_total'] <= res['T'] / 2), None)
+    primeira_t = next(((mm['ano'], mm['mes']) for mm in res['meses'] if pagas_ate((mm['ano'], mm['mes'])) >= 1), None)
+    if metade_t and metade_t in (primeira_t, saida_t): metade_t = None
 
     def linha_mes(m):
         """Devolve (rótulo, linhas de 'de onde vem', ações) — cada ação é (texto fixo, nome da dívida ou None)."""
@@ -448,14 +522,22 @@ def montar(r, textos, inicio=(2026, 11)):
             if cenario and m is res['meses'][0] and res_tot > 2 * res['meta_colchao']:
                 acoes_m.append((f'O resto da venda, <b>{brl(res_tot)}</b>, fica guardado com você: é a sua reserva e pode virar a entrada de um carro mais barato, à vista', None))
             elif m is ultimo_mes and res.get('saida') == (m['ano'], m['mes']) and not m.get('extras'):
-                acoes_m.append((f'Último mês com dívida: pague só a última parcela. A partir daqui, os <b>{brl(res_tot)}</b> que iam para as dívidas ficam com você. Use os primeiros meses para montar uma reserva de 3 meses de contas e, depois, escolha um objetivo seu', None))
+                acoes_m.append((f'Pague só a última parcela. Os <b>{brl(res_tot)}</b> que iam para as dívidas ficam com você. Use os primeiros meses para montar uma reserva de 3 meses de contas e, depois, escolha um objetivo seu', None))
             else:
                 acoes_m.append((f'Guarde <b>{brl(res_tot)}</b> na reserva para imprevistos', None))
         if m.get('deficit'):
             acoes_m = [('Só as parcelas. Neste mês não sobra nada para adiantar', None)]
         marcos_m = marcos_mes.get((m['ano'], m['mes']), [])
-        return {'m': m, 'de': de, 'subiu': subiu, 'acoes': acoes_m, 'marcos': marcos_m,
-                'chave': (tuple(de), tuple(a for a in acoes_m)) if not marcos_m and not subiu else None}
+        t = (m['ano'], m['mes'])
+        vitoria = None
+        if saida_t and t == saida_t and not cenario:
+            vitoria = ('Mês do desaperto.', 'A última dívida da lista acaba aqui. A partir de agora, o seu salário volta a ser seu.')
+        elif t == primeira_t and n_div > 1 and t != saida_t:
+            vitoria = ('Primeira dívida paga.', 'É a prova de que o plano funciona. Daqui em diante, cada uma acaba mais rápido que a anterior.')
+        elif t == metade_t:
+            vitoria = ('Metade do caminho.', f'Você já tirou {brl(res["T"] - m["saldo_total"])} das costas. Falta menos do que você já pagou.')
+        return {'m': m, 'de': de, 'subiu': subiu, 'acoes': acoes_m, 'marcos': marcos_m, 'vitoria': vitoria,
+                'chave': (tuple(de), tuple(a for a in acoes_m)) if not marcos_m and not subiu and not vitoria else None}
 
     def complemento(nome, ms, primeiro):
         """Quanto falta da dívida depois do(s) mês(es) e quando ela termina."""
@@ -469,7 +551,8 @@ def montar(r, textos, inicio=(2026, 11)):
                 if mm is ms[-1]: break
             falta = max(d['acordo_oferta'] - juntado, 0)
             q = f' O acordo sai em {mes_longo(d["quitada_em"])}.' if (d.get('quitada_em') and primeiro) else ''
-            return f' Já separados: <b>{brl(juntado)}</b> dos {brl(d["acordo_oferta"])}.{q}' if falta > 0.5 else q
+            se = f' Se pedirem mais de {brl(d["acordo_teto"])}, não feche: continue juntando e tente no mês seguinte.' if (primeiro and d.get('acordo_teto')) else ''
+            return (f' Já separados: <b>{brl(juntado)}</b> dos {brl(d["acordo_oferta"])}.{q}' if falta > 0.5 else q) + se
         fim = ms[-1]['saldos'].get(nome, 0)
         if len(ms) == 1:
             return f' Depois disso, faltam <b>{brl(fim)}</b>.{quando}' if fim > 0.5 else ''
@@ -495,7 +578,22 @@ def montar(r, textos, inicio=(2026, 11)):
             linhas.append(texto + '.' + extra)
         linhas += [f'<span class="marco">Conquista: {e(x)}.</span>' for x in base['marcos']]
         sub = f'<p class="subiu">{base["subiu"]}</p>' if base['subiu'] else ''
-        return f'<li><span class="m">{rot_m}</span><div><p class="de">{cab}</p>{sub}<ul>{"".join("<li>" + x + "</li>" for x in linhas)}</ul></div></li>'
+        vit = f'<p class="vitoria"><b>{base["vitoria"][0]}</b> {base["vitoria"][1]}</p>' if base['vitoria'] else ''
+        t1 = (m1['ano'], m1['mes'])
+        pg = pagas_ate(t1)
+        if saida_t and not cenario and n_div > 1:
+            faltam = meses_ate(t1, saida_t)
+            if faltam <= 0 or pg >= n_div:
+                txt = f'{n_div} de {n_div} pagas · desapertou'
+            else:
+                txt = f'{pg} de {n_div} pagas · ' + ('falta 1 mês' if faltam == 1 else f'faltam {faltam} meses')
+            prog = f'<p class="prog"><span class="barra"><i style="width:{round(100 * pg / n_div)}%"></i></span><span>{txt}</span></p>'
+        else:
+            prog = ''
+        classe = ' class="alto"' if base['vitoria'] else ''
+        peso = 9 + sum(len(re.sub(r'<[^>]+>', '', x)) for x in linhas) / 48 * 3.5 + (4 if sub else 0) + (7 if vit else 0) + (4 if prog else 0)
+        return (f'<li{classe}><span class="m">{rot_m}<span class="ck"></span></span><div>{vit}<p class="de">{cab}</p>{sub}'
+                f'<ul>{"".join("<li>" + x + "</li>" for x in linhas)}</ul>{prog}</div></li>', peso)
 
     # meses iguais em sequência viram um bloco só ("fev/27 a mai/27"), mostrando quanto a dívida cai no período
     linhas_mes, grupo = [], []
@@ -507,13 +605,14 @@ def montar(r, textos, inicio=(2026, 11)):
             if grupo: linhas_mes.append(html_linha(grupo))
             grupo = [item]
     if grupo: linhas_mes.append(html_linha(grupo))
-    mblocos = [linhas_mes[:3]] + [linhas_mes[i:i + 6] for i in range(3, len(linhas_mes), 6)]
+    # tudo numa página só: o script de paginação (no fim do HTML) mede no navegador e quebra em quantas páginas precisar
+    mblocos = [[h for h, _ in linhas_mes]]
     for bi, bloco in enumerate(mblocos):
         pags.append(f'''
 <section class="pag">
   <p class="secao">O caminho, mês a mês{' (continua)' if bi else ''}</p>
   {('<h2>O que pagar, quanto e onde.</h2>' + grafico_html + '<p class="nota">Barras: quanto você deve no fim de cada mês. Abaixo, só o que você paga <b>a mais</b>; as parcelas normais continuam todo mês.</p>') if bi == 0 else ''}
-  <ol class="mes">{''.join(bloco)}</ol>
+  <ol class="mes" data-flui>{''.join(bloco)}</ol>
   {'<div class="caixa"><b>Como adiantar:</b> no app do banco, use "antecipar parcelas" e escolha as últimas do contrato. O desconto nos juros é maior e a dívida acaba antes. Se o desconto mostrado for pequeno, não adiante: passe o dinheiro para a próxima da lista.</div>' if bi == len(mblocos) - 1 else ''}
 </section>''')
 
@@ -548,7 +647,7 @@ def montar(r, textos, inicio=(2026, 11)):
 <section class="pag">
   <p class="secao">Direitos que quase ninguém usa</p>
   <h2>O que a lei já garante a você.</h2>
-  <ul class="direitos">{''.join(f'<li><h3>{a}</h3><p>{b}</p></li>' for a, b in T['direitos'])}
+  <ul class="direitos" data-flui>{''.join(f'<li><h3>{a}</h3><p>{b}</p></li>' for a, b in T['direitos'])}
   </ul>
 </section>''')
 
@@ -557,7 +656,7 @@ def montar(r, textos, inicio=(2026, 11)):
 <section class="pag">
   <p class="secao">Se algo sair do previsto</p>
   <h2>Regras simples para não sair do caminho.</h2>
-  <ul class="regras">{''.join(f'<li><h3>{a}</h3><p>{b}</p></li>' for a, b in T['regras'])}
+  <ul class="regras" data-flui>{''.join(f'<li><h3>{a}</h3><p>{b}</p></li>' for a, b in T['regras'])}
   </ul>
 </section>''')
 
@@ -589,13 +688,13 @@ def montar(r, textos, inicio=(2026, 11)):
 <section class="pag">
   <p class="secao">Suas dívidas</p>
   <h2>Marque cada uma quando quitar.</h2>
-  <div class="dcards">{''.join(bloco)}</div>
+  <div class="dcards" data-flui>{''.join(bloco)}</div>
 </section>''')
     pags.append(f'''
 <section class="pag">
   <p class="secao">Suas dívidas{' (continua)' if len(cblocos) > 1 else ''}</p>
   {'' if len(cblocos) > 1 else '<h2>Marque cada uma quando quitar.</h2>'}
-  <div class="dcards">{''.join(cblocos[-1])}</div>
+  <div class="dcards" data-flui>{''.join(cblocos[-1])}</div>
   <p class="nota">Sem número: fica fora da lista e segue só com as parcelas normais. * Valor estimado: confirme com o banco antes de pagar a dívida inteira.{(' As compras parceladas do cartão (' + brl(res['parceladas_cartao']) + ') não cobram juros e ficam fora do total.') if res['parceladas_cartao'] else ''}</p>
   <div class="total"><div><span class="rot">Parcelas do mês</span><b>{brl(parcelas_plano)}</b></div><div><span class="rot">Para quitar tudo hoje</span><b>{brl(res["T"])}</b></div></div>
 </section>''')
@@ -604,7 +703,7 @@ def montar(r, textos, inicio=(2026, 11)):
         pags[idx_c:] = dossie(rep, res, r, e, nome_exibicao, inicio)
     confirmar_html = ('<h3 class="peq">Para confirmar</h3><ul class="golpes premissas">' + ''.join(f'<li>{e(x[1])}</li>' for x in original['alertas']) + '</ul>') if original['alertas'] else ''
     prem = [x for x in res['premissas'] if not (rep and ('fim da lista' in x or 'Parcelamento do rotativo' in x or 'fim do contrato' in x))]
-    premissas_html = ('<h3 class="peq">O que foi estimado</h3><ul class="golpes premissas">' + ''.join(f'<li>{e(x)}</li>' for x in prem) + '</ul>') if prem else ''
+    premissas_html = ('<h3 class="peq">O que foi estimado</h3><ul class="golpes premissas" data-flui>' + ''.join(f'<li>{e(x)}</li>' for x in prem) + '</ul>') if prem else ''
     # 11. Apoio e avisos
     pags.append(f'''
 <section class="pag fim">
@@ -643,7 +742,9 @@ h2 {{ font-size: 15.5pt; line-height: 1.1; }}
 h3 {{ font-size: 10pt; line-height: 1.25; }}
 p {{ margin: 0; }}
 .peq {{ font-size: 7pt; font-family: Plex; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--cinza); margin-top: 1mm; }}
-.capa {{ gap: 3.2mm; }}
+.capa {{ gap: 2.6mm; }}
+.capa .acoes-resumo li {{ padding-top: 1.9mm; padding-bottom: 1.9mm; }}
+.capa .acoes-resumo li::before {{ top: 1.8mm; }}
 .olho {{ margin-top: 2mm; font-size: 11pt; color: var(--cinza); font-weight: 600; }}
 .data {{ font-size: 25pt; line-height: 1.02; letter-spacing: -0.03em; }}
 .data em {{ font-style: normal; color: var(--verde); }}
@@ -661,6 +762,13 @@ p {{ margin: 0; }}
 .mes ul li {{ font-size: 8.2pt; line-height: 1.35; }}
 
 .mes .marco {{ color: var(--verde); font-weight: 700; }}
+.mes > li.alto {{ background: var(--respiro); }}
+.mes .vitoria {{ font-size: 8pt; line-height: 1.35; margin-bottom: .8mm; color: var(--tinta); }}
+.mes .vitoria b {{ display: block; font-size: 11pt; font-weight: 800; font-stretch: 80%; letter-spacing: -0.01em; color: var(--verde); }}
+.mes .ck {{ display: block; width: 3.4mm; height: 3.4mm; border: 1.2px solid var(--areia-esc); border-radius: .8mm; margin-top: 1.4mm; background: var(--branco); }}
+.mes .prog {{ display: flex; align-items: center; gap: 1.8mm; margin-top: 1.2mm; font-family: Plex; font-weight: 500; font-size: 6.2pt; color: var(--cinza); }}
+.mes .prog .barra {{ flex: none; width: 13mm; height: 1.4mm; border-radius: 99px; background: var(--areia); overflow: hidden; }}
+.mes .prog .barra i {{ display: block; height: 100%; background: var(--verde); border-radius: 99px; }}
 .mes .subiu {{ font-size: 7.2pt; color: var(--verde); font-weight: 600; line-height: 1.35; margin-top: .4mm; }}
 .mes ul li b {{ font-family: Plex; font-weight: 600; }}
 .tira {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6mm; }}
@@ -739,7 +847,7 @@ b {{ font-weight: 800; }}
 .ficha dd {{ margin: 0; font-weight: 600; }}
 .enq {{ margin: 1.2mm 0 0; padding-left: 4mm; display: flex; flex-direction: column; gap: .8mm; }}
 '''
-    doc = f'<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Plano de desaperto · {e(nome)}</title><style>{css}</style></head><body>{"".join(pags)}</body></html>'
+    doc = f'<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Plano de desaperto · {e(nome)}</title><style>{css}</style></head><body>{"".join(pags)}{PAGINAR}</body></html>'
     return doc, res, cons
 
 
