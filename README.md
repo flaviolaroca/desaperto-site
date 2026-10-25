@@ -52,6 +52,7 @@ Configuração extra:
 - Liga sozinha quando existe o segredo `MP_ACCESS_TOKEN` na Cloudflare (Access Token de produção do Mercado Pago). Sem ele, o plano continua grátis e é enviado direto.
 - Preço: R$ 34,90 (dá para mudar com a variável `PRECO`, ex.: `29.90`).
 - Fluxo: a pessoa responde → vai para /pagar → vê a data grátis → paga o Pix → o Mercado Pago avisa `/api/mp/notificacao` → o site confere o pagamento direto no Mercado Pago e manda o plano.
+- Usa a API de Orders do Mercado Pago (aplicação criada como Checkout Transparente, tipo de API "Orders"). O aviso automático precisa ser ligado no painel do Mercado Pago: Suas integrações → aplicação → Webhooks → Configurar notificações → Modo produção → URL `https://desaperto.com/api/mp/notificacao` → evento "Order (Mercado Pago)" → Salvar. Sem o aviso, a página /pagar ainda confere sozinha enquanto estiver aberta.
 - Quem saiu antes de pagar recebe a data por e-mail e, 24 horas depois, um lembrete (uma vez só).
 - Devolução (garantia de 7 dias): botão "Devolver" no /admin.
 - "Enviar sem cobrar" no /admin manda o plano de graça (testadores, cortesias).
