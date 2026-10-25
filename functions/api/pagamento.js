@@ -7,13 +7,13 @@ import { json, erro, agora, assinaturaPagar, garantirTabelas, cobrancaAtiva, pre
 async function buscar(env, id, a) {
   if (!env.DB || !env.ADMIN_TOKEN || !id || !a || a !== (await assinaturaPagar(env, id))) return null;
   await garantirTabelas(env.DB);
-  return env.DB.prepare('SELECT id, nome, email, protocolo, status, plano_resumo, estimativa, teste, pag_id, pag_status, pag_qr, pag_qr_img, pag_expira, pago_em, devolvido_em FROM respostas WHERE id = ?').bind(id).first();
+  return env.DB.prepare("SELECT json_extract(dados, '$.objetivo') AS objetivo, id, nome, email, protocolo, status, plano_resumo, estimativa, teste, pag_id, pag_status, pag_qr, pag_qr_img, pag_expira, pago_em, devolvido_em FROM respostas WHERE id = ?").bind(id).first();
 }
 
 function situacao(env, l, a) {
   const base = { primeiro_nome: (l.nome || '').trim().split(/\s+/)[0] || '', email: mascararEmail(l.email), protocolo: l.protocolo,
     preco: preco(env), preco_txt: reaisCentavos(preco(env)), cobrar: cobrancaAtiva(env), pago: !!l.pago_em,
-    recebedor: String(env.PIX_RECEBEDOR || '').trim().slice(0, 80) };
+    recebedor: String(env.PIX_RECEBEDOR || '').trim().slice(0, 80), objetivo: String(l.objetivo || '').trim().slice(0, 140) };
   if (l.status === 'rapido') {
     const data = dataDaLinha(l);
     if (l.devolvido_em) return { ...base, estado: 'devolvido', data };

@@ -10,5 +10,5 @@ export async function onRequestGet({ request, env }) {
   if (!l) return erro('Este link não é válido ou as respostas já foram apagadas.', 404);
   const d = JSON.parse(l.dados || '{}');
   return json({ ok: true, status: l.status, protocolo: l.protocolo, pago: !!l.pago_em,
-    rapido: d.rapido ? { nome: d.nome, email: d.email, renda: d.renda, guardado: d.guardado, gastos: d.gastosR || {}, dividas: d.dividasR || [] } : null });
+    rapido: d.rapido ? { nome: d.nome, email: d.email, renda: d.renda, guardado: d.guardado, objetivo: d.objetivo || '', gastos: d.gastosR || {}, dividas: d.dividasR || [] } : null });
 }

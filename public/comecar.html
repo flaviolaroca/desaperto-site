@@ -896,7 +896,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     fetch('/api/continuar?id=' + encodeURIComponent(id) + '&a=' + encodeURIComponent(a)).then(function (r) { return r.json(); }).then(function (j) {
       if (!j.ok || !j.rapido) return;
       var q = j.rapido, r = E.r;
-      r.nome = q.nome; r.email = q.email; r.renda = q.renda; r.guardado = q.guardado;
+      r.nome = q.nome; r.email = q.email; r.renda = q.renda; r.guardado = q.guardado; if (q.objetivo) r.objetivo = q.objetivo;
       if (q.gastos) { if (q.gastos.moradia != null) r.gastos.moradia = q.gastos.moradia; if (q.gastos.transporte != null) r.gastos.transporte = q.gastos.transporte; }
       E.rapidoDividas = q.dividas || [];
       salvar(); render();

@@ -8,12 +8,12 @@ export async function onRequestGet({ request, env }) {
   const id = u.searchParams.get('id') || '', a = u.searchParams.get('a') || '';
   if (!env.DB || !env.ADMIN_TOKEN || !id || a !== (await assinaturaAcomp(env, id))) return erro('Este link não é válido.', 404);
   await garantirTabelas(env.DB);
-  let meses = null, nome = '';
-  const ac = await env.DB.prepare('SELECT meses, primeiro_nome FROM acompanhamento WHERE resposta_id = ?').bind(id).first();
-  if (ac) { meses = JSON.parse(ac.meses); nome = ac.primeiro_nome; }
+  let meses = null, nome = '', objetivo = '';
+  const ac = await env.DB.prepare('SELECT meses, primeiro_nome, objetivo FROM acompanhamento WHERE resposta_id = ?').bind(id).first();
+  if (ac) { meses = JSON.parse(ac.meses); nome = ac.primeiro_nome; objetivo = ac.objetivo || ''; }
   else {
-    const l = await env.DB.prepare('SELECT nome, plano_resumo FROM respostas WHERE id = ?').bind(id).first();
-    if (l && l.plano_resumo) { meses = JSON.parse(l.plano_resumo).acoes_mensais || null; nome = (l.nome || '').trim().split(/\s+/)[0]; }
+    const l = await env.DB.prepare("SELECT nome, plano_resumo, json_extract(dados, '$.objetivo') AS objetivo FROM respostas WHERE id = ?").bind(id).first();
+    if (l && l.plano_resumo) { meses = JSON.parse(l.plano_resumo).acoes_mensais || null; nome = (l.nome || '').trim().split(/\s+/)[0]; objetivo = l.objetivo || ''; }
   }
   if (!meses || !meses.length) return erro('Não encontramos o seu plano. As respostas podem ter sido apagadas.', 404);
   const hoje = diaBrasil().slice(0, 7);
@@ -22,6 +22,6 @@ export async function onRequestGet({ request, env }) {
   const atual = meses.find((m) => chave(m) === hoje) || (feitos ? meses[feitos - 1] : meses[0]);
   const ult = meses[meses.length - 1];
   const pagas = feitos ? (meses[feitos - 1].pagas || 0) : 0;
-  return json({ ok: true, primeiro_nome: nome, total: meses.length, feitos, pagas, dividas: atual.total || 0,
+  return json({ ok: true, primeiro_nome: nome, objetivo: String(objetivo || '').slice(0, 140), total: meses.length, feitos, pagas, dividas: atual.total || 0,
     fim_txt: `${M[ult.mes[1] - 1]}/${String(ult.mes[0]).slice(2)}` });
 }

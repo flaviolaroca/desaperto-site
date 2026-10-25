@@ -307,13 +307,15 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       return;
     }
     if (t === 'guardado') {
-      $t.innerHTML = '<section class="tela"><p class="acolhe">Última pergunta.</p><h1>Você tem algum dinheiro guardado hoje?</h1><div class="campos">' +
-        campoDinheiro('guardado', 'Quanto, mais ou menos?', 'Se não tem, coloque 0.', r.guardado) + '</div>' +
+      $t.innerHTML = '<section class="tela"><p class="acolhe">Última pergunta.</p><h1>Para fechar</h1><div class="campos">' +
+        campoDinheiro('guardado', 'Você tem algum dinheiro guardado hoje? Quanto, mais ou menos?', 'Se não tem, coloque 0.', r.guardado) +
+        '<div class="campo" data-campo="objetivo"><label for="q-objetivo">E quando acabar, o que você quer fazer com esse dinheiro?</label><p class="ajuda">Opcional. Por exemplo: a entrada da casa, uma viagem com a família, voltar a estudar.</p><input type="text" id="q-objetivo" maxlength="120" value="' + esc(r.objetivo || '') + '"></div>' + '</div>' +
         '<div class="acoes"><div id="erro-envio" class="erro-envio oculto" role="alert"></div><button type="button" class="btn btn-principal" id="btn-seguir">Ver a minha data</button><p class="nota">A data é calculada com valores aproximados e é grátis.</p></div></section>';
       ligarDinheiro();
       document.getElementById('btn-seguir').addEventListener('click', function () {
         limparErros();
         r.guardado = num(document.getElementById('q-guardado').value);
+        r.objetivo = document.getElementById('q-objetivo').value.trim().slice(0, 120);
         if (r.guardado == null) { erro('guardado', 'Coloque um valor. Se não tiver, coloque 0.'); return; }
         salvar(); enviar();
       });
@@ -375,7 +377,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     var r = E.r, est = estimativa(r), caixa = document.getElementById('erro-envio'), btn = document.getElementById('btn-seguir');
     if (btn) { btn.disabled = true; btn.textContent = 'Calculando...'; }
     var g = r.gastosR || {};
-    var respostas = { rapido: true, consent: true, nome: r.nome, email: r.email, renda: r.renda, guardado: r.guardado || 0,
+    var respostas = { rapido: true, consent: true, nome: r.nome, email: r.email, renda: r.renda, guardado: r.guardado || 0, objetivo: r.objetivo || '',
       gastosR: g, dividasR: r.dividas, dividas: r.dividas.map(function (d) { return { tipo: (TIPOS.filter(function (x) { return x[1] === d.tipo; })[0] || ['Outra'])[0] }; }) };
     fetch('/api/respostas', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ respostas: respostas, rapido: true, estimativa: est, teste: TESTE }) })
       .then(function (resp) { return resp.json().then(function (j) { if (!resp.ok || !j.ok) throw new Error(j.erro || 'Não conseguimos enviar agora.'); return j; }); })

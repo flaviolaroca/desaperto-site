@@ -90,6 +90,10 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
 .etapas-c li.feito { color: var(--tinta); }
 .etapas-c li.feito::before { content: "✓ "; color: var(--verde); font-weight: 700; }
 .erro-box { background: #F3E3C7; color: #5C3A0C; border-radius: 14px; padding: 12px 16px; font-size: .9375rem; }
+.versoes { display: flex; gap: 8px; }
+.versao { flex: 1; font: inherit; font-size: .9375rem; font-weight: 700; padding: 10px 12px; border-radius: 999px; border: 1.5px solid #CFC4AE; background: var(--papel); color: var(--tinta); cursor: pointer; }
+.versao[aria-pressed="true"] { border-color: var(--verde); background: #DCEBE1; color: var(--verde); }
+.btn-zap { background: #F3EFE6 !important; color: var(--tinta) !important; border: 1.5px solid #CFC4AE !important; text-align: center; text-decoration: none; }
 .compartilhar .previa { width: 100%; max-width: 240px; align-self: center; border-radius: 14px; box-shadow: 0 10px 30px rgba(22, 33, 28, .25); }
 .compartilhar .btn { align-self: stretch; }
 .quem-recebe { border-left: 4px solid var(--verde); }
@@ -143,7 +147,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     if (!d.saida || !window.DesapertoCartao) return '';
     var h = new Date(Date.now() - 3 * 3600e3), ini = h.getUTCFullYear() * 12 + h.getUTCMonth() + 1, fim = d.saida[0] * 12 + d.saida[1] - 1;
     var total = Math.max(1, fim - ini + 1), M = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-    setTimeout(function () { var el = document.getElementById('area-cartao'); if (el) window.DesapertoCartao.montar(el, { total: total, feitos: 0, pagas: 0, dividas: d.dividas, fim_txt: M[d.saida[1] - 1] + '/' + String(d.saida[0]).slice(2), aprox: d.aprox }, contar); }, 0);
+    setTimeout(function () { var el = document.getElementById('area-cartao'); if (el) window.DesapertoCartao.montar(el, { total: total, feitos: 0, pagas: 0, dividas: d.dividas, fim_txt: M[d.saida[1] - 1] + '/' + String(d.saida[0]).slice(2), aprox: d.aprox, objetivo: s.objetivo }, contar); }, 0);
     return '<div id="area-cartao"></div>';
   }
   function numeros(d) {

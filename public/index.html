@@ -273,6 +273,8 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
 .marca-grande span:nth-child(8) { font-stretch: 117.1%; letter-spacing: .041em; transition-delay: .49s; }
 .marca-grande span:nth-child(9) { font-stretch: 125%; letter-spacing: .05em; transition-delay: .56s; }
 .marca-grande.aperta span { font-stretch: 62%; letter-spacing: -0.04em; }
+.final .indicar { font-size: 1rem; color: #DCEBE1; max-width: 32rem; }
+.final .indicar a { color: var(--papel); font-weight: 700; }
 .final h2 { font-size: clamp(1.8rem, 6vw, 3rem); line-height: 1.05; letter-spacing: -0.025em; max-width: 30rem; }
 .final p { font-size: 1.125rem; color: #E2F0E7; max-width: 32rem; }
 .btn-claro { background: var(--papel); color: var(--tinta); }
@@ -343,7 +345,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
         <h1 class="solta">Descubra o mês em que você <em>sai das dívidas.</em></h1>
         <p class="lead">Você conta quanto ganha, quanto gasta e quanto deve. O <b>Desaperto</b> faz as contas e te entrega um plano: <b>qual dívida pagar primeiro, quanto pagar em cada mês e o que falar com o banco.</b></p>
         <div class="cta-linha">
-          <a class="btn btn-principal" href="/rapido">Descobrir minha data <span class="seta" aria-hidden="true">→</span></a>
+          <a class="btn btn-principal" href="/rapido">Descobrir minha data grátis <span class="seta" aria-hidden="true">→</span></a>
         </div>
         <p class="preco-hero">A data é grátis. O plano completo custa <b>R$ 34,90</b>, uma vez só.</p>
         <ul class="garantias" aria-label="Como funciona">
@@ -656,7 +658,8 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
       <p class="marca-grande" id="marca-grande" aria-label="desaperto"><span>d</span><span>e</span><span>s</span><span>a</span><span>p</span><span>e</span><span>r</span><span>t</span><span>o</span></p>
       <h2 id="t-final">O primeiro desaperto é olhar para ela.</h2>
       <p>Em 5 minutos, de cabeça, você vê o mês em que sai das dívidas. De graça.</p>
-      <a class="btn btn-claro" href="/rapido">Descobrir minha data <span class="seta" aria-hidden="true">→</span></a>
+      <a class="btn btn-claro" href="/rapido">Descobrir minha data grátis <span class="seta" aria-hidden="true">→</span></a>
+      <p class="indicar">Conhece alguém no aperto? <a id="link-indicar" href="https://wa.me/?text=Achei%20isso%20e%20lembrei%20de%20voc%C3%AA%3A%20em%205%20minutos%20mostra%20em%20que%20m%C3%AAs%20d%C3%A1%20para%20sair%20do%20aperto.%20%C3%89%20gr%C3%A1tis%3A%20https%3A%2F%2Fdesaperto.com%2F%3Futm_source%3Dwhatsapp" target="_blank" rel="noopener">Mande para essa pessoa pelo WhatsApp</a>. Sem ninguém precisar se expor.</p>
     </div>
   </section>
 </main>
@@ -713,6 +716,8 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
     var achou = mapa.filter(function (x) { return o.indexOf(x) >= 0 || (r && r.indexOf(x) >= 0) || (x === 'instagram' && o === 'ig') || (x === 'facebook' && /fb|l\.facebook/.test(o + r)); })[0];
     contar('origem_' + (achou || (o || (r && r.indexOf(location.host) < 0) ? 'outro' : 'direto')));
   })();
+
+  var li = document.getElementById('link-indicar'); if (li) li.addEventListener('click', function () { contar('indicou'); });
 
   // frases: a pessoa toca nas que são dela
   var frases = document.querySelectorAll('.frase'), marcou = document.getElementById('marcou');

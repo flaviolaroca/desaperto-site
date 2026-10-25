@@ -57,6 +57,11 @@ main .in { max-width: 34rem; }
 .cartao h2 { margin: 0; font-size: 1.125rem; }
 .btn { font: inherit; font-weight: 700; border: 0; border-radius: 999px; padding: 16px 24px; cursor: pointer; background: var(--verde); color: #fff; font-size: 1.0625rem; }
 .pequeno { color: var(--cinza); font-size: .875rem; }
+.versoes { display: flex; gap: 8px; }
+.versao { flex: 1; font: inherit; font-size: .9375rem; font-weight: 700; padding: 10px 12px; border-radius: 999px; border: 1.5px solid #CFC4AE; background: var(--papel); color: var(--tinta); cursor: pointer; }
+.versao[aria-pressed="true"] { border-color: var(--verde); background: #DCEBE1; color: var(--verde); }
+.btn-zap { background: #F3EFE6 !important; color: var(--tinta) !important; border: 1.5px solid #CFC4AE !important; text-align: center; text-decoration: none; }
+.btn-zap { display: block; border-radius: 999px; padding: 16px 24px; font-weight: 700; }
 .compartilhar .previa { width: 100%; max-width: 260px; align-self: center; border-radius: 14px; box-shadow: 0 10px 30px rgba(22, 33, 28, .25); }
 #tela { display: flex; flex-direction: column; gap: 14px; }
 </style>
@@ -79,7 +84,7 @@ main .in { max-width: 34rem; }
       $t.innerHTML = '<p class="rotulo">Meu progresso</p><h1>' + (j.primeiro_nome ? esc(j.primeiro_nome) + ', ' : '') +
         (fim ? 'você chegou ao fim do plano.' : j.feitos === 0 ? 'o seu desaperto começa agora.' : 'mês ' + j.feitos + ' de ' + j.total + '.') + '</h1>' +
         '<p>' + (fim ? 'Cada mês seguido valeu. Conte para quem precisa ouvir isso.' : 'Faltam ' + faltam + (faltam === 1 ? ' mês' : ' meses') + ' para o seu desaperto, se tudo seguir o plano.') + '</p><div id="area"></div>';
-      window.DesapertoCartao.montar(document.getElementById('area'), { total: j.total, feitos: j.feitos, pagas: j.pagas, dividas: j.dividas, fim_txt: j.fim_txt }, contar);
+      window.DesapertoCartao.montar(document.getElementById('area'), { total: j.total, feitos: j.feitos, pagas: j.pagas, dividas: j.dividas, fim_txt: j.fim_txt, objetivo: j.objetivo }, contar);
     })
     .catch(function (e) { $t.innerHTML = '<p class="rotulo">Meu progresso</p><h1>Este link não funcionou.</h1><p>' + esc(e.message) + '</p>'; });
 })();
