@@ -90,9 +90,15 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
 .etapas-c li.feito { color: var(--tinta); }
 .etapas-c li.feito::before { content: "✓ "; color: var(--verde); font-weight: 700; }
 .erro-box { background: #F3E3C7; color: #5C3A0C; border-radius: 14px; padding: 12px 16px; font-size: .9375rem; }
+.compartilhar .previa { width: 100%; max-width: 240px; align-self: center; border-radius: 14px; box-shadow: 0 10px 30px rgba(22, 33, 28, .25); }
+.compartilhar .btn { align-self: stretch; }
+.aprox { font-size: .875rem; color: var(--cinza); background: var(--areia); border-radius: 12px; padding: 10px 14px; }
 @media (prefers-reduced-motion: reduce) { .ponto { animation: none; } .barra-c i { transition: none; } }
 </style>
 
+<div id="logo-cartao" hidden><svg xmlns="http://www.w3.org/2000/svg" viewBox="24.6 -724.5 4784.3 911.5" aria-hidden="true" focusable="false"><path fill="currentColor" d="M154.2 12Q107.5 12 78.7 -18.4Q49.9 -48.8 37.3 -111.4Q24.6 -174 24.6 -269.7Q24.6 -364 36.5 -423.5Q48.5 -483 75.9 -511.3Q103.4 -539.5 147.9 -539.5Q175.1 -539.5 193.4 -530.5Q211.7 -521.5 224.1 -505.5Q236.6 -489.5 244 -468.5H249V-724.5H384.2V0H272.9L264.8 -61.7H259.8Q248.2 -31.3 223.2 -9.6Q198.3 12 154.2 12ZM206.5 -108.8Q223.5 -108.8 232.7 -120.9Q241.9 -132.9 245.7 -157.4Q249.6 -181.9 249.6 -219.4V-299.4Q249.6 -329.1 247.2 -349.9Q244.8 -370.8 239.8 -384.1Q234.7 -397.5 226.2 -403.7Q217.8 -410 205.6 -410Q190.9 -410 181.7 -398.9Q172.5 -387.7 168.1 -363.7Q163.7 -339.7 163.7 -299.4V-219.4Q163.7 -180.5 167.9 -156.1Q172 -131.6 181.5 -120.2Q190.9 -108.8 206.5 -108.8Z M627.7 12Q558.5 12 513.5 -15.9Q468.5 -43.8 446.9 -104.6Q425.2 -165.4 425.2 -263.5Q425.2 -363.9 448.5 -424.4Q471.7 -485 517.6 -512.2Q563.4 -539.4 631.1 -539.4Q698.6 -539.4 742.1 -514.5Q785.6 -489.6 806.5 -431.3Q827.5 -372.9 827.5 -271.7V-237.7H569.8Q570 -188.6 575.1 -157.1Q580.1 -125.5 593 -110.3Q605.9 -95.1 629.4 -95.1Q644.4 -95.1 655.1 -100.4Q665.8 -105.8 672.5 -117Q679.2 -128.2 682.5 -145.8Q685.7 -163.5 686.1 -188H825.9Q825.5 -137 813.1 -99.2Q800.6 -61.4 776 -36.9Q751.5 -12.5 714.3 -0.2Q677.1 12 627.7 12ZM570.1 -312.8H682.5Q682.5 -346.1 680 -368.9Q677.5 -391.7 671.6 -405.8Q665.8 -420 655.5 -426.2Q645.1 -432.3 629.6 -432.3Q607.3 -432.3 594.7 -419.4Q582.1 -406.5 576.5 -380.3Q571 -354.1 570.1 -312.8Z M1066.2 12Q1015.7 12 978.3 0.9Q940.9 -10.2 916 -31Q891.2 -51.8 878.8 -81Q866.4 -110.1 866.4 -146.5Q866.4 -150.7 866.8 -157Q867.1 -163.2 867.9 -169.3H1001.8Q1001 -163.2 1001 -159Q1001 -154.9 1001 -150.6Q1001.4 -132.3 1009.3 -119.1Q1017.2 -105.8 1031.9 -98.9Q1046.7 -92 1066.6 -92Q1083.1 -92 1097.2 -96.8Q1111.3 -101.7 1120 -112.8Q1128.8 -124 1128.8 -141.9Q1128.8 -164.6 1113.5 -177.3Q1098.3 -190 1073.7 -198.5Q1049.2 -206.9 1021 -216Q995 -224 969.1 -235Q943.2 -245.9 921.7 -263.6Q900.2 -281.3 887.1 -308.8Q874.1 -336.2 874.1 -377.5Q874.1 -420.8 889.6 -451.4Q905 -482 932.4 -501.6Q959.8 -521.2 995.7 -530.3Q1031.5 -539.4 1071.8 -539.4Q1111.1 -539.4 1145 -530.6Q1179 -521.8 1204.7 -504.2Q1230.4 -486.6 1244.6 -460.4Q1258.9 -434.3 1258.9 -399.8Q1258.9 -393.1 1258.5 -385Q1258.1 -377 1257.3 -371.6H1124.4V-386.9Q1124.4 -403.5 1117.3 -414.1Q1110.2 -424.6 1097.6 -430Q1084.9 -435.4 1068.1 -435.4Q1057.1 -435.4 1047.1 -432.8Q1037 -430.3 1029.3 -424.8Q1021.6 -419.2 1017.1 -411.2Q1012.6 -403.3 1012.6 -392Q1012.6 -374.1 1025.4 -362.8Q1038.2 -351.6 1059.4 -344.1Q1080.5 -336.6 1105.2 -328.2Q1132.6 -319.8 1161.9 -309.8Q1191.3 -299.8 1216.4 -283.2Q1241.5 -266.5 1257.1 -238.8Q1272.6 -211 1272.6 -166.6Q1272.6 -118.1 1257 -84Q1241.3 -49.9 1213.4 -28.7Q1185.5 -7.5 1147.8 2.3Q1110.2 12 1066.2 12Z M1477.9 12Q1446.8 12 1418.8 4.4Q1390.8 -3.2 1369.1 -20.3Q1347.3 -37.4 1335 -65.8Q1322.7 -94.2 1322.7 -135.1Q1322.7 -186 1342.5 -221.3Q1362.4 -256.5 1400.7 -278.3Q1438.9 -300 1494.9 -309.9Q1550.8 -319.7 1622.8 -319.7V-362.6Q1622.8 -383.1 1615.8 -397.2Q1608.8 -411.3 1594.7 -419.1Q1580.6 -426.9 1557.7 -426.9Q1535.3 -426.9 1519.9 -420.2Q1504.6 -413.4 1497.2 -401.7Q1489.9 -390 1489.9 -374.1V-365.3H1342.7Q1341.7 -369.6 1341.7 -373.5Q1341.7 -377.4 1341.7 -382.5Q1341.7 -432 1367.9 -467Q1394.1 -502.1 1443.2 -520.7Q1492.4 -539.3 1561.1 -539.3Q1623.1 -539.3 1671.4 -523Q1719.8 -506.7 1747.7 -470.2Q1775.6 -433.6 1775.6 -371.8V-139.3Q1775.6 -123.1 1783.9 -113.7Q1792.1 -104.4 1806.8 -104.4H1834.8V-6.3Q1821.2 0.4 1798.4 6Q1775.6 11.5 1747 11.5Q1716.7 11.5 1694 3.3Q1671.3 -4.9 1657.1 -19.9Q1642.9 -35 1637.7 -55.2H1631.9Q1616.4 -36.2 1595 -20.9Q1573.6 -5.6 1544.9 3.2Q1516.1 12 1477.9 12ZM1536.9 -100.5Q1556 -100.5 1571.7 -107.3Q1587.5 -114.1 1598.9 -126.1Q1610.3 -138.1 1616.5 -155.1Q1622.8 -172 1622.8 -192.2V-234.2Q1573.5 -234.2 1541.3 -225.1Q1509.1 -216 1493.6 -198.7Q1478 -181.5 1478 -156.4Q1478 -137.7 1485.3 -125.2Q1492.5 -112.6 1505.8 -106.6Q1519 -100.5 1536.9 -100.5Z M1899.9 187V-527.2H2030.1L2043 -456.3H2049.6Q2074.2 -498.3 2112.8 -518.7Q2151.3 -539.2 2201.1 -539.2Q2265.4 -539.2 2310.4 -509.2Q2355.4 -479.3 2379.1 -417.9Q2402.9 -356.4 2402.9 -261.7Q2402.9 -168.7 2379 -107.9Q2355.2 -47.1 2310.8 -17.6Q2266.5 12 2204.9 12Q2174.2 12 2147.7 4.7Q2121.2 -2.6 2100.4 -17.6Q2079.7 -32.7 2065.1 -54.8H2058.8V187ZM2150 -116.1Q2183.6 -116.1 2203.7 -130.5Q2223.9 -144.9 2232.8 -173Q2241.7 -201.2 2241.7 -242.7V-285.6Q2241.7 -327.5 2232.9 -355.8Q2224 -384.1 2203.8 -398.3Q2183.6 -412.5 2149.9 -412.5Q2117.5 -412.5 2097.1 -396.5Q2076.7 -380.5 2067.3 -351.1Q2057.9 -321.6 2057.9 -281.1V-248Q2057.9 -217.8 2063.1 -193.5Q2068.4 -169.1 2079.5 -151.9Q2090.6 -134.7 2108.2 -125.4Q2125.8 -116.1 2150 -116.1Z M2775.4 12Q2684.4 12 2620.2 -17.5Q2555.9 -47 2522.2 -108Q2488.4 -169 2488.4 -263.5Q2488.4 -357.4 2521.9 -418.2Q2555.3 -479 2618 -509.1Q2680.6 -539.1 2768.8 -539.1Q2856.5 -539.1 2917.1 -510Q2977.8 -481 3009.2 -420.9Q3040.6 -360.8 3040.6 -266.5V-231.1H2655.2Q2656.2 -189.2 2668.3 -159.9Q2680.4 -130.6 2706.3 -115.9Q2732.3 -101.1 2774 -101.1Q2799.2 -101.1 2818.7 -107.1Q2838.2 -113.1 2851.7 -124.4Q2865.2 -135.8 2872.2 -152Q2879.1 -168.2 2879.2 -188.2H3040.5Q3040.5 -140 3022.3 -102.5Q3004.2 -65 2969.6 -39.6Q2935.1 -14.2 2886.1 -1.1Q2837.1 12 2775.4 12ZM2656.6 -321.9H2871.8Q2871.8 -348.1 2864.9 -367.5Q2858 -386.9 2845.2 -400Q2832.4 -413 2814.3 -419.3Q2796.1 -425.6 2773.3 -425.6Q2736.9 -425.6 2712.3 -413.6Q2687.7 -401.7 2674.4 -378.9Q2661.1 -356 2656.6 -321.9Z M3163.9 0V-527.3H3304.4L3316.4 -443H3324Q3337 -472.2 3357.2 -494.1Q3377.4 -515.9 3404.8 -527.9Q3432.2 -539.8 3464.9 -539.8Q3483.8 -539.8 3499.9 -536.5Q3515.9 -533.3 3526.3 -528.8V-384.7H3461.4Q3428.5 -384.7 3404.7 -375.2Q3380.8 -365.6 3365.5 -347.6Q3350.3 -329.6 3342.9 -304.6Q3335.5 -279.6 3335.5 -248.7V0Z M3869.1 12Q3807.8 12 3766.1 -3.2Q3724.4 -18.3 3703.2 -53.3Q3682 -88.3 3682 -147.4V-404H3589.6V-527.4H3688.4L3724.1 -683.7H3860.2V-527.4H3993.3V-404H3860.2V-183.2Q3860.2 -148.3 3874.5 -129.9Q3888.9 -111.4 3932 -111.4H3993.3V-5.8Q3979.6 -0.9 3956.7 3.3Q3933.8 7.5 3910.2 9.7Q3886.6 12 3869.1 12Z M4460.9 12Q4355.5 12 4277.3 -18.7Q4199.1 -49.5 4156 -110.7Q4112.9 -171.9 4112.9 -264Q4112.9 -356.5 4156 -417.8Q4199.1 -479.1 4277.3 -509.3Q4355.5 -539.5 4460.9 -539.5Q4566.2 -539.5 4644.4 -509.3Q4722.7 -479.1 4765.8 -417.8Q4808.9 -356.5 4808.9 -264Q4808.9 -171.9 4765.8 -110.7Q4722.7 -49.5 4644.4 -18.7Q4566.2 12 4460.9 12ZM4460.9 -113.5Q4513.1 -113.5 4548.2 -131.2Q4583.2 -148.8 4600.6 -180.5Q4618.1 -212.2 4618.1 -254V-274Q4618.1 -316.2 4600.6 -347.7Q4583.2 -379.2 4548.2 -396.6Q4513.1 -414.1 4460.9 -414.1Q4408.7 -414.1 4373.6 -396.6Q4338.6 -379.2 4321.1 -347.7Q4303.7 -316.2 4303.7 -274V-254Q4303.7 -212.2 4321.1 -180.5Q4338.6 -148.8 4373.6 -131.2Q4408.7 -113.5 4460.9 -113.5Z"/></svg>
+</div>
+<script src="/cartao.js"></script>
 <div id="tela" aria-live="polite"><p class="rotulo">Seu resultado</p><h1>Carregando...</h1></div>
 
 <script>
@@ -125,16 +131,31 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     var n = nome ? esc(nome) + ', ' : '';
     if (d.tipo === 'lei') return n + 'a conta não fecha. <em>Mas existe saída.</em>';
     if (d.tipo === 'sem_data') return n + 'as suas contas estão prontas.';
+    if (d.aprox) return n + 'você sai das dívidas <em>' + esc(d.faixa_txt || 'por volta de ' + d.saida_txt) + '</em>.';
     return n + (d.carro ? 'vendendo o carro, você sai' : 'você sai') + ' das dívidas em <em>' + esc(d.saida_txt) + '</em>.';
+  }
+  function notaAprox(d) {
+    return d.aprox ? '<p class="aprox">Data aproximada, feita com valores de cabeça. O plano exato usa os valores do app do banco e pode mudar essa data.</p>' : '';
+  }
+  // cartão do story: meses do próximo mês até a saída
+  function areaCartao(d) {
+    if (!d.saida || !window.DesapertoCartao) return '';
+    var h = new Date(Date.now() - 3 * 3600e3), ini = h.getUTCFullYear() * 12 + h.getUTCMonth() + 1, fim = d.saida[0] * 12 + d.saida[1] - 1;
+    var total = Math.max(1, fim - ini + 1), M = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+    setTimeout(function () { var el = document.getElementById('area-cartao'); if (el) window.DesapertoCartao.montar(el, { total: total, feitos: 0, pagas: 0, dividas: d.dividas, fim_txt: M[d.saida[1] - 1] + '/' + String(d.saida[0]).slice(2), aprox: d.aprox }, contar); }, 0);
+    return '<div id="area-cartao"></div>';
   }
   function numeros(d) {
     var h = '';
     if (d.tipo === 'lei') {
       if (d.diferenca) h += '<div><small>Do jeito que está, falta por mês</small><b>' + reais(d.diferenca) + '</b></div>';
       if (d.parcela) h += '<div><small>Proposta única para os credores, pela Lei do Superendividamento</small><b>' + reais(d.parcela) + ' por mês</b><small>em ' + d.meses + ' parcelas' + (d.saida_txt ? ', terminando em ' + esc(d.saida_txt) : '') + '</small></div>';
+    } else if (d.aprox) {
+      if (d.primeira_txt) h += '<div><small>A primeira dívida pode acabar já em</small><b>' + esc(d.primeira_txt) + '</b></div>';
+      if (d.juros_mes > 20) h += '<div><small>Hoje, só de juros, você paga cerca de</small><b>' + reais(d.juros_mes) + ' por mês</b></div>';
     } else {
       if (d.primeira_txt) h += '<div><small>A primeira dívida acaba já em</small><b>' + esc(d.primeira_txt) + '</b></div>';
-      if (d.economia > 50) h += '<div><small>Seguindo a ordem certa, você deixa de pagar de juros nos próximos 12 meses</small><b>' + reais(d.economia) + '</b></div>';
+      if (d.economia > 50) h += '<div><small>Seguindo a ordem certa, você pode deixar de pagar de juros nos próximos 12 meses</small><b>' + reais(d.economia) + '</b></div>';
     }
     return h ? '<div class="numeros">' + h + '</div>' : '';
   }
@@ -142,12 +163,17 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     var itens = d.tipo === 'lei'
       ? ['O que proteger primeiro: casa, comida e contas.', 'A proposta para os credores, com o valor de cada um.', 'O passo a passo para pedir a renegociação, de graça, no Procon ou na Defensoria Pública.', 'O dossiê pronto para levar: dívidas, orçamento e a proposta.']
       : ['A ordem: qual dívida pagar primeiro e por quê.', 'O mês a mês: quanto pagar, em qual dívida e onde, até a última.', 'O que falar com o banco e quanto oferecer nas dívidas atrasadas.', 'Os seus direitos e o que fazer se um mês apertar.', 'Se você escolheu: um e-mail no começo de cada mês com o que fazer naquele mês.'];
+    if (d.aprox) itens.unshift('A data exata: depois de pagar, você completa as respostas com os valores do app do banco, em uns 15 minutos.');
     return '<div class="cartao"><h2>O que vem no plano completo</h2><ul class="inclui">' + itens.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
   }
   function ancora(d) {
+    if (d.aprox && d.juros_mes > 20 && s.preco) {
+      var dj = Math.ceil(s.preco / (d.juros_mes / 30));
+      return dj <= 31 ? '<p class="ancora">Custa menos que ' + (dj <= 1 ? '1 dia' : dj + ' dias') + ' dos juros que você paga hoje.</p>' : '';
+    }
     if (!(d.economia > 50) || !s.preco) return '';
     var dias = Math.ceil(s.preco / (d.economia / 365));
-    return dias <= 31 ? '<p class="ancora">Custa menos que ' + (dias <= 1 ? '1 dia' : dias + ' dias') + ' dos juros que o plano evita.</p>' : '';
+    return dias <= 31 ? '<p class="ancora">Custa menos que ' + (dias <= 1 ? '1 dia' : dias + ' dias') + ' dos juros que o plano pode evitar.</p>' : '';
   }
 
   function desenhar() {
@@ -161,10 +187,10 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
         $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>Está demorando mais que o normal.</h1><p>Pode fechar esta página. Assim que as contas ficarem prontas, a sua data chega no e-mail <b>' + esc(s.email) + '</b>.</p><p class="pequeno">Olhe também em Spam e em Promoções.</p>';
         repetir(15000); return;
       }
-      $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>' + (nome ? esc(nome) + ', estamos' : 'Estamos') + ' fazendo as suas contas.</h1><p>Leva cerca de 1 minuto. Não precisa fazer nada.</p>' +
+      $t.innerHTML = '<p class="rotulo">' + (s.pago ? 'Seu plano' : 'Seu resultado') + '</p><h1>' + (nome ? esc(nome) + ', estamos' : 'Estamos') + (s.pago ? ' montando o seu plano.' : ' fazendo as suas contas.') + '</h1><p>Leva cerca de 1 minuto. Não precisa fazer nada.</p>' +
         '<div class="cartao"><div class="barra-c"><i style="width:' + Math.min(92, 8 + passou * 1.1) + '%"></i></div><ul class="etapas-c">' +
         ETAPAS.map(function (x, i) { return '<li' + (i < etapaG ? ' class="feito"' : '') + '>' + x + (i === etapaG ? '...' : '') + '</li>'; }).join('') + '</ul></div>' +
-        '<p class="pequeno">Se precisar sair, tudo bem: a sua data também chega no e-mail ' + esc(s.email) + '.</p>';
+        '<p class="pequeno">Se precisar sair, tudo bem: ' + (s.pago ? 'o plano' : 'a sua data') + ' também chega no e-mail ' + esc(s.email) + '.</p>';
       repetir(3000); return;
     }
     if (s.estado === 'erro') {
@@ -175,6 +201,13 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
       $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>Algumas respostas não batem.</h1><p>Antes de mostrar a sua data, a gente confere com cuidado para não te dar um número errado. Você recebe um e-mail em <b>' + esc(s.email) + '</b> em até 24 horas.</p><p class="pequeno">Nada foi cobrado. Protocolo ' + esc(s.protocolo) + '.</p>';
       return;
     }
+    if (s.estado === 'completar') {
+      $t.innerHTML = '<p class="rotulo">' + (s.gratis ? 'Seu resultado' : 'Pagamento confirmado') + '</p><h1>' + (nome ? esc(nome) + ', agora' : 'Agora') + ', o plano exato.</h1>' +
+        '<div class="cartao"><h2>Falta um passo: as respostas completas</h2><p>Separe uns 15 minutos e abra o app do banco. Você confirma o que entra, o que sai e o valor de cada dívida. Assim que terminar, o plano chega no e-mail <b>' + esc(s.email) + '</b> em poucos minutos.</p>' +
+        '<a class="btn" href="' + esc(s.continuar) + '">Completar minhas respostas</a><p class="pequeno">Se não der agora, o link também está no seu e-mail.</p></div>' +
+        (d.saida ? '<div class="numeros"><div><small>Sua data aproximada</small><b>' + esc(d.faixa_txt || d.saida_txt) + '</b></div></div>' : '') + areaCartao(d);
+      return;
+    }
     if (s.estado === 'devolvido') {
       $t.innerHTML = '<p class="rotulo">Seu plano</p><h1>O pagamento deste plano foi devolvido.</h1><p>Se precisar de alguma coisa, escreva para contato@desaperto.com.</p>';
       return;
@@ -182,7 +215,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     if (s.estado === 'enviado') {
       $t.innerHTML = '<p class="rotulo">' + (s.pago ? 'Pagamento confirmado' : 'Seu plano') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) +
         '<div class="cartao"><h2>' + (s.pago ? 'Pagamento confirmado. O seu plano foi enviado.' : 'O seu plano já foi enviado.') + '</h2><p>Ele está no e-mail <b>' + esc(s.email) + '</b>, em PDF. Se não achar na caixa de entrada, olhe em Spam e em Promoções, ou escreva para contato@desaperto.com.</p></div>' +
-        '<div class="cartao"><h2>Por onde começar</h2><p>Abra o PDF na página 3: são três passos para esta semana, com o tempo que cada um leva. Deixe o app do banco à mão.</p></div>';
+        '<div class="cartao"><h2>Por onde começar</h2><p>Abra o PDF na página 3: são três passos para esta semana, com o tempo que cada um leva. Deixe o app do banco à mão.</p></div>' + areaCartao(d);
       return;
     }
     if (s.estado === 'pago') {
@@ -191,18 +224,18 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
         : 'O seu plano está a caminho do e-mail <b>' + esc(s.email) + '</b>. Chega em poucos minutos.';
       $t.innerHTML = '<p class="rotulo">' + (s.gratis ? 'Seu resultado' : 'Pagamento confirmado') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) +
         '<div class="cartao"><h2>' + (s.gratis ? 'Pronto.' : 'Pagamento confirmado. Obrigado.') + '</h2><p>' + txt + '</p><p class="pequeno">Se não aparecer na caixa de entrada, olhe em Spam e em Promoções.</p></div>' +
-        '<div class="cartao"><h2>Enquanto o e-mail chega</h2><p>Abra o app do banco e deixe à mão. O primeiro passo do plano é para esta semana e leva poucos minutos.</p></div>';
+        '<div class="cartao"><h2>Enquanto o e-mail chega</h2><p>Abra o app do banco e deixe à mão. O primeiro passo do plano é para esta semana e leva poucos minutos.</p></div>' + areaCartao(d);
       if (!s.gratis) repetir(8000);
       return;
     }
     if (s.estado === 'oferta') {
       contar('v_pagar_data');
-      $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) + inclui(d) +
-        '<div class="oferta"><div><span class="preco">' + esc(s.preco_txt) + '</span></div><p class="sub">Uma vez só, por Pix. Sem assinatura. O plano chega no seu e-mail em poucos minutos.</p>' + ancora(d) +
+      $t.innerHTML = '<p class="rotulo">' + (d.aprox ? 'Sua data aproximada' : 'Seu resultado') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) + notaAprox(d) + inclui(d) +
+        '<div class="oferta"><div><span class="preco">' + esc(s.preco_txt) + '</span></div><p class="sub">' + (d.aprox ? 'Uma vez só, por Pix. Sem assinatura. Depois de pagar, você completa as respostas e o plano exato chega no seu e-mail em minutos.' : 'Uma vez só, por Pix. Sem assinatura. O plano chega no seu e-mail em poucos minutos.') + '</p>' + ancora(d) +
         '<button type="button" class="btn" id="btn-pix">Pagar ' + esc(s.preco_txt) + ' com Pix</button><div id="erro" class="erro-box" hidden></div>' +
         '<p class="pequeno">Pagamento processado pelo Mercado Pago. O Desaperto não vê nem guarda dados do seu banco.</p></div>' +
         '<div class="garantia">' + ESCUDO + '<p><b>Garantia de 7 dias.</b> Se o plano não te ajudar, responda o e-mail do plano e devolvemos o valor inteiro. Sem perguntas difíceis.</p></div>' +
-        '<p class="pequeno">Protocolo ' + esc(s.protocolo) + '. A data acima é sua, de graça, pague ou não.</p>';
+        '<p class="pequeno">Protocolo ' + esc(s.protocolo) + '. A data acima é sua, de graça, pague ou não.</p>' + areaCartao(d);
       document.getElementById('btn-pix').addEventListener('click', gerarPix);
       return;
     }

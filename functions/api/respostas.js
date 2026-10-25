@@ -1,7 +1,7 @@
 // POST /api/respostas  -> guarda as respostas do questionário e devolve um protocolo.
 // PUT  /api/respostas  -> a própria pessoa corrige as respostas já enviadas (precisa do id e da chave).
 import { json, erro, sha256, aleatorio, protocolo, agora, lerCorpo, validarRespostas, limparAntigas, enviarEmail, escapar, pedirPlano, LIMITE_POR_HORA,
-  garantirTabelas, evento, cobrancaAtiva, assinaturaPagar } from '../../lib/api.js';
+  garantirTabelas, evento, cobrancaAtiva, assinaturaPagar, enviarDataGratis } from '../../lib/api.js';
 
 async function origem(request, env) {
   const ip = request.headers.get('cf-connecting-ip') || 'sem-ip';
@@ -25,6 +25,13 @@ export async function onRequestPost({ request, env }) {
   const chave = aleatorio(24);
   const quando = agora();
   const teste = corpo.teste ? 1 : 0;
+  const rapido = corpo.rapido === true && r.rapido === true;
+  let estimativa = null;
+  if (rapido) {
+    if (!corpo.estimativa || typeof corpo.estimativa !== 'object') return erro('Falta a estimativa.');
+    estimativa = JSON.stringify(corpo.estimativa);
+    if (estimativa.length > 4000) return erro('Estimativa inválida.');
+  }
   let prot = protocolo();
   for (let i = 0; i < 3; i++) {
     try {
@@ -39,6 +46,20 @@ export async function onRequestPost({ request, env }) {
   }
   try { await limparAntigas(env.DB); } catch {}
   try { await garantirTabelas(env.DB); } catch {}
+  const pagar = `/pagar?id=${encodeURIComponent(id)}&a=${await assinaturaPagar(env, id)}`;
+  if (rapido) {
+    // Versão rápida: não roda o motor. A data aproximada já veio calculada; o plano exato vem depois das respostas completas.
+    await env.DB.prepare("UPDATE respostas SET status = 'rapido', estimativa = ? WHERE id = ?").bind(estimativa, id).run();
+    if (!teste) await evento(env.DB, 'rapido_enviou');
+    const primeiro = r.nome.trim().split(/\s+/)[0];
+    await enviarEmail(env, { para: env.EMAIL_AVISO, assunto: `${teste ? '[teste] ' : ''}Data rápida: ${primeiro} · ${prot}`, texto: `Alguém fez a versão rápida.\nProtocolo: ${prot}\nDívidas: ${r.dividas.length}\nVeja em https://desaperto.com/admin` });
+    if (!teste && cobrancaAtiva(env)) {
+      const origemUrl = new URL(request.url).origin;
+      const l = { id, nome: r.nome, email: r.email.trim(), status: 'rapido', estimativa };
+      if (await enviarDataGratis(env, l, origemUrl)) await env.DB.prepare('UPDATE respostas SET aviso_data_em = ? WHERE id = ?').bind(agora(), id).run();
+    }
+    return json({ ok: true, id, chave, protocolo: prot, pagar }, 201);
+  }
   if (!teste) await evento(env.DB, 'enviou');
   if (await pedirPlano(env, id)) {
     try { await env.DB.prepare("UPDATE respostas SET status = 'gerando' WHERE id = ?").bind(id).run(); } catch {}
@@ -59,20 +80,26 @@ export async function onRequestPost({ request, env }) {
       html: `<p>${escapar(primeiroNome)}, recebemos suas respostas.</p><p>Seu plano de desaperto está sendo montado e chega neste e-mail em poucos minutos.<br>Protocolo: <b>${prot}</b></p><p style="color:#555D58;font-size:13px">O Desaperto nunca pede senha, nunca manda boleto e nunca cobra para limpar nome.</p><p><b>desaperto</b> · desaperto.com</p>`,
     });
   }
-  return json({ ok: true, id, chave, protocolo: prot, pagar: `/pagar?id=${encodeURIComponent(id)}&a=${await assinaturaPagar(env, id)}` }, 201);
+  return json({ ok: true, id, chave, protocolo: prot, pagar }, 201);
 }
 
 export async function onRequestPut({ request, env }) {
   if (!env.DB) return erro('O site ainda está sendo configurado. Tente de novo mais tarde.', 503);
   const { corpo, erro: e } = await lerCorpo(request);
   if (e) return erro(e, 413);
-  const { id, chave, respostas: r } = corpo || {};
-  if (typeof id !== 'string' || typeof chave !== 'string') return erro('Envio sem identificação.');
+  const { id, chave, a, respostas: r } = corpo || {};
+  if (typeof id !== 'string' || (typeof chave !== 'string' && typeof a !== 'string')) return erro('Envio sem identificação.');
   const problema = validarRespostas(r);
   if (problema) return erro(problema);
-  const linha = await env.DB.prepare('SELECT chave_hash, protocolo FROM respostas WHERE id = ?').bind(id).first();
-  if (!linha || linha.chave_hash !== (await sha256(chave))) return erro('Não encontramos esse envio. Envie de novo como novo.', 404);
+  if (r.rapido) return erro('Faltam as respostas completas.');
   try { await garantirTabelas(env.DB); } catch {}
+  const linha = await env.DB.prepare('SELECT chave_hash, protocolo, status, teste FROM respostas WHERE id = ?').bind(id).first();
+  const valido = linha && (typeof chave === 'string' ? linha.chave_hash === (await sha256(chave)) : a === (await assinaturaPagar(env, id)));
+  if (!valido) return erro('Não encontramos esse envio. Envie de novo como novo.', 404);
+  if (linha.status === 'rapido') {
+    await env.DB.prepare('UPDATE respostas SET completado_em = ? WHERE id = ?').bind(agora(), id).run();
+    if (!linha.teste) await evento(env.DB, 'completou');
+  }
   await env.DB.prepare("UPDATE respostas SET dados = ?, nome = ?, email = ?, atualizado_em = ?, status = 'recebido', plano_resumo = NULL, plano_erro = NULL, aviso_data_em = NULL WHERE id = ?")
     .bind(JSON.stringify(r), r.nome.trim(), r.email.trim().toLowerCase(), agora(), id).run();
   if (await pedirPlano(env, id)) {

@@ -62,3 +62,12 @@ Configuração extra:
 
 ## Funil
 - O site conta, por dia, quantas vezes cada passo acontece (sem cookie, sem nome). O resumo fica no topo do /admin.
+
+## Versão rápida (data aproximada)
+- A página inicial leva para /rapido: 4 telas, de cabeça (renda, 4 gastos, dívidas com valor aproximado, dinheiro guardado). A data é calculada no navegador, com os juros médios de referência do motor, e mostrada em /pagar como "aproximada".
+- Depois do pagamento, a pessoa completa o questionário em /comecar?continuar=... (link no e-mail e na página). Só então o motor roda e o plano exato é enviado.
+- Quem pagou e não completou recebe um lembrete 2 dias depois. No /admin aparece como "Data rápida · falta completar".
+
+## Cartão para o story
+- /cartao.js desenha a imagem (1080 x 1920) com a contagem e a barra de progresso, sem valores e sem nome.
+- Aparece na página /pagar (depois da data e depois do pagamento) e em /progresso, que tem link no e-mail do plano e no e-mail de cada mês.

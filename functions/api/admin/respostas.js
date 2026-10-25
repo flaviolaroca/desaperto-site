@@ -20,12 +20,12 @@ export async function onRequest({ request, env }) {
       return json({ ok: true, resposta: { ...l, chave_hash: undefined, origem_hash: undefined, pag_qr: undefined, pag_qr_img: undefined, dados: JSON.parse(l.dados), plano_resumo: l.plano_resumo ? JSON.parse(l.plano_resumo) : null } });
     }
     const { results } = await env.DB.prepare(
-      "SELECT id, protocolo, criado_em, atualizado_em, nome, email, teste, status, plano_enviado_em, plano_gerado_em, plano_resumo, plano_erro, pag_status, pago_em, pago_valor, devolvido_em, aviso_data_em, json_array_length(dados, '$.dividas') AS n_dividas FROM respostas ORDER BY criado_em DESC LIMIT 500"
+      "SELECT id, protocolo, criado_em, atualizado_em, nome, email, teste, status, plano_enviado_em, plano_gerado_em, plano_resumo, plano_erro, pag_status, pago_em, pago_valor, devolvido_em, aviso_data_em, estimativa, completado_em, json_array_length(dados, '$.dividas') AS n_dividas FROM respostas ORDER BY criado_em DESC LIMIT 500"
     ).all();
     return json({ ok: true, cobrar: !!(env.MP_ACCESS_TOKEN || '').trim(), respostas: results.map((x) => {
       const p = x.plano_resumo ? JSON.parse(x.plano_resumo) : null;
       if (p) delete p.acoes_mensais;
-      return { ...x, plano_resumo: p };
+      return { ...x, plano_resumo: p, estimativa: x.estimativa ? JSON.parse(x.estimativa) : null };
     }) });
   }
 

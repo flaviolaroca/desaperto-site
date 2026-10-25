@@ -691,7 +691,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     $tela.innerHTML = '<section class="tela"><h1>Agora, vamos olhar juntos.</h1><div class="texto">' +
       '<p>Nas próximas telas, vamos te pedir os números da sua vida real: quanto entra, quanto sai e o que você deve. Pode ser desconfortável ver o valor total. Tudo bem sentir isso. Respira e continua: é a partir desse número que o caminho aparece.</p>' +
       '<p>Os detalhes fazem toda a diferença. Um valor esquecido pode mudar a ordem certa de pagar. Uma data de vencimento pode te fazer economizar todo mês. Quanto mais real e completa for a sua resposta, mais o seu plano vai ser feito para você, e não para qualquer pessoa.</p>' +
-      '<p>No fim, você vê na hora, de graça, o mês em que sai das dívidas.</p>' +
+      (E.envio && E.envio.a ? '<p><strong>Esta é a parte que deixa o plano exato.</strong> Na versão rápida você respondeu de cabeça; agora são os valores de verdade, do app do banco.</p>' : '<p>No fim, você vê na hora, de graça, o mês em que sai das dívidas.</p>') +
       '<p>Separe uns 15 minutos tranquilos. Deixe aberto o app do seu banco e o do Serasa. Se bater o cansaço no meio, respira e segue no seu tempo. Seu progresso fica salvo neste aparelho.</p></div>' +
       '<div class="campo" data-campo="consent"><label class="check"><input type="checkbox" id="q-consent"' + (r.consent ? ' checked' : '') + '><span>Concordo que minhas respostas sejam usadas apenas para montar o meu plano, com análise apoiada por inteligência artificial, e apagadas em até 90 dias. Entendo que o Desaperto é uma ferramenta educacional e não substitui consultoria profissional. Li os <a href="/termos" target="_blank" rel="noopener">termos de uso</a> e a <a href="/privacidade" target="_blank" rel="noopener">política de privacidade</a>.</span></label></div>' +
       botoes('Começar', '').replace('</div>', '<p class="nota">Não pedimos CPF, senha nem extrato. Só os números.</p></div>') + '</section>';
@@ -717,6 +717,10 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
   function renderDividas() {
     var ds = R().dividas = R().dividas || [];
     var h = '<section class="tela"><h1>Suas dívidas</h1><p class="lead">Adicione uma por vez: cartões, empréstimos, cheque especial, contas atrasadas e dívidas com pessoas. Cada cartão de crédito conta como uma dívida.</p>';
+    if (E.rapidoDividas && E.rapidoDividas.length) {
+      var NT = { cartao: 'Cartão de crédito', cheque: 'Cheque especial', pessoal: 'Empréstimo pessoal no banco', app: 'Empréstimo em app ou financeira', consignado: 'Consignado', veiculo: 'Financiamento de veículo', imovel: 'Financiamento de imóvel', crediario: 'Crediário ou carnê de loja', conta: 'Conta atrasada', imposto: 'Imposto', parente: 'Dívida com parente ou conhecido', outra: 'Outra' };
+      h += '<div class="aviso"><strong>Na versão rápida, você listou:</strong>' + E.rapidoDividas.map(function (d) { return '<span>' + esc(NT[d.tipo] || d.tipo) + ', cerca de ' + reais(d.valor) + (d.atrasada ? ' (atrasada)' : '') + '</span>'; }).join('') + '<span>Agora adicione cada uma com os valores do app.</span></div>';
+    }
     if (!ds.length) h += '<div class="vazio">Nenhuma dívida adicionada ainda. Comece pela que você lembrar primeiro.</div>';
     else {
       h += '<div class="cartoes">' + ds.map(function (d, i) {
@@ -801,7 +805,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       sec('Dívidas', 'dividas', [['Quantidade', String((r.dividas || []).length)], ['Soma aproximada', reais(totalDividas())], totalParceladas() ? ['Compras parceladas, sem juros', reais(totalParceladas())] : null, ['Atrasadas', String((r.dividas || []).filter(function (d) { return d.s_status === 'Atrasada'; }).length)]]) +
       sec('Para fechar', 'recursos', [['Dinheiro guardado', reais(r.guardado)], ['Empréstimo para pagar dívida', r.emprestPagar || '—']]) +
       sec('Depois das dívidas', 'depois', [['O que você quer fazer', r.objetivo || '—'], ['E-mail do mês', r.acompanhar || '—']]) +
-      '</div>' + '<div class="acoes"><div id="erro-envio" class="erro-envio oculto" role="alert"></div><button type="button" class="btn btn-principal" id="btn-enviar">' + (E.envio ? 'Enviar a correção' : 'Enviar e ver minha data') + '</button><p class="nota">Você vê na hora, de graça, o mês em que sai das dívidas. Suas respostas são apagadas em até 90 dias.</p></div></section>';
+      '</div>' + '<div class="acoes"><div id="erro-envio" class="erro-envio oculto" role="alert"></div><button type="button" class="btn btn-principal" id="btn-enviar">' + (E.envio && E.envio.a && !E.enviado ? 'Enviar e receber meu plano' : E.envio ? 'Enviar a correção' : 'Enviar e ver minha data') + '</button><p class="nota">Você vê na hora, de graça, o mês em que sai das dívidas. Suas respostas são apagadas em até 90 dias.</p></div></section>';
     $tela.innerHTML = h;
     $tela.querySelectorAll('[data-ir]').forEach(function (b) { b.addEventListener('click', function () { ui.daRevisao = true; ir(indice(b.getAttribute('data-ir'))); }); });
     document.getElementById('btn-enviar').addEventListener('click', enviar);
@@ -812,8 +816,8 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     var btn = document.getElementById('btn-enviar'), caixa = document.getElementById('erro-envio');
     var rotulo = btn.textContent;
     btn.disabled = true; btn.textContent = 'Enviando...'; caixa.classList.add('oculto');
-    var corrigindo = !!(E.envio && E.envio.id && E.envio.chave);
-    var corpo = corrigindo ? { id: E.envio.id, chave: E.envio.chave, respostas: R() } : { respostas: R(), teste: TESTE };
+    var corrigindo = !!(E.envio && E.envio.id && (E.envio.chave || E.envio.a));
+    var corpo = !corrigindo ? { respostas: R(), teste: TESTE } : E.envio.chave ? { id: E.envio.id, chave: E.envio.chave, respostas: R() } : { id: E.envio.id, a: E.envio.a, respostas: R() };
     function falhou(msg) {
       btn.disabled = false; btn.textContent = rotulo;
       caixa.textContent = (msg || 'Não conseguimos enviar agora.') + ' Suas respostas continuam salvas neste aparelho. Confira a internet e tente de novo.';
@@ -826,7 +830,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     pedido.then(function (resp) {
       return resp.json().catch(function () { return {}; }).then(function (j) {
         if (resp.ok && j.ok) {
-          E.envio = { id: j.id || E.envio.id, chave: corrigindo ? E.envio.chave : j.chave, protocolo: j.protocolo, pagar: j.pagar || (E.envio && E.envio.pagar) };
+          E.envio = { id: j.id || E.envio.id, chave: corrigindo ? E.envio.chave : j.chave, a: corrigindo ? E.envio.a : undefined, protocolo: j.protocolo, pagar: j.pagar || (E.envio && E.envio.pagar) };
           E.enviado = true; E.enviadoEm = new Date().toISOString(); salvar();
           if (E.envio.pagar && !TESTE) { location.href = E.envio.pagar; return; }
           ir(indice('fim'));
@@ -883,6 +887,21 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     if (b) { e.preventDefault(); b.click(); }
   });
 
+  (function () {
+    var qs = new URLSearchParams(location.search), id = qs.get('continuar'), a = qs.get('a');
+    if (!id || !a) return;
+    if (E.envio && E.envio.id === id && E.envio.a) return;  // já está continuando neste aparelho
+    E = { passo: indice('compromisso'), r: { dividas: [], extrasLista: [], anuaisLista: [], gastos: {}, consent: true }, enviado: false, envio: { id: id, a: a, pagar: '/pagar?id=' + encodeURIComponent(id) + '&a=' + encodeURIComponent(a) } };
+    salvar();
+    fetch('/api/continuar?id=' + encodeURIComponent(id) + '&a=' + encodeURIComponent(a)).then(function (r) { return r.json(); }).then(function (j) {
+      if (!j.ok || !j.rapido) return;
+      var q = j.rapido, r = E.r;
+      r.nome = q.nome; r.email = q.email; r.renda = q.renda; r.guardado = q.guardado;
+      if (q.gastos) { if (q.gastos.moradia != null) r.gastos.moradia = q.gastos.moradia; if (q.gastos.transporte != null) r.gastos.transporte = q.gastos.transporte; }
+      E.rapidoDividas = q.dividas || [];
+      salvar(); render();
+    }).catch(function () {});
+  })();
   contar('v_comecar');
   (function () {  // de onde veio, só se não passou pela página inicial nesta visita
     try { if (sessionStorage.getItem('desaperto-ev-v_inicio')) return; } catch (e) {}

@@ -100,9 +100,11 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
     if (x.status === 'plano_pronto') return '<span class="chip pronto">Plano pronto</span>' + (p && p.precisa_revisao ? ' <span class="chip rev">revisar</span>' : '');
     if (x.status === 'gerando') return '<span class="chip">Gerando plano...</span>';
     if (x.status === 'erro_plano') return '<span class="chip erro">Erro ao gerar</span>';
+    if (x.status === 'rapido') return '<span class="chip">Data rápida</span>' + (x.pago_em ? ' <span class="chip rev">falta completar</span>' : '');
     return '<span class="chip">Recebido</span>';
   }
-  function saidaTxt(p) {
+  function saidaTxt(p, x) {
+    if (!p && x && x.estimativa) { var e = x.estimativa; return e.tipo === 'lei' ? 'Aproximada: a conta não fecha' : e.saida ? 'Aproximada ' + MESES[e.saida[1] - 1] + '/' + String(e.saida[0]).slice(2) + (e.saida_max ? ' a ' + MESES[e.saida_max[1] - 1] + '/' + String(e.saida_max[0]).slice(2) : '') : 'Aproximada: sem data'; }
     if (!p) return '';
     if (p.repactuacao) return 'Renegociação pela lei' + (p.saida ? ' · saída ' + MESES[p.saida[1] - 1] + '/' + String(p.saida[0]).slice(2) : '');
     if (!p.saida) return 'Sem data de saída';
@@ -132,13 +134,13 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
           (x.status === 'plano_pronto' ? (enviando === x.id ? '<button type="button" data-enviar-sim="' + x.id + '">Confirmar envio para ' + esc(x.email) + '</button><button type="button" class="perigo" data-cancelar>Cancelar</button>' : '<button type="button" data-enviar="' + x.id + '">' + (cobrar && !x.pago_em ? 'Enviar sem cobrar' : 'Enviar plano') + '</button>') : '') +
           (x.pago_em && !x.devolvido_em ? (devolvendo === x.id ? '<button type="button" class="perigo" data-devolver-sim="' + x.id + '">Confirmar: devolver o Pix</button><button type="button" class="perigo" data-cancelar>Cancelar</button>' : '<button type="button" class="sec" data-devolver="' + x.id + '">Devolver</button>') : '') +
           '<button type="button" class="sec" data-ver="' + x.id + '">' + (aberto && aberto.id === x.id ? 'Fechar' : 'Respostas') + '</button>' +
-          '<button type="button" class="sec" data-gerar="' + x.id + '">' + (x.status === 'recebido' || x.status === 'erro_plano' ? 'Gerar plano' : 'Gerar de novo') + '</button>' +
+          (x.status === 'rapido' ? '' : '<button type="button" class="sec" data-gerar="' + x.id + '">' + (x.status === 'recebido' || x.status === 'erro_plano' ? 'Gerar plano' : 'Gerar de novo') + '</button>') +
           '<button type="button" class="sec" data-baixar="' + x.id + '">Baixar</button>' +
           (confirmando === x.id ? '<button type="button" class="perigo" data-apagar-sim="' + x.id + '">Confirmar: apagar</button><button type="button" class="perigo" data-cancelar>Cancelar</button>' : '<button type="button" class="perigo" data-apagar="' + x.id + '">Apagar</button>');
         var p = x.plano_resumo, avisos = '';
         if (p && ((p.alertas && p.alertas.length) || p.precisa_revisao)) avisos = '<ul class="avisos">' + (p.alertas || []).map(function (a) { return '<li>' + esc(a.texto) + '</li>'; }).join('') + (!p.conta_fecha ? '<li>A conta não fecha: confira se faz sentido o caminho escolhido (' + esc(saidaTxt(p)) + ').</li>' : '') + '</ul>';
         if (x.status === 'erro_plano' && x.plano_erro) avisos = '<p class="msg-linha">' + esc(x.plano_erro) + '</p>';
-        var linha = '<tr><td>' + esc(data(x.criado_em)) + (x.atualizado_em !== x.criado_em ? '<br><small>corrigido ' + esc(data(x.atualizado_em)) + '</small>' : '') + '</td><td class="n">' + esc(x.protocolo) + '</td><td>' + esc(x.nome) + '<br><small>' + esc(x.email) + '</small></td><td>' + esc(x.n_dividas) + '</td><td>' + esc(saidaTxt(p)) + avisos + '</td><td>' + sit + (x.plano_enviado_em ? '<br><small>' + esc(data(x.plano_enviado_em)) + '</small>' : '') + '</td><td><div class="acoes">' + acoes + '</div></td></tr>';
+        var linha = '<tr><td>' + esc(data(x.criado_em)) + (x.atualizado_em !== x.criado_em ? '<br><small>corrigido ' + esc(data(x.atualizado_em)) + '</small>' : '') + '</td><td class="n">' + esc(x.protocolo) + '</td><td>' + esc(x.nome) + '<br><small>' + esc(x.email) + '</small></td><td>' + esc(x.n_dividas) + '</td><td>' + esc(saidaTxt(p, x)) + avisos + '</td><td>' + sit + (x.plano_enviado_em ? '<br><small>' + esc(data(x.plano_enviado_em)) + '</small>' : '') + '</td><td><div class="acoes">' + acoes + '</div></td></tr>';
         if (aberto && aberto.id === x.id) linha += '<tr><td colspan="7"><pre>' + esc(JSON.stringify(aberto.dados, null, 2)) + '</pre></td></tr>';
         return linha;
       }).join('') + '</tbody></table>';
@@ -191,14 +193,14 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
 
   // ---------- funil ----------
   var diasFunil = 30;
-  var PASSOS = [['v_inicio', 'Visitas na página inicial'], ['v_comecar', 'Abriram o questionário'], ['etapa_contato', 'Começaram a responder'], ['etapa_renda', 'Chegaram na renda'],
-    ['etapa_gastos1', 'Chegaram nos gastos'], ['etapa_dividas', 'Chegaram nas dívidas'], ['etapa_revisao', 'Chegaram na revisão'], ['enviou', 'Enviaram'],
-    ['v_pagar_data', 'Viram a data'], ['clicou_pix', 'Clicaram em pagar'], ['pix_gerado', 'Pix gerado'], ['pagou', 'Pagaram']];
+  var PASSOS = [['v_inicio', 'Visitas na página inicial'], ['v_rapido', 'Abriram a versão rápida'], ['etapa_rrenda', 'Passaram do nome e e-mail'], ['etapa_rdividas', 'Chegaram nas dívidas'],
+    ['etapa_rguardado', 'Chegaram na última pergunta'], ['rapido_enviou', 'Viram a data aproximada'], ['clicou_pix', 'Clicaram em pagar'], ['pix_gerado', 'Pix gerado'], ['pagou', 'Pagaram'],
+    ['completou', 'Completaram as respostas'], ['plano_pronto', 'Plano gerado']];
   function carregarFunil() {
     return fetch('/api/admin/funil?dias=' + diasFunil, { headers: { authorization: 'Bearer ' + token } }).then(function (r) { return r.json(); }).then(function (j) {
       if (!j.ok) return;
       $('sec-funil').hidden = false;
-      var t = j.total || {}, max = Math.max(1, t.v_inicio || 0, t.v_comecar || 0), ant = null;
+      var t = j.total || {}, max = Math.max(1, t.v_inicio || 0, t.v_rapido || 0), ant = null;
       var linhas = PASSOS.map(function (p) {
         var n = t[p[0]] || 0, pct = ant ? Math.round(100 * n / ant) + '%' : '';
         ant = n || ant;

@@ -365,7 +365,7 @@ def montar(r, textos, inicio=(2026, 11), link_avaliar=None):
     <div><span class="rot">Juros nos próximos 12 meses, se nada mudar</span><b class="cinza">{brl(original["juros_sem_12"])}</b></div>
     <div><span class="rot">Com este plano</span><b>{brl(res["juros_com_12"])}</b></div>
   </div>
-  <p class="nota">A diferença, {brl(original["juros_sem_12"] - res["juros_com_12"])}, fica com você em vez de ir para os bancos e financeiras.</p>'''}
+  <p class="nota">A diferença, {brl(original["juros_sem_12"] - res["juros_com_12"])}, pode ficar com você em vez de ir para os bancos e financeiras.</p>'''}
 </section>''')
 
     # 3. Primeira semana

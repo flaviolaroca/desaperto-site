@@ -37,9 +37,14 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
 .etapas-c li.feito { color: var(--tinta); }
 .etapas-c li.feito::before { content: "✓ "; color: var(--verde); font-weight: 700; }
 .erro-box { background: #F3E3C7; color: #5C3A0C; border-radius: 14px; padding: 12px 16px; font-size: .9375rem; }
+.compartilhar .previa { width: 100%; max-width: 240px; align-self: center; border-radius: 14px; box-shadow: 0 10px 30px rgba(22, 33, 28, .25); }
+.compartilhar .btn { align-self: stretch; }
+.aprox { font-size: .875rem; color: var(--cinza); background: var(--areia); border-radius: 12px; padding: 10px 14px; }
 @media (prefers-reduced-motion: reduce) { .ponto { animation: none; } .barra-c i { transition: none; } }
 </style>
 
+<div id="logo-cartao" hidden>{{LOGO}}</div>
+<script src="/cartao.js"></script>
 <div id="tela" aria-live="polite"><p class="rotulo">Seu resultado</p><h1>Carregando...</h1></div>
 
 <script>
@@ -72,16 +77,31 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     var n = nome ? esc(nome) + ', ' : '';
     if (d.tipo === 'lei') return n + 'a conta não fecha. <em>Mas existe saída.</em>';
     if (d.tipo === 'sem_data') return n + 'as suas contas estão prontas.';
+    if (d.aprox) return n + 'você sai das dívidas <em>' + esc(d.faixa_txt || 'por volta de ' + d.saida_txt) + '</em>.';
     return n + (d.carro ? 'vendendo o carro, você sai' : 'você sai') + ' das dívidas em <em>' + esc(d.saida_txt) + '</em>.';
+  }
+  function notaAprox(d) {
+    return d.aprox ? '<p class="aprox">Data aproximada, feita com valores de cabeça. O plano exato usa os valores do app do banco e pode mudar essa data.</p>' : '';
+  }
+  // cartão do story: meses do próximo mês até a saída
+  function areaCartao(d) {
+    if (!d.saida || !window.DesapertoCartao) return '';
+    var h = new Date(Date.now() - 3 * 3600e3), ini = h.getUTCFullYear() * 12 + h.getUTCMonth() + 1, fim = d.saida[0] * 12 + d.saida[1] - 1;
+    var total = Math.max(1, fim - ini + 1), M = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+    setTimeout(function () { var el = document.getElementById('area-cartao'); if (el) window.DesapertoCartao.montar(el, { total: total, feitos: 0, pagas: 0, dividas: d.dividas, fim_txt: M[d.saida[1] - 1] + '/' + String(d.saida[0]).slice(2), aprox: d.aprox }, contar); }, 0);
+    return '<div id="area-cartao"></div>';
   }
   function numeros(d) {
     var h = '';
     if (d.tipo === 'lei') {
       if (d.diferenca) h += '<div><small>Do jeito que está, falta por mês</small><b>' + reais(d.diferenca) + '</b></div>';
       if (d.parcela) h += '<div><small>Proposta única para os credores, pela Lei do Superendividamento</small><b>' + reais(d.parcela) + ' por mês</b><small>em ' + d.meses + ' parcelas' + (d.saida_txt ? ', terminando em ' + esc(d.saida_txt) : '') + '</small></div>';
+    } else if (d.aprox) {
+      if (d.primeira_txt) h += '<div><small>A primeira dívida pode acabar já em</small><b>' + esc(d.primeira_txt) + '</b></div>';
+      if (d.juros_mes > 20) h += '<div><small>Hoje, só de juros, você paga cerca de</small><b>' + reais(d.juros_mes) + ' por mês</b></div>';
     } else {
       if (d.primeira_txt) h += '<div><small>A primeira dívida acaba já em</small><b>' + esc(d.primeira_txt) + '</b></div>';
-      if (d.economia > 50) h += '<div><small>Seguindo a ordem certa, você deixa de pagar de juros nos próximos 12 meses</small><b>' + reais(d.economia) + '</b></div>';
+      if (d.economia > 50) h += '<div><small>Seguindo a ordem certa, você pode deixar de pagar de juros nos próximos 12 meses</small><b>' + reais(d.economia) + '</b></div>';
     }
     return h ? '<div class="numeros">' + h + '</div>' : '';
   }
@@ -89,12 +109,17 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     var itens = d.tipo === 'lei'
       ? ['O que proteger primeiro: casa, comida e contas.', 'A proposta para os credores, com o valor de cada um.', 'O passo a passo para pedir a renegociação, de graça, no Procon ou na Defensoria Pública.', 'O dossiê pronto para levar: dívidas, orçamento e a proposta.']
       : ['A ordem: qual dívida pagar primeiro e por quê.', 'O mês a mês: quanto pagar, em qual dívida e onde, até a última.', 'O que falar com o banco e quanto oferecer nas dívidas atrasadas.', 'Os seus direitos e o que fazer se um mês apertar.', 'Se você escolheu: um e-mail no começo de cada mês com o que fazer naquele mês.'];
+    if (d.aprox) itens.unshift('A data exata: depois de pagar, você completa as respostas com os valores do app do banco, em uns 15 minutos.');
     return '<div class="cartao"><h2>O que vem no plano completo</h2><ul class="inclui">' + itens.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
   }
   function ancora(d) {
+    if (d.aprox && d.juros_mes > 20 && s.preco) {
+      var dj = Math.ceil(s.preco / (d.juros_mes / 30));
+      return dj <= 31 ? '<p class="ancora">Custa menos que ' + (dj <= 1 ? '1 dia' : dj + ' dias') + ' dos juros que você paga hoje.</p>' : '';
+    }
     if (!(d.economia > 50) || !s.preco) return '';
     var dias = Math.ceil(s.preco / (d.economia / 365));
-    return dias <= 31 ? '<p class="ancora">Custa menos que ' + (dias <= 1 ? '1 dia' : dias + ' dias') + ' dos juros que o plano evita.</p>' : '';
+    return dias <= 31 ? '<p class="ancora">Custa menos que ' + (dias <= 1 ? '1 dia' : dias + ' dias') + ' dos juros que o plano pode evitar.</p>' : '';
   }
 
   function desenhar() {
@@ -108,10 +133,10 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
         $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>Está demorando mais que o normal.</h1><p>Pode fechar esta página. Assim que as contas ficarem prontas, a sua data chega no e-mail <b>' + esc(s.email) + '</b>.</p><p class="pequeno">Olhe também em Spam e em Promoções.</p>';
         repetir(15000); return;
       }
-      $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>' + (nome ? esc(nome) + ', estamos' : 'Estamos') + ' fazendo as suas contas.</h1><p>Leva cerca de 1 minuto. Não precisa fazer nada.</p>' +
+      $t.innerHTML = '<p class="rotulo">' + (s.pago ? 'Seu plano' : 'Seu resultado') + '</p><h1>' + (nome ? esc(nome) + ', estamos' : 'Estamos') + (s.pago ? ' montando o seu plano.' : ' fazendo as suas contas.') + '</h1><p>Leva cerca de 1 minuto. Não precisa fazer nada.</p>' +
         '<div class="cartao"><div class="barra-c"><i style="width:' + Math.min(92, 8 + passou * 1.1) + '%"></i></div><ul class="etapas-c">' +
         ETAPAS.map(function (x, i) { return '<li' + (i < etapaG ? ' class="feito"' : '') + '>' + x + (i === etapaG ? '...' : '') + '</li>'; }).join('') + '</ul></div>' +
-        '<p class="pequeno">Se precisar sair, tudo bem: a sua data também chega no e-mail ' + esc(s.email) + '.</p>';
+        '<p class="pequeno">Se precisar sair, tudo bem: ' + (s.pago ? 'o plano' : 'a sua data') + ' também chega no e-mail ' + esc(s.email) + '.</p>';
       repetir(3000); return;
     }
     if (s.estado === 'erro') {
@@ -122,6 +147,13 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
       $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>Algumas respostas não batem.</h1><p>Antes de mostrar a sua data, a gente confere com cuidado para não te dar um número errado. Você recebe um e-mail em <b>' + esc(s.email) + '</b> em até 24 horas.</p><p class="pequeno">Nada foi cobrado. Protocolo ' + esc(s.protocolo) + '.</p>';
       return;
     }
+    if (s.estado === 'completar') {
+      $t.innerHTML = '<p class="rotulo">' + (s.gratis ? 'Seu resultado' : 'Pagamento confirmado') + '</p><h1>' + (nome ? esc(nome) + ', agora' : 'Agora') + ', o plano exato.</h1>' +
+        '<div class="cartao"><h2>Falta um passo: as respostas completas</h2><p>Separe uns 15 minutos e abra o app do banco. Você confirma o que entra, o que sai e o valor de cada dívida. Assim que terminar, o plano chega no e-mail <b>' + esc(s.email) + '</b> em poucos minutos.</p>' +
+        '<a class="btn" href="' + esc(s.continuar) + '">Completar minhas respostas</a><p class="pequeno">Se não der agora, o link também está no seu e-mail.</p></div>' +
+        (d.saida ? '<div class="numeros"><div><small>Sua data aproximada</small><b>' + esc(d.faixa_txt || d.saida_txt) + '</b></div></div>' : '') + areaCartao(d);
+      return;
+    }
     if (s.estado === 'devolvido') {
       $t.innerHTML = '<p class="rotulo">Seu plano</p><h1>O pagamento deste plano foi devolvido.</h1><p>Se precisar de alguma coisa, escreva para contato@desaperto.com.</p>';
       return;
@@ -129,7 +161,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     if (s.estado === 'enviado') {
       $t.innerHTML = '<p class="rotulo">' + (s.pago ? 'Pagamento confirmado' : 'Seu plano') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) +
         '<div class="cartao"><h2>' + (s.pago ? 'Pagamento confirmado. O seu plano foi enviado.' : 'O seu plano já foi enviado.') + '</h2><p>Ele está no e-mail <b>' + esc(s.email) + '</b>, em PDF. Se não achar na caixa de entrada, olhe em Spam e em Promoções, ou escreva para contato@desaperto.com.</p></div>' +
-        '<div class="cartao"><h2>Por onde começar</h2><p>Abra o PDF na página 3: são três passos para esta semana, com o tempo que cada um leva. Deixe o app do banco à mão.</p></div>';
+        '<div class="cartao"><h2>Por onde começar</h2><p>Abra o PDF na página 3: são três passos para esta semana, com o tempo que cada um leva. Deixe o app do banco à mão.</p></div>' + areaCartao(d);
       return;
     }
     if (s.estado === 'pago') {
@@ -138,18 +170,18 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
         : 'O seu plano está a caminho do e-mail <b>' + esc(s.email) + '</b>. Chega em poucos minutos.';
       $t.innerHTML = '<p class="rotulo">' + (s.gratis ? 'Seu resultado' : 'Pagamento confirmado') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) +
         '<div class="cartao"><h2>' + (s.gratis ? 'Pronto.' : 'Pagamento confirmado. Obrigado.') + '</h2><p>' + txt + '</p><p class="pequeno">Se não aparecer na caixa de entrada, olhe em Spam e em Promoções.</p></div>' +
-        '<div class="cartao"><h2>Enquanto o e-mail chega</h2><p>Abra o app do banco e deixe à mão. O primeiro passo do plano é para esta semana e leva poucos minutos.</p></div>';
+        '<div class="cartao"><h2>Enquanto o e-mail chega</h2><p>Abra o app do banco e deixe à mão. O primeiro passo do plano é para esta semana e leva poucos minutos.</p></div>' + areaCartao(d);
       if (!s.gratis) repetir(8000);
       return;
     }
     if (s.estado === 'oferta') {
       contar('v_pagar_data');
-      $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) + inclui(d) +
-        '<div class="oferta"><div><span class="preco">' + esc(s.preco_txt) + '</span></div><p class="sub">Uma vez só, por Pix. Sem assinatura. O plano chega no seu e-mail em poucos minutos.</p>' + ancora(d) +
+      $t.innerHTML = '<p class="rotulo">' + (d.aprox ? 'Sua data aproximada' : 'Seu resultado') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) + notaAprox(d) + inclui(d) +
+        '<div class="oferta"><div><span class="preco">' + esc(s.preco_txt) + '</span></div><p class="sub">' + (d.aprox ? 'Uma vez só, por Pix. Sem assinatura. Depois de pagar, você completa as respostas e o plano exato chega no seu e-mail em minutos.' : 'Uma vez só, por Pix. Sem assinatura. O plano chega no seu e-mail em poucos minutos.') + '</p>' + ancora(d) +
         '<button type="button" class="btn" id="btn-pix">Pagar ' + esc(s.preco_txt) + ' com Pix</button><div id="erro" class="erro-box" hidden></div>' +
         '<p class="pequeno">Pagamento processado pelo Mercado Pago. O Desaperto não vê nem guarda dados do seu banco.</p></div>' +
         '<div class="garantia">' + ESCUDO + '<p><b>Garantia de 7 dias.</b> Se o plano não te ajudar, responda o e-mail do plano e devolvemos o valor inteiro. Sem perguntas difíceis.</p></div>' +
-        '<p class="pequeno">Protocolo ' + esc(s.protocolo) + '. A data acima é sua, de graça, pague ou não.</p>';
+        '<p class="pequeno">Protocolo ' + esc(s.protocolo) + '. A data acima é sua, de graça, pague ou não.</p>' + areaCartao(d);
       document.getElementById('btn-pix').addEventListener('click', gerarPix);
       return;
     }

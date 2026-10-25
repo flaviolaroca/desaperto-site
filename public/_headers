@@ -15,6 +15,11 @@
   Cache-Control: no-store
   Referrer-Policy: no-referrer
 
+/progresso
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+  Referrer-Policy: no-referrer
+
 /avaliar
   X-Robots-Tag: noindex, nofollow
   Cache-Control: no-store

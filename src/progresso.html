@@ -1,0 +1,32 @@
+<style>
+main .in { max-width: 34rem; }
+.cartao { background: var(--branco); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.cartao h2 { margin: 0; font-size: 1.125rem; }
+.btn { font: inherit; font-weight: 700; border: 0; border-radius: 999px; padding: 16px 24px; cursor: pointer; background: var(--verde); color: #fff; font-size: 1.0625rem; }
+.pequeno { color: var(--cinza); font-size: .875rem; }
+.compartilhar .previa { width: 100%; max-width: 260px; align-self: center; border-radius: 14px; box-shadow: 0 10px 30px rgba(22, 33, 28, .25); }
+#tela { display: flex; flex-direction: column; gap: 14px; }
+</style>
+<div id="logo-cartao" hidden>{{LOGO}}</div>
+<script src="/cartao.js"></script>
+<div id="tela"><p class="rotulo">Meu progresso</p><h1>Carregando...</h1></div>
+<script>
+(function () {
+  'use strict';
+  var q = new URLSearchParams(location.search), $t = document.getElementById('tela');
+  function esc(x) { return String(x == null ? '' : x).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function contar(e) { try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: e })); } catch (er) {} }
+  contar('v_progresso');
+  fetch('/api/progresso?id=' + encodeURIComponent(q.get('id') || '') + '&a=' + encodeURIComponent(q.get('a') || ''))
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      if (!j.ok) throw new Error(j.erro);
+      var fim = j.feitos >= j.total, faltam = j.total - j.feitos;
+      $t.innerHTML = '<p class="rotulo">Meu progresso</p><h1>' + (j.primeiro_nome ? esc(j.primeiro_nome) + ', ' : '') +
+        (fim ? 'você chegou ao fim do plano.' : j.feitos === 0 ? 'o seu desaperto começa agora.' : 'mês ' + j.feitos + ' de ' + j.total + '.') + '</h1>' +
+        '<p>' + (fim ? 'Cada mês seguido valeu. Conte para quem precisa ouvir isso.' : 'Faltam ' + faltam + (faltam === 1 ? ' mês' : ' meses') + ' para o seu desaperto, se tudo seguir o plano.') + '</p><div id="area"></div>';
+      window.DesapertoCartao.montar(document.getElementById('area'), { total: j.total, feitos: j.feitos, pagas: j.pagas, dividas: j.dividas, fim_txt: j.fim_txt }, contar);
+    })
+    .catch(function (e) { $t.innerHTML = '<p class="rotulo">Meu progresso</p><h1>Este link não funcionou.</h1><p>' + esc(e.message) + '</p>'; });
+})();
+</script>

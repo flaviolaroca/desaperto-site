@@ -68,7 +68,7 @@ def separar(fonte, marcador):
 
 def pagina_simples(nome, titulo, descricao, caminho, indexar=True, cta=True):
     css = open(os.path.join(AQUI, 'src', 'legal.css')).read()
-    conteudo = open(os.path.join(AQUI, 'src', nome)).read()
+    conteudo = open(os.path.join(AQUI, 'src', nome)).read().replace('{{LOGO}}', logo())
     corpo = f'''<body>
 <header class="topo"><div class="in"><a class="logo" href="/" aria-label="desaperto, página inicial">{logo()}</a>{'<a class="voltar" href="/comecar">Montar meu plano</a>' if cta else ''}</div></header>
 <main><div class="in">
@@ -86,7 +86,7 @@ def main():
     L = logo()
 
     # página inicial
-    src = open(os.path.join(SITE, 'index.src.html')).read().replace('{{LOGO}}', L).replace('href="comecar.html"', 'href="/comecar"')
+    src = open(os.path.join(SITE, 'index.src.html')).read().replace('{{LOGO}}', L).replace('href="comecar.html"', 'href="/comecar"').replace('href="rapido.html"', 'href="/rapido"')
     topo, corpo = separar(src, '<header class="topo')
     desc = 'Responda sobre seu salário, seus gastos e suas dívidas. O Desaperto faz as contas e entrega um plano com a ordem certa de pagar e o mês em que você sai das dívidas.'
     open(os.path.join(PUB, 'index.html'), 'w').write(cabeca('Desaperto: descubra o mês em que você sai das dívidas', desc, '/', topo) + '<body>\n' + corpo + '\n</body>\n</html>\n')
@@ -95,6 +95,13 @@ def main():
     src = open(os.path.join(SITE, 'comecar.html')).read()
     topo, corpo = separar(src, '<div class="app">')
     open(os.path.join(PUB, 'comecar.html'), 'w').write(cabeca('Montar meu plano · Desaperto', 'Responda o questionário e receba o seu plano de desaperto por e-mail.', '/comecar', topo) + '<body>\n' + corpo + '\n</body>\n</html>\n')
+
+    shutil.copy(os.path.join(SITE, 'cartao.js'), os.path.join(PUB, 'cartao.js'))
+    open(os.path.join(PUB, 'progresso.html'), 'w').write(pagina_simples('progresso.html', 'Meu progresso · Desaperto', 'A contagem até o seu desaperto.', '/progresso', indexar=False, cta=False))
+    # versão rápida (data aproximada)
+    src = open(os.path.join(SITE, 'rapido.html')).read()
+    topo, corpo = separar(src, '<div class="app">')
+    open(os.path.join(PUB, 'rapido.html'), 'w').write(cabeca('Descubra a sua data · Desaperto', 'Em 5 minutos, de cabeça: o mês aproximado em que você sai das dívidas. Grátis.', '/rapido', topo) + '<body>\n' + corpo + '\n</body>\n</html>\n')
 
     open(os.path.join(PUB, 'termos.html'), 'w').write(pagina_simples('termos.html', 'Termos de uso · Desaperto', 'O combinado entre você e o Desaperto.', '/termos'))
     open(os.path.join(PUB, 'privacidade.html'), 'w').write(pagina_simples('privacidade.html', 'Privacidade · Desaperto', 'Como o Desaperto cuida das suas respostas.', '/privacidade'))
@@ -106,8 +113,8 @@ def main():
     open(os.path.join(AQUI, 'src', '404.html'), 'w').write(nao)
     open(os.path.join(PUB, '404.html'), 'w').write(pagina_simples('404.html', 'Página não encontrada · Desaperto', 'Página não encontrada.', '/404', indexar=False))
 
-    open(os.path.join(PUB, 'robots.txt'), 'w').write(f'User-agent: *\nDisallow: /admin\nDisallow: /avaliar\nDisallow: /pagar\nDisallow: /api/\nSitemap: {URL}/sitemap.xml\n')
-    urls = ['/', '/comecar', '/termos', '/privacidade']
+    open(os.path.join(PUB, 'robots.txt'), 'w').write(f'User-agent: *\nDisallow: /admin\nDisallow: /avaliar\nDisallow: /pagar\nDisallow: /progresso\nDisallow: /api/\nSitemap: {URL}/sitemap.xml\n')
+    urls = ['/', '/rapido', '/comecar', '/termos', '/privacidade']
     open(os.path.join(PUB, 'sitemap.xml'), 'w').write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + ''.join(f'  <url><loc>{URL}{u}</loc></url>\n' for u in urls) + '</urlset>\n')
     csp = ("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
            "font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
@@ -124,6 +131,11 @@ def main():
   Cache-Control: no-store
 
 /pagar
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+  Referrer-Policy: no-referrer
+
+/progresso
   X-Robots-Tag: noindex, nofollow
   Cache-Control: no-store
   Referrer-Policy: no-referrer

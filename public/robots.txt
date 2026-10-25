@@ -2,5 +2,6 @@ User-agent: *
 Disallow: /admin
 Disallow: /avaliar
 Disallow: /pagar
+Disallow: /progresso
 Disallow: /api/
 Sitemap: https://desaperto.com/sitemap.xml

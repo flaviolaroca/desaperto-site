@@ -1,0 +1,377 @@
+<title>Desaperto · Sua data</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: uma coluna de leitura (máx. 34rem), cabeçalho com etapa e progresso, botão principal sempre ao fim da tela. Marca de cor única (papel claro), por decisão de identidade. */
+:root {
+  --papel: #F3EFE6;
+  --tinta: #16211C;
+  --verde: #16704A;
+  --verde-escuro: #0F5537;
+  --respiro: #DCEBE1;
+  --areia: #E7DFD0;
+  --ambar: #9A5B12;
+  --cinza: #5C625E;
+  --branco: #FFFFFF;
+  --linha: #D9D1C1;
+  --f-texto: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --f-num: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  background: var(--papel); color: var(--tinta);
+  font-family: var(--f-texto); font-size: 17px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.app { max-width: 34rem; margin: 0 auto; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; padding-block: 20px 28px; }
+.topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
+.logo { height: 22px; width: auto; display: block; }
+.voltar { appearance: none; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; color: var(--tinta); padding: 10px 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; }
+.voltar svg { width: 18px; height: 18px; }
+.etapa { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+.etapa-nome { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--cinza); }
+.barra { height: 6px; border-radius: 3px; background: var(--areia); overflow: hidden; }
+.barra > i { display: block; height: 100%; background: var(--verde); border-radius: 3px; transition: width .35s ease; }
+main { flex: 1; display: flex; flex-direction: column; padding-top: 26px; }
+.tela { display: flex; flex-direction: column; gap: 22px; flex: 1; }
+h1 { font-size: 30px; line-height: 1.12; font-weight: 800; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+.lead { margin: 0; font-size: 17px; color: #2E3832; }
+a.btn { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+.acolhe { margin: 0; font-size: 15px; color: var(--verde); font-weight: 700; }
+.texto p { margin: 0 0 14px; }
+.texto p:last-child { margin-bottom: 0; }
+.texto strong { font-weight: 800; }
+.campos { display: flex; flex-direction: column; gap: 22px; }
+.campo { display: flex; flex-direction: column; gap: 8px; }
+.campo > label, .campo > .rotulo, fieldset legend { font-weight: 700; font-size: 17px; line-height: 1.3; padding: 0; }
+.ajuda { font-size: 14px; color: var(--cinza); margin: -2px 0 0; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+fieldset legend { margin-bottom: 10px; }
+input[type=text], input[type=email], input[inputmode], select, textarea {
+  width: 100%; font: inherit; font-size: 18px; color: var(--tinta); background: var(--branco);
+  border: 1.5px solid var(--linha); border-radius: 12px; padding: 13px 14px; min-height: 52px;
+}
+textarea { min-height: 96px; resize: vertical; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid var(--respiro); border-color: var(--verde); outline-offset: 0; }
+.dinheiro { position: relative; }
+.dinheiro span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-family: var(--f-num); font-weight: 600; font-size: 16px; color: var(--cinza); pointer-events: none; }
+.dinheiro input { padding-left: 46px; font-family: var(--f-num); font-weight: 600; font-variant-numeric: tabular-nums; }
+.curto { max-width: 9rem; }
+.opcoes { display: flex; flex-direction: column; gap: 10px; }
+.opcoes.lado { flex-direction: row; flex-wrap: wrap; }
+.opcoes.lado .op { flex: 1 1 8rem; }
+.op { position: relative; display: flex; }
+.op input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.op span { flex: 1; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 12px 16px; border-radius: 12px; border: 1.5px solid var(--linha); background: var(--branco); font-size: 16px; font-weight: 600; line-height: 1.3; }
+.op span::before { content: ""; flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--linha); background: var(--branco); }
+.op input[type=checkbox] + span::before { border-radius: 6px; }
+.op input:checked + span { border-color: var(--verde); background: var(--respiro); }
+.op input:checked + span::before { border-color: var(--verde); background: var(--verde); box-shadow: inset 0 0 0 3px var(--branco); }
+.op input:focus-visible + span { outline: 3px solid var(--verde); outline-offset: 2px; }
+.check { display: flex; gap: 12px; align-items: flex-start; font-size: 15px; line-height: 1.45; cursor: pointer; }
+.check input { width: 22px; height: 22px; margin: 1px 0 0; flex: none; accent-color: var(--verde); }
+.nao-sei { display: inline-flex; gap: 10px; align-items: center; font-size: 15px; color: var(--cinza); cursor: pointer; min-height: 36px; }
+.nao-sei input { width: 20px; height: 20px; accent-color: var(--verde); margin: 0; }
+.linha-dupla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.erro { color: var(--ambar); font-size: 14px; font-weight: 700; margin: 0; }
+.campo.com-erro input, .campo.com-erro select, .campo.com-erro .op span { border-color: var(--ambar); }
+.acoes { margin-top: auto; padding-top: 28px; display: flex; flex-direction: column; gap: 12px; }
+.btn { appearance: none; border: 0; font: inherit; font-size: 17px; font-weight: 700; min-height: 56px; border-radius: 16px; padding: 0 22px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+.btn-principal { background: var(--verde); color: var(--branco); }
+.btn-principal:hover { background: var(--verde-escuro); }
+.btn-sec { background: var(--branco); color: var(--tinta); border: 1.5px solid var(--linha); }
+.btn:focus-visible, .voltar:focus-visible, .link:focus-visible { outline: 3px solid var(--tinta); outline-offset: 3px; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.link { appearance: none; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 700; color: var(--verde); padding: 8px 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; min-height: 40px; }
+.nota { font-size: 14px; color: var(--cinza); text-align: center; margin: 0; }
+.total { position: sticky; bottom: 0; margin-top: 8px; background: var(--tinta); color: var(--papel); border-radius: 14px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.total b { font-family: var(--f-num); font-size: 20px; font-variant-numeric: tabular-nums; }
+.total small { font-size: 14px; }
+.cartoes { display: flex; flex-direction: column; gap: 12px; }
+.cartao { background: var(--branco); border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; border: 1.5px solid var(--areia); }
+.cartao-topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.cartao h2 { font-size: 17px; margin: 0; line-height: 1.3; }
+.cartao .quem { font-size: 14px; color: var(--cinza); margin: 2px 0 0; }
+.cartao .valor { font-family: var(--f-num); font-weight: 600; font-size: 17px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip { display: inline-block; font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--areia); color: var(--tinta); }
+.chip.atraso { color: var(--ambar); }
+.cartao-acoes { display: flex; gap: 18px; flex-wrap: wrap; }
+.vazio { border: 1.5px dashed var(--linha); border-radius: 16px; padding: 22px 18px; color: var(--cinza); font-size: 15px; text-align: center; }
+.soma { background: var(--respiro); border-radius: 16px; padding: 16px 18px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.soma b { font-family: var(--f-num); font-size: 20px; font-variant-numeric: tabular-nums; }
+.bloco { border-top: 1.5px solid var(--areia); padding-top: 18px; display: flex; flex-direction: column; gap: 22px; }
+.bloco-titulo { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--cinza); margin: 0; }
+.linhas { display: flex; flex-direction: column; gap: 12px; }
+.linha-item { background: var(--branco); border: 1.5px solid var(--areia); border-radius: 14px; padding: 12px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.linha-item .linha-dupla select, .linha-item .linha-dupla input { min-height: 48px; }
+.revisao { display: flex; flex-direction: column; gap: 14px; }
+.rev { background: var(--branco); border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.rev-topo { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.rev h2 { font-size: 16px; margin: 0; }
+.rev dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 14px; font-size: 15px; }
+.rev dt { color: var(--cinza); min-width: 0; }
+.rev dd { margin: 0; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.aviso { background: var(--areia); border-radius: 16px; padding: 16px 18px; font-size: 15px; display: flex; flex-direction: column; gap: 6px; }
+.aviso strong { color: var(--ambar); }
+.final { text-align: left; }
+.final .cvv { background: var(--branco); border-radius: 16px; padding: 16px 18px; font-size: 15px; }
+pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-size: 12px; overflow-x: auto; max-height: 60vh; }
+.oculto { display: none !important; }
+.logo-link { display: inline-flex; color: inherit; }
+.erro-envio { background: var(--branco); border-radius: 14px; padding: 14px 16px; color: var(--tinta); font-size: 15px; border-left: 4px solid #9A5B12; }
+.btn[disabled] { opacity: .65; cursor: progress; }
+.check a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.protocolo { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; letter-spacing: .04em; }
+.sr { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+@media (prefers-reduced-motion: reduce) { .barra > i { transition: none; } }
+
+.cartao .chip.atraso { margin-right: 4px; }
+#nova select { min-height: 52px; }
+</style>
+<div class="app">
+  <header class="topo">
+    <button type="button" class="voltar" id="btn-voltar" aria-label="Voltar para a tela anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Voltar</button>
+    <a class="logo-link" href="/" aria-label="desaperto, página inicial"><svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="24.6 -724.5 4784.3 911.5" aria-hidden="true" focusable="false"><path fill="currentColor" d="M154.19580078125 12.0Q107.478515625 12.0 78.706787109375 -18.402099609375Q49.93505859375 -48.80419921875 37.250244140625 -111.39111328125Q24.5654296875 -173.97802734375 24.5654296875 -269.71728515625Q24.5654296875 -364.0 36.52197265625 -423.5Q48.478515625 -483.0 75.93505859375 -511.271728515625Q103.3916015625 -539.54345703125 147.93505859375 -539.54345703125Q175.10888671875 -539.54345703125 193.380615234375 -530.5Q211.65234375 -521.45654296875 224.10888671875 -505.45654296875Q236.5654296875 -489.45654296875 244.02197265625 -468.54345703125H249.02197265625V-724.54345703125H384.1728515625V0.0H272.9130859375L264.826171875 -61.7392578125H259.826171875Q248.19580078125 -31.28271484375 223.2392578125 -9.641357421875Q198.28271484375 12.0 154.19580078125 12.0ZM206.49951171875 -108.80322265625Q223.521484375 -108.80322265625 232.71728515625 -120.86865234375Q241.9130859375 -132.93408203125 245.7392578125 -157.423583984375Q249.5654296875 -181.9130859375 249.5654296875 -219.41357421875V-299.41259765625Q249.5654296875 -329.0869140625 247.19580078125 -349.93505859375Q244.826171875 -370.783203125 239.771728515625 -384.120361328125Q234.71728515625 -397.45751953125 226.249755859375 -403.740234375Q217.7822265625 -410.02294921875 205.58642578125 -410.02294921875Q190.93408203125 -410.02294921875 181.69482421875 -398.87060546875Q172.45556640625 -387.71826171875 168.0859375 -363.728759765625Q163.71630859375 -339.7392578125 163.71630859375 -299.41259765625V-219.41357421875Q163.71630859375 -180.54345703125 167.857666015625 -156.053955078125Q171.9990234375 -131.564453125 181.466552734375 -120.183837890625Q190.93408203125 -108.80322265625 206.49951171875 -108.80322265625Z M627.6977954506874 12.0Q558.5340990424156 12.0 513.5219121873379 -15.914794921875Q468.50972533226013 -43.82958984375 446.8653567135334 -104.61421713232994Q425.22098809480667 -165.39884442090988 425.22098809480667 -263.54345703125Q425.22098809480667 -363.86625158786774 448.4630942940712 -424.4226073920727Q471.7052004933357 -484.9789631962776 517.5681563317776 -512.2138671875Q563.4311121702194 -539.4487711787224 631.1008713841438 -539.4487711787224Q698.6281745433807 -539.4487711787224 742.1179818511009 -514.5492554008961Q785.6077891588211 -489.64973962306976 806.531190186739 -431.2600708901882Q827.4545912146568 -372.87040215730667 827.4545912146568 -271.7105715870857V-237.71044921875H569.7776696681976Q569.9670413732529 -188.6419677734375 575.0522057712078 -157.08990475535393Q580.1373701691628 -125.53784173727036 593.0404260754585 -110.30635571479797Q605.9434819817543 -95.07486969232559 629.4264736771584 -95.07486969232559Q644.3827726840973 -95.07486969232559 655.1074838638306 -100.42875155806541Q665.8321950435638 -105.78263342380524 672.5203868150711 -116.98034664988518Q679.2085785865784 -128.17805987596512 682.4551402628422 -145.83060708642006Q685.701701939106 -163.483154296875 686.0635590553284 -187.98579913377762H825.8693861365318Q825.5075290203094 -136.96280938386917 813.0686455667019 -99.20397964119911Q800.6297621130943 -61.44514989852905 776.048951536417 -36.94799816608429Q751.4681409597397 -12.450846433639526 714.3061128556728 -0.22542321681976318Q677.144084751606 12.0 627.6977954506874 12.0ZM570.0797529816628 -312.84346503019333H682.4831147193909Q682.4831147193909 -346.09354639053345 679.9766856729984 -368.87797024846077Q677.470256626606 -391.6623941063881 671.6478078663349 -405.84586584568024Q665.8253591060638 -420.0293375849724 655.4552011489868 -426.1542766094208Q645.0850431919098 -432.27921563386917 629.6247566342354 -432.27921563386917Q607.2734380960464 -432.27921563386917 594.668579608202 -419.38389080762863Q582.0637211203575 -406.4885659813881 576.5338748991489 -380.3164874613285Q571.0040286779404 -354.1444089412689 570.0797529816628 -312.84346503019333Z M1066.1704061031342 12.0Q1015.6782481372356 12.0 978.270735219121 0.8949376493692398Q940.8632223010063 -10.21012470126152 916.021398961544 -30.993973270058632Q891.1795756220818 -51.77782183885574 878.7718577086926 -80.96269987523556Q866.3641397953033 -110.14757791161537 866.3641397953033 -146.4543884396553Q866.3641397953033 -150.68567404150963 866.7515111118555 -156.9659754484892Q867.1388824284077 -163.24627685546875 867.9496500492096 -169.2607421875H1001.7888753414154Q1000.9781077206135 -163.1533345580101 1000.9781077206135 -159.0378911346197Q1000.9781077206135 -154.92244771122932 1000.9781077206135 -150.58040669560432Q1001.3925974667072 -132.30278116464615 1009.2764826565981 -119.06928150355816Q1017.160367846489 -105.83578184247017 1031.929079696536 -98.89550676941872Q1046.6977915465832 -91.95523169636726 1066.5819468200207 -91.95523169636726Q1083.1329111754894 -91.95523169636726 1097.2229710966349 -96.83236335217953Q1111.3130310177803 -101.70949500799179 1120.0498006343842 -112.8331807255745Q1128.786570250988 -123.9568664431572 1128.786570250988 -141.9370544552803Q1128.786570250988 -164.63693949580193 1113.5310516655445 -177.3216903656721Q1098.275533080101 -190.0064412355423 1073.7345627397299 -198.45990650355816Q1049.1935923993587 -206.91337177157402 1020.9647299051285 -216.01234230399132Q994.9935334026814 -224.01837053894997 969.0942525863647 -234.97323961555958Q943.1949717700481 -245.9281086921692 921.6802475303411 -263.6262476295233Q900.1655232906342 -281.32438656687737 887.1392120420933 -308.7749013006687Q874.1129007935524 -336.22541603446007 874.1129007935524 -377.5260711610317Q874.1129007935524 -420.8289937376976 889.5680964142084 -451.4159713834524Q905.0232920348644 -482.00294902920723 932.4231735318899 -501.61999563872814Q959.8230550289154 -521.237042248249 995.6810826808214 -530.3136459439993Q1031.5391103327274 -539.3902496397495 1071.7592641413212 -539.3902496397495Q1111.0662048459053 -539.3902496397495 1145.0307693630457 -530.6064010709524Q1178.995333880186 -521.8225525021553 1204.6940623223782 -504.2008178830147Q1230.3927907645702 -486.57908326387405 1244.6394012868404 -460.4362584501505Q1258.8860118091106 -434.2934336364269 1258.8860118091106 -399.7647135257721Q1258.8860118091106 -393.08023273944855 1258.4986404925585 -385.02050068974495Q1258.1112691760063 -376.96076864004135 1257.3005015552044 -371.6369394958019H1124.36833396554V-386.8557841181755Q1124.36833396554 -403.5292887687683 1117.2939412593842 -414.0854060202837Q1110.2195485532284 -424.6415232717991 1097.584691375494 -430.0202581137419Q1084.9498341977596 -435.39899295568466 1068.1406779289246 -435.39899295568466Q1057.1306315660477 -435.39899295568466 1047.0500112473965 -432.8492376059294Q1036.9693909287453 -430.2994822561741 1029.285383656621 -424.7541448324919Q1021.6013763844967 -419.20880740880966 1017.1129633933306 -411.2383997887373Q1012.6245504021645 -403.26799216866493 1012.6245504021645 -391.9701446592808Q1012.6245504021645 -374.11410319805145 1025.4232630580664 -362.8332616239786Q1038.2219757139683 -351.5524200499058 1059.3855585604906 -344.0989547818899Q1080.549141407013 -336.64548951387405 1105.2008035779 -328.22831931710243Q1132.5504648387432 -319.80780133605003 1161.9228901863098 -309.78242038190365Q1191.2953155338764 -299.75703942775726 1216.404918923974 -283.1505025625229Q1241.5145223140717 -266.5439656972885 1257.0530171990395 -238.76279757916927Q1272.5915120840073 -210.98162946105003 1272.5915120840073 -166.64388325810432Q1272.5915120840073 -118.10364684462547 1256.9545161277056 -84.01532897353172Q1241.3175201714039 -49.92701110243797 1213.3875061273575 -28.7081156373024Q1185.457492083311 -7.489220172166824 1147.82773591578 2.255389913916588Q1110.197979748249 12.0 1066.1704061031342 12.0Z M1477.9271359443665 12.0Q1446.8270609378815 12.0 1418.8260335922241 4.397103905677795Q1390.8250062465668 -3.205792188644409 1369.0806906223297 -20.28838086128235Q1347.3363749980927 -37.37096953392029 1335.0108296871185 -65.79277539253235Q1322.6852843761444 -94.21458125114441 1322.6852843761444 -135.13617968559265Q1322.6852843761444 -185.97154140472412 1342.5352691411972 -221.2542999982834Q1362.38525390625 -256.53705859184265 1400.6673492193222 -278.27900195121765Q1438.9494445323944 -300.02094531059265 1494.8668261766434 -309.86957812309265Q1550.7842078208923 -319.71821093559265 1622.8002617359161 -319.71821093559265V-362.63556718826294Q1622.8002617359161 -383.0684609413147 1615.8189843893051 -397.1627246141434Q1608.837707042694 -411.25698828697205 1594.743705868721 -419.0816078186035Q1580.649704694748 -426.906227350235 1557.7246882915497 -426.906227350235Q1535.2793390750885 -426.906227350235 1519.932433605194 -420.1751574277878Q1504.5855281352997 -413.4440875053406 1497.2253699302673 -401.708328127861Q1489.865211725235 -389.97256875038147 1489.865211725235 -374.06185936927795V-365.2990906238556H1342.7364523410797Q1341.7364523410797 -369.5828695297241 1341.7364523410797 -373.51240038871765Q1341.7364523410797 -377.4419312477112 1341.7364523410797 -382.46603202819824Q1341.7364523410797 -431.95157265663147 1367.8996765613556 -467.02643632888794Q1394.0629007816315 -502.1013000011444 1443.2133238315582 -520.6804890632629Q1492.363746881485 -539.2596781253815 1561.1361343860626 -539.2596781253815Q1623.0838882923126 -539.2596781253815 1671.4428074359894 -523.0006703138351Q1719.8017265796661 -506.7416625022888 1747.6918519735336 -470.1568328142166Q1775.5819773674011 -433.5720031261444 1775.5819773674011 -371.8045859336853V-139.34117031097412Q1775.5819773674011 -123.10679531097412 1783.8656871318817 -113.73527538776398Q1792.1493968963623 -104.36375546455383 1806.7797679901123 -104.36375546455383H1834.8414437770844V-6.34659218788147Q1821.2454781532288 0.4190328121185303 1798.4322640895844 5.981244921684265Q1775.61905002594 11.54345703125 1746.956314086914 11.54345703125Q1716.745362520218 11.54345703125 1694.0028800964355 3.3316304683685303Q1671.2603976726532 -4.8801960945129395 1657.0853488445282 -19.92543125152588Q1642.9103000164032 -34.97066640853882 1637.6748609542847 -55.15980625152588H1631.9211297035217Q1616.4244968891144 -36.20921015739441 1594.995491027832 -20.91925859451294Q1573.5664851665497 -5.62930703163147 1544.8575628995895 3.185346484184265Q1516.1486406326294 12.0 1477.9271359443665 12.0ZM1536.9225804805756 -100.4751570224762Q1555.9510250091553 -100.4751570224762 1571.735649228096 -107.29746639728546Q1587.5202734470367 -114.11977577209473 1598.8898656368256 -126.10606014728546Q1610.2594578266144 -138.0923445224762 1616.5298597812653 -155.0533949136734Q1622.8002617359161 -172.0144453048706 1622.8002617359161 -192.18091249465942V-234.18311953544617Q1573.4824867248535 -234.18311953544617 1541.289276957512 -225.07606601715088Q1509.0960671901703 -215.9690124988556 1493.566864848137 -198.72737538814545Q1478.0376625061035 -181.4857382774353 1478.0376625061035 -156.43101406097412Q1478.0376625061035 -137.74709296226501 1485.2921515703201 -125.19027030467987Q1492.5466406345367 -112.63344764709473 1505.780221104622 -106.55430233478546Q1519.013801574707 -100.4751570224762 1536.9225804805756 -100.4751570224762Z M1899.9107372760773 186.9802416563034V-527.1650201380253H2030.1453692018986L2042.971446454525 -456.32587283849716H2049.6292833685875Q2074.2429497539997 -498.3030773997307 2112.7520534545183 -518.734048768878Q2151.261157155037 -539.1650201380253 2201.078455746174 -539.1650201380253Q2265.374110043049 -539.1650201380253 2310.371327742934 -509.2494244277477Q2355.3685454428196 -479.33382871747017 2379.126585289836 -417.87614926695824Q2402.8846251368523 -356.4184698164463 2402.8846251368523 -261.73641660809517Q2402.8846251368523 -168.6671185195446 2379.022907614708 -107.88468779623508Q2355.1611900925636 -47.10225707292557 2310.806466296315 -17.551128536462784Q2266.4517425000668 12.0 2204.876717507839 12.0Q2174.1616466641426 12.0 2147.6592821478844 4.722446888685226Q2121.156917631626 -2.555106222629547 2100.4111900925636 -17.61812075972557Q2079.665462553501 -32.681135296821594 2065.1270903646946 -54.80157658457756H2058.847690343857V186.9802416563034ZM2149.976009428501 -116.11523199081421Q2183.5554497539997 -116.11523199081421 2203.7238436192274 -130.50209812819958Q2223.892237484455 -144.88896426558495 2232.820917904377 -173.0244171321392Q2241.749598324299 -201.15986999869347 2241.749598324299 -242.7449993789196V-285.6049951314926Q2241.749598324299 -327.50532472133636 2232.8599709421396 -355.8225613385439Q2223.9703435599804 -384.1397979557514 2203.8019496947527 -398.34047634899616Q2183.633555829525 -412.5411547422409 2149.897903352976 -412.5411547422409Q2117.504916906357 -412.5411547422409 2097.0796639174223 -396.5294579863548Q2076.654410928488 -380.51776123046875 2067.254081338644 -351.0743207037449Q2057.8537517488003 -321.630880177021 2057.8537517488003 -281.1001794934273V-248.00668880343437Q2057.8537517488003 -217.80984616279602 2063.121564552188 -193.46591612696648Q2068.3893773555756 -169.12198609113693 2079.4714906960726 -151.91060549020767Q2090.5536040365696 -134.6992248892784 2108.1752586960793 -125.40722844004631Q2125.796913355589 -116.11523199081421 2149.976009428501 -116.11523199081421Z M2775.4124064445496 12.0Q2684.4412150382996 12.0 2620.183947443962 -17.485007166862488Q2555.9266798496246 -46.970014333724976 2522.1617000102997 -107.98500716686249Q2488.3967201709747 -169.0 2488.3967201709747 -263.54345703125Q2488.3967201709747 -357.3809726238251 2521.8647813796997 -418.19288408756256Q2555.3328425884247 -479.00479555130005 2617.962136864662 -509.0584498643875Q2680.5914311408997 -539.112104177475 2768.8249428272247 -539.112104177475Q2856.4508674144745 -539.112104177475 2917.101288676262 -510.03325974941254Q2977.7517099380493 -480.9544153213501 3009.1945810317993 -420.8800963163376Q3040.6374521255493 -360.8057773113251 3040.6374521255493 -266.4842357635498V-231.14892578125H2655.1658411026Q2656.164088487625 -189.18388152122498 2668.264848947525 -159.8905553817749Q2680.365609407425 -130.59722924232483 2706.31431388855 -115.86074423789978Q2732.2630183696747 -101.12425923347473 2773.9506056308746 -101.12425923347473Q2799.1892006397247 -101.12425923347473 2818.712869286537 -107.09906911849976Q2838.2365379333496 -113.07387900352478 2851.7338700294495 -124.42398965358734Q2865.2312021255493 -135.7741003036499 2872.1583656072617 -151.96385419368744Q2879.085529088974 -168.15360808372498 2879.161099433899 -188.17733335494995H3040.5067059993744Q3040.5067059993744 -139.96964859962463 3022.3445576429367 -102.47896957397461Q3004.182409286499 -64.98829054832458 2969.617930173874 -39.61165118217468Q2935.053451061249 -14.23501181602478 2886.0558182001114 -1.1175059080123901Q2837.058185338974 12.0 2775.4124064445496 12.0ZM2656.5720038414 -321.88760805130005H2871.773578643799Q2871.773578643799 -348.14542055130005 2864.877652168274 -367.51759111881256Q2857.981725692749 -386.8897616863251 2845.1842008829117 -399.9648697376251Q2832.3866760730743 -413.03997778892517 2814.2631232738495 -419.2982349395752Q2796.1395704746246 -425.5564920902252 2773.2829506397247 -425.5564920902252Q2736.9115691184998 -425.5564920902252 2712.28976893425 -413.6410083770752Q2687.66796875 -401.72552466392517 2674.3632506132126 -378.8518326282501Q2661.058532476425 -355.9781405925751 2656.5720038414 -321.88760805130005Z M3163.9212268590927 0.0V-527.2558327317238H3304.4128262996674L3316.445350289345 -442.99055844545364H3324.016421854496Q3337.022170305252 -472.2199818491936 3357.187880754471 -494.07162645459175Q3377.3535912036896 -515.9232710599899 3404.7675338089466 -527.8612804114819Q3432.1814764142036 -539.7992897629738 3464.934612452984 -539.7992897629738Q3483.848430812359 -539.7992897629738 3499.8854391872883 -536.5413685142994Q3515.9224475622177 -533.283447265625 3526.316719174385 -528.7989235520363V-384.7267223596573H3461.396000444889Q3428.5333518385887 -384.7267223596573 3404.6567838191986 -375.18105256557465Q3380.7802157998085 -365.635382771492 3365.524512887001 -347.6059749722481Q3350.2688099741936 -329.57656717300415 3342.882919073105 -304.595283895731Q3335.497028172016 -279.6140006184578 3335.497028172016 -248.66040283441544V0.0Z M3869.074660420418 12.0Q3807.844540119171 12.0 3766.098936498165 -3.159786343574524Q3724.353332877159 -18.319572687149048 3703.179504752159 -53.32675153017044Q3682.005676627159 -88.33393037319183 3682.005676627159 -147.44551742076874V-403.95703125H3589.609870672226V-527.3995612859726H3688.407776236534L3724.068424463272 -683.6530332565308H3860.1584043502808V-527.3995612859726H3993.3431795835495V-403.95703125H3860.1584043502808V-183.1870265007019Q3860.1584043502808 -148.25889337062836 3874.545193016529 -129.85071170330048Q3888.9319816827774 -111.4425300359726 3931.9686567783356 -111.4425300359726H3993.3431795835495V-5.771728515625Q3979.576182961464 -0.9156242609024048 3956.6939538121223 3.284156382083893Q3933.8117246627808 7.48393702507019 3910.1851610541344 9.741968512535095Q3886.558597445488 12.0 3869.074660420418 12.0Z M4460.890625 12.0Q4355.54296875 12.0 4277.336669921875 -18.728271484375Q4199.13037109375 -49.45654296875 4156.010986328125 -110.684814453125Q4112.8916015625 -171.9130859375 4112.8916015625 -264.0Q4112.8916015625 -356.54345703125 4156.010986328125 -417.815185546875Q4199.13037109375 -479.0869140625 4277.336669921875 -509.315185546875Q4355.54296875 -539.54345703125 4460.890625 -539.54345703125Q4566.23828125 -539.54345703125 4644.444580078125 -509.315185546875Q4722.65087890625 -479.0869140625 4765.770263671875 -417.815185546875Q4808.8896484375 -356.54345703125 4808.8896484375 -264.0Q4808.8896484375 -171.9130859375 4765.770263671875 -110.684814453125Q4722.65087890625 -49.45654296875 4644.444580078125 -18.728271484375Q4566.23828125 12.0 4460.890625 12.0ZM4460.890625 -113.4775390625Q4513.08642578125 -113.4775390625 4548.15185546875 -131.162353515625Q4583.21728515625 -148.84716796875 4600.641357421875 -180.54296875Q4618.0654296875 -212.23876953125 4618.0654296875 -254.0V-274.0Q4618.0654296875 -316.2177734375 4600.641357421875 -347.685302734375Q4583.21728515625 -379.15283203125 4548.15185546875 -396.609375Q4513.08642578125 -414.06591796875 4460.890625 -414.06591796875Q4408.69482421875 -414.06591796875 4373.62939453125 -396.609375Q4338.56396484375 -379.15283203125 4321.139892578125 -347.685302734375Q4303.7158203125 -316.2177734375 4303.7158203125 -274.0V-254.0Q4303.7158203125 -212.23876953125 4321.139892578125 -180.54296875Q4338.56396484375 -148.84716796875 4373.62939453125 -131.162353515625Q4408.69482421875 -113.4775390625 4460.890625 -113.4775390625Z"/></svg></a>
+  </header>
+  <div class="etapa" id="etapa">
+    <div class="etapa-nome" id="etapa-nome"></div>
+    <div class="barra" role="progressbar" aria-label="Progresso" aria-valuemin="0" aria-valuemax="100" id="barra"><i id="barra-i"></i></div>
+  </div>
+  <main id="tela" aria-live="polite"></main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  // Versão rápida: 4 telas, de cabeça, sem abrir app. Dá uma data APROXIMADA, de graça.
+  // O plano exato vem depois do pagamento, com o questionário completo (/comecar?continuar=...).
+  var CHAVE = 'desaperto.rapido.v1';
+  var TESTE = location.hash === '#teste';
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function num(v) { if (typeof v === 'number') return v; var i = parseInt(String(v == null ? '' : v).split(',')[0].replace(/\D/g, ''), 10); return isNaN(i) ? null : i; }
+  function reais(n) { return n == null || isNaN(n) ? '—' : 'R$ ' + Math.round(n).toLocaleString('pt-BR'); }
+  function fmt(n) { return n == null || n === '' ? '' : Number(n).toLocaleString('pt-BR'); }
+  var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+  function mesLongo(t) { return t ? MESES[t[1] - 1] + ' de ' + t[0] : ''; }
+  function contar(e) {
+    if (TESTE) return;
+    try { var k = 'desaperto-ev-' + e; if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); } catch (er) {}
+    try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: e })); } catch (er) {}
+  }
+
+  // Juros médios de mercado por tipo (os mesmos de referência do motor). Só para a estimativa.
+  var TIPOS = [
+    ['Cartão de crédito', 'cartao'], ['Cheque especial', 'cheque'], ['Empréstimo pessoal no banco', 'pessoal'], ['Empréstimo em app ou financeira', 'app'],
+    ['Consignado', 'consignado'], ['Financiamento de veículo', 'veiculo'], ['Financiamento de imóvel', 'imovel'], ['Crediário ou carnê de loja', 'crediario'],
+    ['Conta atrasada (luz, água, gás, aluguel, condomínio)', 'conta'], ['Impostos (DAS do MEI, IR, IPVA)', 'imposto'], ['Dívida com parente ou conhecido', 'parente'], ['Outra', 'outra']
+  ];
+  var TAXA = { cheque: 0.0792, pessoal: 0.0402, app: 0.0727, consignado: 0.032, veiculo: 0.0212, imovel: 0.011, crediario: 0.0544, conta: 0.01, imposto: 0.01, parente: 0, outra: 0.04 };
+  function taxa(d) { return d.tipo === 'cartao' ? (d.parcela ? 0.0727 : 0.1522) : (TAXA[d.tipo] == null ? 0.04 : TAXA[d.tipo]); }
+
+  var E = { passo: 0, r: { dividas: [] } };
+  try { var s0 = JSON.parse(localStorage.getItem(CHAVE) || 'null'); if (s0 && s0.r) E = s0; } catch (e) {}
+  function salvar() { try { localStorage.setItem(CHAVE, JSON.stringify(E)); } catch (e) {} }
+  var $t = document.getElementById('tela');
+  var TELAS = ['contato', 'renda', 'dividas', 'guardado', 'enviando'];
+  var NOMES = ['Você', 'O que entra e o que sai', 'O que você deve', 'Para fechar'];
+
+  function cab() {
+    var i = Math.min(E.passo, 3);
+    document.getElementById('etapa-nome').textContent = 'Passo ' + (i + 1) + ' de 4 · ' + NOMES[i];
+    document.getElementById('barra-i').style.width = Math.max(6, Math.round((E.passo / 4) * 100)) + '%';
+    document.getElementById('btn-voltar').style.visibility = E.passo > 0 && E.passo < 4 ? 'visible' : 'hidden';
+  }
+  function ir(p) { E.passo = p; salvar(); render(); window.scrollTo(0, 0); }
+  document.getElementById('btn-voltar').addEventListener('click', function () { if (E.passo > 0) ir(E.passo - 1); });
+
+  function campoDinheiro(id, rotulo, ajuda, val) {
+    return '<div class="campo" data-campo="' + id + '"><label for="q-' + id + '">' + rotulo + '</label>' + (ajuda ? '<p class="ajuda">' + ajuda + '</p>' : '') +
+      '<div class="dinheiro"><span>R$</span><input id="q-' + id + '" inputmode="numeric" autocomplete="off" placeholder="0" value="' + esc(fmt(val)) + '"></div></div>';
+  }
+  function erro(id, msg) {
+    var el = $t.querySelector('[data-campo="' + id + '"]'); if (!el) return;
+    el.classList.add('com-erro'); var p = document.createElement('p'); p.className = 'erro'; p.textContent = msg; el.appendChild(p);
+  }
+  function limparErros() { $t.querySelectorAll('.erro').forEach(function (x) { x.remove(); }); $t.querySelectorAll('.com-erro').forEach(function (x) { x.classList.remove('com-erro'); }); }
+  function ligarDinheiro() {
+    $t.querySelectorAll('.dinheiro input').forEach(function (inp) {
+      inp.addEventListener('input', function () { var n = num(inp.value); inp.value = n == null ? '' : n.toLocaleString('pt-BR'); });
+    });
+  }
+
+  function render() {
+    cab();
+    var t = TELAS[E.passo], r = E.r;
+    contar('etapa_r' + t);
+    if (t === 'contato') {
+      $t.innerHTML = '<section class="tela"><p class="acolhe">Leva uns 5 minutos. Pode responder de cabeça.</p><h1>Vamos descobrir a sua data.</h1>' +
+        '<p class="lead">Com valores aproximados, a gente calcula o mês em que você sai das dívidas. É grátis.</p><div class="campos">' +
+        '<div class="campo" data-campo="nome"><label for="q-nome">Seu primeiro nome</label><input type="text" id="q-nome" autocomplete="given-name" value="' + esc(r.nome || '') + '"></div>' +
+        '<div class="campo" data-campo="email"><label for="q-email">Seu e-mail</label><p class="ajuda">Para mandar a sua data e, se quiser, o plano.</p><input type="email" id="q-email" autocomplete="email" value="' + esc(r.email || '') + '"></div>' +
+        '<div class="campo" data-campo="consent"><label class="check"><input type="checkbox" id="q-consent"' + (r.consent ? ' checked' : '') + '><span>Concordo que minhas respostas sejam usadas só para calcular a minha data e montar o meu plano, e apagadas em até 90 dias. Li os <a href="/termos" target="_blank" rel="noopener">termos de uso</a> e a <a href="/privacidade" target="_blank" rel="noopener">política de privacidade</a>.</span></label></div>' +
+        '</div><div class="acoes"><button type="button" class="btn btn-principal" id="btn-seguir">Começar</button><p class="nota">Não pedimos CPF, senha nem extrato.</p></div></section>';
+      document.getElementById('btn-seguir').addEventListener('click', function () {
+        limparErros();
+        r.nome = document.getElementById('q-nome').value.trim(); r.email = document.getElementById('q-email').value.trim(); r.consent = document.getElementById('q-consent').checked; salvar();
+        var ok = true;
+        if (!r.nome) { erro('nome', 'Preencha o seu nome.'); ok = false; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(r.email)) { erro('email', 'Confira o e-mail. Ele precisa ter o formato nome@exemplo.com.'); ok = false; }
+        if (!r.consent) { erro('consent', 'Para calcular, precisamos que você marque que concorda.'); ok = false; }
+        if (ok) ir(1);
+      });
+      return;
+    }
+    if (t === 'renda') {
+      var g = r.gastosR || {};
+      $t.innerHTML = '<section class="tela"><h1>O que entra e o que sai</h1><p class="lead">Valores de um mês normal. Um chute bom já serve.</p><div class="campos">' +
+        campoDinheiro('renda', 'Quanto cai na sua conta por mês?', 'O salário que entra de fato, já sem os descontos.', r.renda) +
+        '<p class="bloco-titulo">Gastos do mês, sem contar as dívidas</p>' +
+        campoDinheiro('moradia', 'Aluguel ou condomínio', 'Se não paga, coloque 0.', g.moradia) +
+        campoDinheiro('casa', 'Mercado e contas da casa', 'Luz, água, gás, internet, celular e mercado.', g.casa) +
+        campoDinheiro('transporte', 'Transporte', 'Ônibus, combustível, aplicativo.', g.transporte) +
+        campoDinheiro('resto', 'Todo o resto', 'Farmácia, escola, lanches, roupas, assinaturas, ajuda à família.', g.resto) +
+        '</div><div class="acoes"><button type="button" class="btn btn-principal" id="btn-seguir">Continuar</button></div></section>';
+      ligarDinheiro();
+      document.getElementById('btn-seguir').addEventListener('click', function () {
+        limparErros();
+        var v = function (id) { return num(document.getElementById('q-' + id).value); };
+        r.renda = v('renda'); r.gastosR = { moradia: v('moradia'), casa: v('casa'), transporte: v('transporte'), resto: v('resto') }; salvar();
+        var ok = true;
+        if (!r.renda) { erro('renda', 'Coloque quanto entra por mês.'); ok = false; }
+        ['moradia', 'casa', 'transporte', 'resto'].forEach(function (k) { if (r.gastosR[k] == null) { erro(k, 'Coloque um valor. Se não tiver, coloque 0.'); ok = false; } });
+        if (ok) ir(2);
+      });
+      return;
+    }
+    if (t === 'dividas') {
+      var lista = r.dividas.map(function (d, i) {
+        var nome = (TIPOS.filter(function (x) { return x[1] === d.tipo; })[0] || ['Dívida'])[0];
+        return '<div class="cartao"><div class="cartao-topo"><div><h2>' + esc(nome) + '</h2><p class="quem">' + (d.atrasada ? '<span class="chip atraso">Atrasada</span> ' : '') + (d.parcela ? 'parcela de ' + reais(d.parcela) : 'sem parcela fixa') + '</p></div><span class="valor">' + reais(d.valor) + '</span></div>' +
+          '<div class="cartao-acoes"><button type="button" class="link" data-tirar="' + i + '">Tirar</button></div></div>';
+      }).join('');
+      $t.innerHTML = '<section class="tela"><h1>O que você deve</h1><p class="lead">Coloque cada dívida com o valor aproximado. Não precisa abrir o app agora.</p>' +
+        '<div class="cartoes">' + (lista || '<div class="vazio">Nenhuma dívida ainda. Adicione a primeira abaixo.</div>') + '</div>' +
+        '<div class="bloco" id="nova"><p class="bloco-titulo">Adicionar dívida</p>' +
+        '<div class="campo" data-campo="tipo"><label for="q-tipo">Tipo</label><select id="q-tipo"><option value="">Escolha</option>' + TIPOS.map(function (x) { return '<option value="' + x[1] + '">' + esc(x[0]) + '</option>'; }).join('') + '</select></div>' +
+        campoDinheiro('valor', 'Quanto deve hoje, mais ou menos?', 'No cartão, o valor da fatura mais o que ainda falta das compras parceladas.', null) +
+        campoDinheiro('parcela', 'Quanto paga por mês nela?', 'Se não tem parcela fixa (cartão, cheque especial) ou não está pagando, coloque 0.', null) +
+        '<div class="campo" data-campo="atrasada"><span class="rotulo">Está atrasada?</span><div class="opcoes lado"><label class="op"><input type="radio" name="atr" value="nao" checked><span>Não</span></label><label class="op"><input type="radio" name="atr" value="sim"><span>Sim</span></label></div></div>' +
+        '<button type="button" class="btn btn-sec" id="btn-add">Adicionar esta dívida</button></div>' +
+        (r.dividas.length ? '<div class="soma"><span>Total aproximado</span><b>' + reais(r.dividas.reduce(function (s, d) { return s + d.valor; }, 0)) + '</b></div>' : '') +
+        '<div class="acoes"><button type="button" class="btn btn-principal" id="btn-seguir">' + (r.dividas.length ? 'Pronto, são essas' : 'Continuar') + '</button></div></section>';
+      ligarDinheiro();
+      document.getElementById('btn-add').addEventListener('click', function () {
+        limparErros();
+        var d = { tipo: document.getElementById('q-tipo').value, valor: num(document.getElementById('q-valor').value), parcela: num(document.getElementById('q-parcela').value) || 0,
+          atrasada: (document.querySelector('input[name="atr"]:checked') || {}).value === 'sim' };
+        var ok = true;
+        if (!d.tipo) { erro('tipo', 'Escolha o tipo.'); ok = false; }
+        if (!d.valor) { erro('valor', 'Coloque quanto deve, mais ou menos.'); ok = false; }
+        if (!ok) return;
+        r.dividas.push(d); salvar(); render();
+        var n = document.getElementById('nova'); if (n) n.scrollIntoView({ block: 'start' });
+      });
+      $t.querySelectorAll('[data-tirar]').forEach(function (b) { b.addEventListener('click', function () { r.dividas.splice(Number(b.getAttribute('data-tirar')), 1); salvar(); render(); }); });
+      document.getElementById('btn-seguir').addEventListener('click', function () {
+        if (!r.dividas.length) { limparErros(); erro('tipo', 'Adicione pelo menos uma dívida.'); return; }
+        ir(3);
+      });
+      return;
+    }
+    if (t === 'guardado') {
+      $t.innerHTML = '<section class="tela"><p class="acolhe">Última pergunta.</p><h1>Você tem algum dinheiro guardado hoje?</h1><div class="campos">' +
+        campoDinheiro('guardado', 'Quanto, mais ou menos?', 'Se não tem, coloque 0.', r.guardado) + '</div>' +
+        '<div class="acoes"><div id="erro-envio" class="erro-envio oculto" role="alert"></div><button type="button" class="btn btn-principal" id="btn-seguir">Ver a minha data</button><p class="nota">A data é calculada com valores aproximados e é grátis.</p></div></section>';
+      ligarDinheiro();
+      document.getElementById('btn-seguir').addEventListener('click', function () {
+        limparErros();
+        r.guardado = num(document.getElementById('q-guardado').value);
+        if (r.guardado == null) { erro('guardado', 'Coloque um valor. Se não tiver, coloque 0.'); return; }
+        salvar(); enviar();
+      });
+      return;
+    }
+    if (t === 'enviando') {
+      $t.innerHTML = '<section class="tela"><h1>Calculando...</h1><div class="acoes"><div id="erro-envio" class="erro-envio oculto" role="alert"></div></div></section>';
+      enviar();
+    }
+  }
+
+  // ---------- a estimativa ----------
+  // Simula mês a mês: as parcelas seguem, o que sobra vai primeiro para juntar o acordo das atrasadas e depois para a dívida de juro mais alto.
+  // Quando uma dívida acaba, a parcela dela passa a ajudar nas outras. Dívida atrasada: acordo estimado em 60% do valor.
+  function simular(r, aperto) {
+    var hoje = new Date(), ano = hoje.getFullYear(), mes = hoje.getMonth() + 2; if (mes > 12) { mes = 1; ano++; }
+    var g = r.gastosR || {}, gastos = (g.moradia || 0) + (g.casa || 0) + (g.transporte || 0) + (g.resto || 0);
+    // Como o plano faz: fatura do cartão em aberto e cheque especial viram parcelamento em 12 vezes (juro bem menor).
+    var pmt = function (S, i, n) { return i ? S * i / (1 - Math.pow(1 + i, -n)) : S / n; };
+    var ds = r.dividas.map(function (d) {
+      if (d.atrasada) return { saldo: Math.round(d.valor * 0.6), parcela: 0, taxa: 0, atrasada: true, fim: null };
+      if ((d.tipo === 'cartao' || d.tipo === 'cheque') && !d.parcela) { var i = 0.0727 * (aperto ? 1.15 : 1); return { saldo: d.valor, parcela: Math.round(pmt(d.valor, i, 12)), taxa: i, atrasada: false, fim: null }; }
+      return { saldo: d.valor, parcela: d.parcela || 0, taxa: taxa(d) * (aperto ? 1.15 : 1), atrasada: false, fim: null };
+    });
+    var caixa = Math.max(0, (r.guardado || 0) - 500) * 0.8;
+    var jurosMes = r.dividas.reduce(function (s, d) { return s + (d.atrasada ? 0 : d.valor * taxa(d)); }, 0);  // o que os juros custam hoje, antes do plano
+    var parcelas0 = ds.reduce(function (s, d) { return s + d.parcela; }, 0);
+    var sobra0 = (r.renda || 0) - gastos - parcelas0;
+    if (sobra0 * (aperto ? 0.85 : 1) <= 0 && caixa < ds.reduce(function (s, d) { return s + d.saldo; }, 0)) return { fecha: false, diferenca: Math.max(0, -sobra0), jurosMes: jurosMes, gastos: gastos };
+    var primeira = null;
+    for (var k = 0; k < 120; k++) {
+      var t = [ano + Math.floor((mes - 1 + k) / 12), (mes - 1 + k) % 12 + 1];
+      var pagas = 0;
+      ds.forEach(function (d) {
+        if (d.fim) return;
+        d.saldo *= 1 + d.taxa;
+        var p = Math.min(d.parcela, d.saldo); d.saldo -= p; pagas += p;
+      });
+      var extra = Math.max(0, ((r.renda || 0) - gastos - pagas) * (aperto ? 0.85 : 1)) + caixa; caixa = 0;
+      var abertas = ds.filter(function (d) { return !d.fim && d.saldo > 0.5; });
+      abertas.sort(function (a, b) { return (b.atrasada - a.atrasada) || (b.taxa - a.taxa); });
+      abertas.forEach(function (d) { var v = Math.min(extra, d.saldo); d.saldo -= v; extra -= v; });
+      caixa = extra;
+      ds.forEach(function (d) { if (!d.fim && d.saldo <= 0.5) { d.fim = t; if (!primeira) primeira = t; } });
+      if (ds.every(function (d) { return d.fim; })) return { fecha: true, saida: t, primeira: primeira, jurosMes: jurosMes, gastos: gastos };
+    }
+    return { fecha: true, saida: null, jurosMes: jurosMes, gastos: gastos };
+  }
+  function estimativa(r) {
+    var a = simular(r, false), b = simular(r, true);
+    var total = r.dividas.reduce(function (s, d) { return s + d.valor; }, 0);
+    if (!a.fecha) return { tipo: 'lei', aprox: true, diferenca: Math.round(a.diferenca), juros_mes: Math.round(a.jurosMes), dividas: r.dividas.length, total: total };
+    if (!a.saida) return { tipo: 'lei', aprox: true, diferenca: 0, juros_mes: Math.round(a.jurosMes), dividas: r.dividas.length, total: total };
+    return { tipo: 'data', aprox: true, saida: a.saida, saida_max: (b.fecha && b.saida && (b.saida[0] * 12 + b.saida[1] > a.saida[0] * 12 + a.saida[1])) ? b.saida : null,
+      primeira: a.primeira && (a.primeira[0] !== a.saida[0] || a.primeira[1] !== a.saida[1]) ? a.primeira : null, juros_mes: Math.round(a.jurosMes), dividas: r.dividas.length, total: total };
+  }
+
+  function enviar() {
+    var r = E.r, est = estimativa(r), caixa = document.getElementById('erro-envio'), btn = document.getElementById('btn-seguir');
+    if (btn) { btn.disabled = true; btn.textContent = 'Calculando...'; }
+    var g = r.gastosR || {};
+    var respostas = { rapido: true, consent: true, nome: r.nome, email: r.email, renda: r.renda, guardado: r.guardado || 0,
+      gastosR: g, dividasR: r.dividas, dividas: r.dividas.map(function (d) { return { tipo: (TIPOS.filter(function (x) { return x[1] === d.tipo; })[0] || ['Outra'])[0] }; }) };
+    fetch('/api/respostas', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ respostas: respostas, rapido: true, estimativa: est, teste: TESTE }) })
+      .then(function (resp) { return resp.json().then(function (j) { if (!resp.ok || !j.ok) throw new Error(j.erro || 'Não conseguimos enviar agora.'); return j; }); })
+      .then(function (j) { E.envio = { id: j.id, pagar: j.pagar }; salvar(); location.href = j.pagar; })
+      .catch(function (e) {
+        if (btn) { btn.disabled = false; btn.textContent = 'Ver a minha data'; }
+        if (caixa) { caixa.textContent = e.message + ' Suas respostas continuam salvas neste aparelho. Confira a internet e tente de novo.'; caixa.classList.remove('oculto'); }
+      });
+  }
+
+  if (E.passo >= 4) E.passo = 3;
+  contar('v_rapido');
+  (function () {  // de onde veio, só se não passou pela página inicial nesta visita
+    try { if (sessionStorage.getItem('desaperto-ev-v_inicio')) return; } catch (e) {}
+    var u = new URLSearchParams(location.search), o = (u.get('utm_source') || '').toLowerCase(), rf = document.referrer;
+    var mapa = ['instagram', 'tiktok', 'whatsapp', 'google', 'facebook', 'youtube', 'email'];
+    var achou = mapa.filter(function (x) { return o.indexOf(x) >= 0 || (rf && rf.indexOf(x) >= 0) || (x === 'instagram' && o === 'ig'); })[0];
+    contar('origem_' + (achou || (o || (rf && rf.indexOf(location.host) < 0) ? 'outro' : 'direto')));
+  })();
+  render();
+})();
+</script>

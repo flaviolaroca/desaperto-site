@@ -1,18 +1,27 @@
 // Página /pagar (link assinado). Mostra a data grátis e cobra o plano completo por Pix.
 // GET  /api/pagamento?id=&a=        -> em que pé está: gerando, revisão, oferta, pix, pago, enviado
 // POST /api/pagamento { id, a }     -> gera (ou devolve) o Pix
-import { json, erro, agora, assinaturaPagar, garantirTabelas, cobrancaAtiva, preco, reaisCentavos, dataGratis, mascararEmail,
+import { json, erro, agora, assinaturaPagar, garantirTabelas, cobrancaAtiva, preco, reaisCentavos, dataGratis, dataDaLinha, mascararEmail,
   criarPix, confirmarPagamento, evento } from '../../lib/api.js';
 
 async function buscar(env, id, a) {
   if (!env.DB || !env.ADMIN_TOKEN || !id || !a || a !== (await assinaturaPagar(env, id))) return null;
   await garantirTabelas(env.DB);
-  return env.DB.prepare('SELECT id, nome, email, protocolo, status, plano_resumo, teste, pag_id, pag_status, pag_qr, pag_qr_img, pag_expira, pago_em, devolvido_em FROM respostas WHERE id = ?').bind(id).first();
+  return env.DB.prepare('SELECT id, nome, email, protocolo, status, plano_resumo, estimativa, teste, pag_id, pag_status, pag_qr, pag_qr_img, pag_expira, pago_em, devolvido_em FROM respostas WHERE id = ?').bind(id).first();
 }
 
-function situacao(env, l) {
+function situacao(env, l, a) {
   const base = { primeiro_nome: (l.nome || '').trim().split(/\s+/)[0] || '', email: mascararEmail(l.email), protocolo: l.protocolo,
     preco: preco(env), preco_txt: reaisCentavos(preco(env)), cobrar: cobrancaAtiva(env), pago: !!l.pago_em };
+  if (l.status === 'rapido') {
+    const data = dataDaLinha(l);
+    if (l.devolvido_em) return { ...base, estado: 'devolvido', data };
+    const continuar = `/comecar?continuar=${encodeURIComponent(l.id)}&a=${a}`;
+    if (l.pago_em || !base.cobrar) return { ...base, estado: 'completar', data, continuar, gratis: !base.cobrar };
+    if (l.pag_id && l.pag_status === 'pending' && l.pag_expira && new Date(l.pag_expira).getTime() > Date.now() + 60e3)
+      return { ...base, estado: 'pix', data, pix: { qr: l.pag_qr, img: l.pag_qr_img, expira: l.pag_expira } };
+    return { ...base, estado: 'oferta', data };
+  }
   if (['recebido', 'gerando'].includes(l.status)) return { ...base, estado: 'gerando' };
   if (l.status === 'erro_plano') return { ...base, estado: 'erro' };
   const resumo = l.plano_resumo ? JSON.parse(l.plano_resumo) : {};
@@ -35,7 +44,7 @@ export async function onRequestGet({ request, env }) {
     const c = await confirmarPagamento(env, l.pag_id, u.origin);
     if (c.ok && (c.pago || c.status !== 'pending')) l = await buscar(env, l.id, u.searchParams.get('a'));
   }
-  return json({ ok: true, ...situacao(env, l) });
+  return json({ ok: true, ...situacao(env, l, u.searchParams.get('a')) });
 }
 
 export async function onRequestPost({ request, env }) {
@@ -44,7 +53,7 @@ export async function onRequestPost({ request, env }) {
   const l = await buscar(env, c && c.id, c && c.a);
   if (!l) return erro('Este link não é válido ou as respostas já foram apagadas.', 404);
   if (!cobrancaAtiva(env)) return erro('O pagamento ainda não está disponível.', 503);
-  const s = situacao(env, l);
+  const s = situacao(env, l, c.a);
   if (s.estado === 'pix') return json({ ok: true, ...s });
   if (s.estado !== 'oferta') return json({ ok: true, ...s });
   const r = await criarPix(env, l, new URL(request.url).origin);
