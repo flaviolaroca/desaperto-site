@@ -47,3 +47,18 @@ Configuração extra:
 - Na /admin, seção Avaliações: "Pôr no site" publica o comentário (só os autorizados). "Corrigir e pôr" permite arrumar erro de digitação.
 - A página inicial mostra a seção "Quem já recebeu o plano" sozinha quando houver 3 ou mais comentários publicados.
 - A tabela `avaliacoes` e as colunas novas são criadas sozinhas pelo site na primeira vez.
+
+## Cobrança (Pix pelo Mercado Pago)
+- Liga sozinha quando existe o segredo `MP_ACCESS_TOKEN` na Cloudflare (Access Token de produção do Mercado Pago). Sem ele, o plano continua grátis e é enviado direto.
+- Preço: R$ 34,90 (dá para mudar com a variável `PRECO`, ex.: `29.90`).
+- Fluxo: a pessoa responde → vai para /pagar → vê a data grátis → paga o Pix → o Mercado Pago avisa `/api/mp/notificacao` → o site confere o pagamento direto no Mercado Pago e manda o plano.
+- Quem saiu antes de pagar recebe a data por e-mail e, 24 horas depois, um lembrete (uma vez só).
+- Devolução (garantia de 7 dias): botão "Devolver" no /admin.
+- "Enviar sem cobrar" no /admin manda o plano de graça (testadores, cortesias).
+
+## E-mail do mês
+- Quem marca "Sim, quero" no questionário recebe, entre os dias 3 e 7 de cada mês, o que fazer naquele mês. Sai pelo mesmo workflow diário dos pedidos de avaliação.
+- Os dados ficam na tabela `acompanhamento` só até o plano acabar.
+
+## Funil
+- O site conta, por dia, quantas vezes cada passo acontece (sem cookie, sem nome). O resumo fica no topo do /admin.
