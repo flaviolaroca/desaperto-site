@@ -39,6 +39,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
 .erro-box { background: #F3E3C7; color: #5C3A0C; border-radius: 14px; padding: 12px 16px; font-size: .9375rem; }
 .compartilhar .previa { width: 100%; max-width: 240px; align-self: center; border-radius: 14px; box-shadow: 0 10px 30px rgba(22, 33, 28, .25); }
 .compartilhar .btn { align-self: stretch; }
+.quem-recebe { border-left: 4px solid var(--verde); }
 .aprox { font-size: .875rem; color: var(--cinza); background: var(--areia); border-radius: 12px; padding: 10px 14px; }
 @media (prefers-reduced-motion: reduce) { .ponto { animation: none; } .barra-c i { transition: none; } }
 </style>
@@ -179,7 +180,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
       $t.innerHTML = '<p class="rotulo">' + (d.aprox ? 'Sua data aproximada' : 'Seu resultado') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) + notaAprox(d) + inclui(d) +
         '<div class="oferta"><div><span class="preco">' + esc(s.preco_txt) + '</span></div><p class="sub">' + (d.aprox ? 'Uma vez só, por Pix. Sem assinatura. Depois de pagar, você completa as respostas e o plano exato chega no seu e-mail em minutos.' : 'Uma vez só, por Pix. Sem assinatura. O plano chega no seu e-mail em poucos minutos.') + '</p>' + ancora(d) +
         '<button type="button" class="btn" id="btn-pix">Pagar ' + esc(s.preco_txt) + ' com Pix</button><div id="erro" class="erro-box" hidden></div>' +
-        '<p class="pequeno">Pagamento processado pelo Mercado Pago. O Desaperto não vê nem guarda dados do seu banco.</p></div>' +
+        '<p class="pequeno">Pagamento pelo Mercado Pago. No seu banco, o recebedor aparece ' + (s.recebedor ? 'como ' + esc(s.recebedor) : 'com o nome do responsável pelo Desaperto') + '. O Desaperto não vê nem guarda dados do seu banco.</p></div>' +
         '<div class="garantia">' + ESCUDO + '<p><b>Garantia de 7 dias.</b> Se o plano não te ajudar, responda o e-mail do plano e devolvemos o valor inteiro. Sem perguntas difíceis.</p></div>' +
         '<p class="pequeno">Protocolo ' + esc(s.protocolo) + '. A data acima é sua, de graça, pague ou não.</p>' + areaCartao(d);
       document.getElementById('btn-pix').addEventListener('click', gerarPix);
@@ -189,7 +190,11 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
       var p = s.pix, img = p.img ? '<img class="qr" alt="QR code do Pix" src="data:image/png;base64,' + p.img + '">' : '';
       $t.innerHTML = '<p class="rotulo">Pagamento por Pix</p><h1>Falta só o Pix de ' + esc(s.preco_txt) + '.</h1>' +
         '<div class="cartao">' + img + '<h2>Pix copia e cola</h2><textarea class="codigo" id="codigo" readonly>' + esc(p.qr) + '</textarea><button type="button" class="btn" id="btn-copiar">Copiar o código</button>' +
-        '<ol class="passos"><li>Abra o app do seu banco e vá em Pix.</li><li>Escolha "Pix copia e cola" e cole o código' + (img ? ', ou leia o QR code com a câmera' : '') + '.</li><li>Confira o valor, ' + esc(s.preco_txt) + ', e confirme.</li></ol></div>' +
+        '<ol class="passos"><li>Abra o app do seu banco e vá em Pix.</li><li>Escolha "Pix copia e cola" e cole o código' + (img ? ', ou leia o QR code com a câmera' : '') + '.</li><li>Confira o valor, ' + esc(s.preco_txt) + ', e o recebedor' + (s.recebedor ? ', <b>' + esc(s.recebedor) + '</b>' : '') + ', e confirme.</li></ol></div>' +
+        '<div class="cartao quem-recebe"><h2>Quem aparece no seu banco</h2><p>' + (s.recebedor
+          ? 'Na confirmação do Pix, o recebedor aparece como <b>' + esc(s.recebedor) + '</b>, pelo Mercado Pago. É o Desaperto: esse é o nome do responsável pela conta.'
+          : 'Na confirmação do Pix, o recebedor aparece com o nome do responsável pelo Desaperto, pelo Mercado Pago. Pode confirmar: é a gente.') +
+        '</p><p class="pequeno">O código vale só para este pedido e só para ' + esc(s.preco_txt) + '. Ninguém do Desaperto vai pedir outro pagamento por mensagem.</p></div>' +
         '<div class="cartao"><p class="esperando"><span class="ponto"></span>Esperando o pagamento...</p><p class="pequeno">Assim que o banco confirmar, esta página muda sozinha e o plano vai para o seu e-mail. O código vale até ' + new Date(p.expira).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + '.</p></div>' +
         '<div class="garantia">' + ESCUDO.replace('#DCEBE1', '#DCEBE1') + '<p><b>Garantia de 7 dias.</b> Se o plano não te ajudar, devolvemos o valor.</p></div>';
       document.getElementById('btn-copiar').addEventListener('click', copiar);

@@ -12,7 +12,8 @@ async function buscar(env, id, a) {
 
 function situacao(env, l, a) {
   const base = { primeiro_nome: (l.nome || '').trim().split(/\s+/)[0] || '', email: mascararEmail(l.email), protocolo: l.protocolo,
-    preco: preco(env), preco_txt: reaisCentavos(preco(env)), cobrar: cobrancaAtiva(env), pago: !!l.pago_em };
+    preco: preco(env), preco_txt: reaisCentavos(preco(env)), cobrar: cobrancaAtiva(env), pago: !!l.pago_em,
+    recebedor: String(env.PIX_RECEBEDOR || '').trim().slice(0, 80) };
   if (l.status === 'rapido') {
     const data = dataDaLinha(l);
     if (l.devolvido_em) return { ...base, estado: 'devolvido', data };

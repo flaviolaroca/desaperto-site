@@ -71,3 +71,4 @@ Configuração extra:
 ## Cartão para o story
 - /cartao.js desenha a imagem (1080 x 1920) com a contagem e a barra de progresso, sem valores e sem nome.
 - Aparece na página /pagar (depois da data e depois do pagamento) e em /progresso, que tem link no e-mail do plano e no e-mail de cada mês.
+- Opcional: variável `PIX_RECEBEDOR` com o nome exato que aparece como recebedor no app do banco (veja no seu pagamento de teste). A tela do Pix passa a mostrar esse nome. Sem ela, mostra "o nome do responsável pelo Desaperto".
