@@ -155,6 +155,45 @@ def textos(c):
         chegou.append('As causas já passaram. O plano é de conta: uma dívida de cada vez, na ordem certa, e a parcela que acaba vai para a próxima.')
 
     # ---------- motivos da ordem ----------
+    # Cada item diz quanto cobra (comparado com as outras), quando começa a receber o dinheiro a mais e quando acaba.
+    # Assim nenhuma linha se repete, mesmo com várias dívidas parecidas.
+    meses_res = res.get('meses') or []
+    inicio_plano = (meses_res[0]['ano'], meses_res[0]['mes']) if meses_res else None
+    com_juro = [x for x in fila if x['banda'] != 'P5' and (x.get('taxa') or 0) > 0 and not x.get('grupo_atraso')]
+    ultima_juro = com_juro[-1]['nome'] if len(com_juro) > 1 else None
+
+    def anterior(d):
+        i = next(k for k, x in enumerate(fila) if x['nome'] == d['nome'])
+        return fila[i - 1] if i > 0 else None
+
+    def inicio_extra(d):
+        return next(((m['ano'], m['mes']) for m in meses_res if (m.get('extras') or {}).get(d['nome'], 0) >= 1), None)
+
+    def juro_comparado(d):
+        ant = anterior(d)
+        if d['nome'] == ultima_juro:
+            return f'Cobra {pct(d["taxa"])} ao mês, a mais barata da lista. Por isso fica por último.'
+        if ant is not None and (ant.get('taxa') or 0) > 0 and not ant.get('grupo_atraso') and abs(ant['taxa'] - d['taxa']) < 0.0035:
+            return f'Cobra {pct(d["taxa"])} ao mês, quase o mesmo que a anterior.'
+        return f'Cobra {pct(d["taxa"])} ao mês.'
+
+    def quando_txt(d):
+        ini, fim = inicio_extra(d), d.get('quitada_em')
+        ant = anterior(d)
+        fim_txt = f' Acaba em {ml(fim)}.' if fim else ''
+        if cv:
+            return ('Quitada com o dinheiro da venda.' if ini == inicio_plano else '') + ('' if ini == inicio_plano else fim_txt.strip())
+        if ini is None:
+            return f'Não precisa de dinheiro a mais: só com as parcelas, acaba sozinha em {ml(fim)}.' if fim else 'Segue só com as parcelas normais.'
+        if ini == inicio_plano:
+            antes = [x for x in fila[:fila.index(d)] if inicio_extra(x) == inicio_plano]
+            return ('Também recebe dinheiro a mais já no primeiro mês.' if antes else 'É a primeira a receber o que sobra, já no primeiro mês.') + fim_txt
+        if d['nome'] == ultima_juro:
+            return f'Até {ml(ini)}, você paga só a parcela normal.' + fim_txt
+        if ant is not None and ant.get('quitada_em') == ini:
+            return f'Entra em {ml(ini)}, quando a de cima acaba.' + fim_txt
+        return f'A partir de {ml(ini)}, o que sobrar vai para ela.' + fim_txt
+
     motivos = {}
     for d in fila:
         if d['sub'] == 'em_atraso':
@@ -169,15 +208,21 @@ def textos(c):
         elif d.get('recente'):
             motivos[d['nome']] = f'Atrasada há pouco tempo: os juros do contrato continuam correndo, mais a multa (cerca de {pct(d["taxa"])} ao mês). Pagar logo evita que seu nome vá para o Serasa.'
         elif d['sub'] == 'parcelamento_formal':
-            motivos[d['nome']] = f'O que ficou sem pagar da fatura, já parcelado: {pct(d["taxa"])} ao mês. Entre as que estão em dia, é a mais cara.'
+            mais_cara = all((x.get('taxa') or 0) <= d['taxa'] for x in fila if not x.get('grupo_atraso') and x['sub'] != 'em_atraso' and x['banda'] not in ('P0', 'P5'))
+            motivos[d['nome']] = f'O que ficou sem pagar da fatura, já parcelado: {pct(d["taxa"])} ao mês.' + (' Entre as que estão em dia, é a mais cara.' if mais_cara else '')
         elif d['sub'] == 'cheque':
             motivos[d['nome']] = f'Cobra {pct(d["taxa"])} ao mês, perto do máximo que a lei permite.'
         elif d['banda'] == 'P5':
-            motivos[d['nome']] = 'Ainda não sabemos quanto você economiza adiantando essa dívida. Ela fica no fim até você confirmar a taxa ou o valor para quitar.'
+            if not any(x['banda'] == 'P5' for x in fila[:fila.index(d)]):
+                motivos[d['nome']] = 'Ainda não sabemos quanto você economiza adiantando essa dívida. Ela fica no fim até você confirmar o juro ou o valor para quitar. Se o juro for alto, ela sobe na fila.'
+            else:
+                motivos[d['nome']] = f'Também falta saber o juro desta. Confira no app do {e(d["credor"])}: se for alto, ela sobe na fila.'
         elif d.get('parcelamento_oficial'):
             motivos[d['nome']] = 'Imposto parcelado em até 60 vezes, com juros perto de 1% ao mês. É a mais barata: fica por último.'
         else:
-            motivos[d['nome']] = f'Cobra {pct(d["taxa"])} ao mês. Recebe o dinheiro extra quando as mais caras acabarem.'
+            motivos[d['nome']] = juro_comparado(d)
+        if d['banda'] not in ('P0', 'P5') and not d.get('grupo_atraso') and d['sub'] != 'em_atraso' and not d.get('parcelamento_oficial'):
+            motivos[d['nome']] += ' ' + quando_txt(d)
         if d.get('prorrogado'):
             motivos[d['nome']] += f' As {d["prorrogado"]} parcelas atrasadas vão para o fim do contrato, se o banco aceitar.'
 
@@ -206,7 +251,7 @@ def textos(c):
     # ---------- regras ----------
     regras = [
         ('Faltou dinheiro num mês', 'Use a reserva para imprevistos, nunca o cheque especial ou o mínimo do cartão. Pague as parcelas e pule o valor extra daquele mês.'),
-        ('Entrou um dinheiro a mais', 'Vai inteiro para a dívida da vez naquele mês, a que aparece na página "Mês a mês". Se a reserva estiver incompleta, complete-a primeiro.'),
+        ('Entrou um dinheiro a mais', 'Vai inteiro para a dívida que está sendo paga naquele mês, a que aparece na página "Mês a mês". Se a reserva estiver incompleta, complete-a primeiro.'),
         ('O cartão continua ativo', 'Use só para o que já está no orçamento, com limite perto do que você gasta no mês.'),
     ]
     if 'Apostas ou jogos online' in causas:

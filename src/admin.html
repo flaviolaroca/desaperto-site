@@ -5,6 +5,9 @@ main .in { max-width: 64rem; }
 input[type=password] { font: inherit; padding: 12px 14px; border-radius: 12px; border: 1.5px solid #CFC4AE; background: var(--papel); }
 button { font: inherit; font-weight: 700; border: 0; border-radius: 999px; padding: 10px 16px; cursor: pointer; background: var(--verde); color: #fff; }
 button.sec { background: var(--areia); color: var(--tinta); }
+textarea.pub { font: inherit; width: 100%; min-width: 16rem; min-height: 90px; padding: 8px 10px; border-radius: 10px; border: 1.5px solid #CFC4AE; background: var(--papel); }
+.coment { max-width: 26rem; white-space: pre-wrap; }
+.coment small { display: block; color: var(--cinza); margin-top: 6px; }
 button.perigo { background: transparent; color: #9A5B12; text-decoration: underline; padding: 6px 8px; }
 .barra { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
 .msg { color: var(--cinza); font-size: .9375rem; }
@@ -29,7 +32,7 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
 </style>
 
 <p class="rotulo">Área interna</p>
-<h1>Respostas recebidas.</h1>
+<h1>Respostas e avaliações.</h1>
 
 <form class="entrar" id="form-entrar">
   <label for="token">Chave de acesso<input type="password" id="token" autocomplete="current-password" required></label>
@@ -41,6 +44,15 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
   <div class="acoes"><button type="button" class="sec" id="btn-atualizar">Atualizar</button><button type="button" id="btn-tudo">Baixar todas</button></div>
 </div>
 <div class="tabela" id="tabela" hidden></div>
+
+<section id="sec-aval" hidden>
+  <div class="barra" style="margin-top:28px">
+    <h2 style="margin:0">Avaliações</h2>
+    <div class="acoes"><button type="button" class="sec" id="btn-lembretes">Pedidos de avaliação pendentes</button></div>
+  </div>
+  <p class="msg" id="msg-aval"></p>
+  <div class="tabela" id="tab-aval" hidden></div>
+</section>
 
 <script>
 (function () {
@@ -111,7 +123,7 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
   }
   function carregar() {
     $('barra').hidden = false; $('msg').textContent = 'Carregando...';
-    return api('GET').then(function (j) { lista = j.respostas || []; $('form-entrar').hidden = true; desenhar(); })
+    return api('GET').then(function (j) { lista = j.respostas || []; $('form-entrar').hidden = true; desenhar(); carregarAval(); })
       .catch(function (e) { $('msg').textContent = e.message === 'Acesso negado.' ? 'Chave de acesso errada. Confira se é exatamente igual à salva na Cloudflare (maiúsculas, minúsculas e símbolos contam).' : e.message; $('form-entrar').hidden = false; });
   }
   function completa(id) { return api('GET', '?id=' + encodeURIComponent(id)).then(function (j) { return j.resposta; }); }
@@ -147,6 +159,88 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
     else if ((id = t.getAttribute('data-apagar-sim'))) api('DELETE', '?id=' + encodeURIComponent(id)).then(function () { confirmando = null; aberto = null; carregar(); });
     else if (t.hasAttribute('data-cancelar')) { confirmando = null; enviando = null; desenhar(); }
   });
+
+  // ---------- avaliações ----------
+  var avals = [], editando = null, apagandoAval = null, pendentes = null;
+  function apiAval(metodo, url, corpo) {
+    return fetch('/api/admin/avaliacoes' + (url || ''), { method: metodo, headers: { authorization: 'Bearer ' + token, 'content-type': 'application/json' }, body: corpo ? JSON.stringify(corpo) : undefined })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.erro || 'Erro ' + r.status); return j; }); });
+  }
+  var MOMENTO = { plano: 'Pelo PDF', '2d': '2 dias', '30d': '30 dias' };
+  function acaoTxt(x) {
+    if (!x.acao) return '-';
+    if (x.momento === '30d') return { sim: 'Está seguindo', ainda_nao: 'Começou e parou', nao_vou: 'Não começou' }[x.acao];
+    return { sim: 'Já fez', ainda_nao: 'Ainda não', nao_vou: 'Não vai fazer' }[x.acao];
+  }
+  function quemTxt(x) {
+    if (x.autoriza === 'nao') return '<span class="chip">Não publicar</span>';
+    return '<span class="chip ok">' + (x.autoriza === 'primeiro_nome' ? esc(x.primeiro_nome || 'primeiro nome') : 'Sem nome') + '</span>' + (x.cidade ? '<br><small>' + esc(x.cidade) + '</small>' : '');
+  }
+  function situacaoAval(x) {
+    if (x.status === 'aprovada') return '<span class="chip pronto">No site</span>';
+    if (x.status === 'recusada') return '<span class="chip">Fora do site</span>';
+    return '<span class="chip rev">Nova</span>';
+  }
+  function desenharAval() {
+    $('sec-aval').hidden = false;
+    var novas = avals.filter(function (x) { return x.status === 'nova'; }).length;
+    var media = avals.filter(function (x) { return x.nota; });
+    var m = media.length ? (media.reduce(function (s, x) { return s + x.nota; }, 0) / media.length).toFixed(1).replace('.', ',') : null;
+    var fez = avals.filter(function (x) { return x.momento !== '30d' && x.acao; });
+    var fezSim = fez.filter(function (x) { return x.acao === 'sim'; }).length;
+    $('msg-aval').innerHTML = (avals.length ? avals.length + (avals.length === 1 ? ' avaliação' : ' avaliações') : 'Nenhuma avaliação ainda') +
+      (m ? ' · nota média ' + m : '') + (fez.length ? ' · ' + Math.round(100 * fezSim / fez.length) + '% já fizeram a primeira ação' : '') +
+      (novas ? ' · <b>' + novas + ' para olhar</b>' : '') + (pendentes ? '<br>' + pendentes : '');
+    if (!avals.length) { $('tab-aval').hidden = true; return; }
+    $('tab-aval').hidden = false;
+    $('tab-aval').innerHTML = '<table><thead><tr><th>Data</th><th>Protocolo</th><th>Quando</th><th>Nota</th><th>Ação</th><th>Comentário</th><th>Publicar</th><th>Situação</th><th>Ações</th></tr></thead><tbody>' +
+      avals.map(function (x) {
+        var pode = x.autoriza !== 'nao' && x.texto;
+        var coment = editando === x.id
+          ? '<textarea class="pub" id="pub-' + x.id + '">' + esc(x.texto_publicado || x.texto) + '</textarea><small>Corrija só erro de digitação. O sentido tem que ser o da pessoa.</small>'
+          : esc(x.texto_publicado || x.texto || '(sem texto)') + (x.texto_publicado ? '<small>Original: ' + esc(x.texto) + '</small>' : '') + (x.contexto ? '<small>' + esc(x.contexto) + '</small>' : '');
+        var acoes = '';
+        if (editando === x.id) acoes = '<button type="button" data-aprovar-ed="' + x.id + '">Aprovar com este texto</button><button type="button" class="perigo" data-cancelar-aval>Cancelar</button>';
+        else {
+          if (pode && x.status !== 'aprovada') acoes += '<button type="button" data-aprovar="' + x.id + '">Pôr no site</button><button type="button" class="sec" data-editar="' + x.id + '">Corrigir e pôr</button>';
+          if (x.status === 'aprovada') acoes += '<button type="button" class="sec" data-recusar="' + x.id + '">Tirar do site</button>';
+          if (x.status === 'nova' && pode) acoes += '<button type="button" class="sec" data-recusar="' + x.id + '">Não usar</button>';
+          if (x.status === 'nova' && !pode) acoes += '<button type="button" class="sec" data-lida="' + x.id + '">Marcar como lida</button>';
+          acoes += apagandoAval === x.id ? '<button type="button" class="perigo" data-apagar-aval-sim="' + x.id + '">Confirmar: apagar</button><button type="button" class="perigo" data-cancelar-aval>Cancelar</button>' : '<button type="button" class="perigo" data-apagar-aval="' + x.id + '">Apagar</button>';
+        }
+        return '<tr><td>' + esc(data(x.atualizado_em)) + '</td><td class="n">' + esc(x.protocolo) + '</td><td>' + esc(MOMENTO[x.momento] || x.momento) + '</td><td class="n">' + (x.nota ? '★'.repeat(x.nota) + '<span style="color:#CFC4AE">' + '★'.repeat(5 - x.nota) + '</span>' : '-') + '</td><td>' + esc(acaoTxt(x)) + '</td><td><div class="coment">' + coment + '</div></td><td>' + quemTxt(x) + '</td><td>' + situacaoAval(x) + '</td><td><div class="acoes">' + acoes + '</div></td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+  function carregarAval() {
+    return apiAval('GET').then(function (j) { avals = j.avaliacoes || []; desenharAval(); }).catch(function (e) { $('sec-aval').hidden = false; $('msg-aval').textContent = 'Avaliações: ' + e.message; });
+  }
+  function mudar(id, status, texto) { return apiAval('POST', '', { id: id, status: status, texto_publicado: texto }).then(function () { editando = null; carregarAval(); }).catch(function (e) { $('msg-aval').textContent = 'Não foi possível: ' + e.message; }); }
+  $('tab-aval').addEventListener('click', function (e) {
+    var t = e.target, id;
+    if ((id = t.getAttribute('data-aprovar'))) mudar(id, 'aprovada');
+    else if ((id = t.getAttribute('data-editar'))) { editando = id; desenharAval(); }
+    else if ((id = t.getAttribute('data-aprovar-ed'))) mudar(id, 'aprovada', $('pub-' + id).value);
+    else if ((id = t.getAttribute('data-recusar'))) mudar(id, 'recusada');
+    else if ((id = t.getAttribute('data-lida'))) mudar(id, 'recusada');
+    else if ((id = t.getAttribute('data-apagar-aval'))) { apagandoAval = id; desenharAval(); }
+    else if ((id = t.getAttribute('data-apagar-aval-sim'))) apiAval('DELETE', '?id=' + encodeURIComponent(id)).then(function () { apagandoAval = null; carregarAval(); });
+    else if (t.hasAttribute('data-cancelar-aval')) { editando = null; apagandoAval = null; desenharAval(); }
+  });
+  function lembretes(simular) {
+    pendentes = 'Consultando...'; desenharAval();
+    return fetch('/api/admin/lembretes' + (simular ? '?simular=1' : ''), { method: 'POST', headers: { authorization: 'Bearer ' + token } })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j.ok) throw new Error(j.erro);
+        if (simular) {
+          var n = j.dois_dias + j.trinta_dias;
+          pendentes = n ? 'Pendentes agora: ' + j.dois_dias + ' de 2 dias e ' + j.trinta_dias + ' de 30 dias. Eles saem sozinhos todo dia, perto das 9h. <button type="button" id="btn-enviar-lembretes">Enviar agora</button>' : 'Nenhum pedido pendente. Eles saem sozinhos todo dia, perto das 9h.';
+        } else pendentes = j.enviados + ' enviados' + (j.falhas ? ', ' + j.falhas + ' falharam (confira o Resend)' : '') + '.';
+        desenharAval();
+      }).catch(function (e) { pendentes = 'Erro: ' + e.message; desenharAval(); });
+  }
+  $('btn-lembretes').addEventListener('click', function () { lembretes(true); });
+  $('msg-aval').addEventListener('click', function (e) { if (e.target.id === 'btn-enviar-lembretes') lembretes(false); });
   setInterval(function () { if (token && lista.some(function (x) { return x.status === 'gerando'; }) && !aberto && !enviando && !confirmando) carregar(); }, 15000);
   if (token) carregar();
 })();

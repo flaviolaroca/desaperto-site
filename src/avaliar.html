@@ -1,0 +1,158 @@
+<style>
+#form { display: flex; flex-direction: column; gap: 14px; }
+#pronto { margin-top: 4px; }
+.cartao { background: var(--branco); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.cartao h2 { margin: 0; font-size: 1.125rem; }
+.cartao .ajuda { color: var(--cinza); font-size: .9375rem; }
+.notas { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.opcoes { display: flex; flex-direction: column; gap: 8px; }
+.notas label, .opcoes label { position: relative; cursor: pointer; }
+.notas input, .opcoes input { position: absolute; opacity: 0; pointer-events: none; }
+.notas span { display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 14px; border: 1.5px solid #CFC4AE; background: var(--papel); font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; font-size: 1.125rem; }
+.opcoes span { display: block; padding: 13px 16px; border-radius: 14px; border: 1.5px solid #CFC4AE; background: var(--papel); font-weight: 600; }
+.notas input:checked + span, .opcoes input:checked + span { border-color: var(--verde); background: #DCEBE1; color: var(--verde); }
+.notas input:focus-visible + span, .opcoes input:focus-visible + span { outline: 3px solid var(--verde); outline-offset: 2px; }
+.pontas { display: flex; justify-content: space-between; font-size: .8125rem; color: var(--cinza); }
+textarea, input[type=text] { font: inherit; width: 100%; padding: 12px 14px; border-radius: 14px; border: 1.5px solid #CFC4AE; background: var(--papel); color: var(--tinta); }
+textarea { min-height: 120px; resize: vertical; }
+textarea:focus, input[type=text]:focus { outline: none; border-color: var(--verde); }
+button.enviar { font: inherit; font-weight: 700; border: 0; border-radius: 999px; padding: 15px 22px; cursor: pointer; background: var(--verde); color: #fff; font-size: 1.0625rem; align-self: flex-start; }
+button.enviar[disabled] { opacity: .6; cursor: default; }
+.erro-box { background: #F3E3C7; color: #5C3A0C; border-radius: 14px; padding: 12px 16px; font-size: .9375rem; }
+.pequeno { color: var(--cinza); font-size: .875rem; }
+</style>
+
+<p class="rotulo" id="rotulo">Sua avaliação</p>
+<h1 id="titulo">Carregando...</h1>
+<p id="abre" hidden></p>
+
+<form id="form" hidden novalidate>
+  <div class="cartao">
+    <h2>O plano te ajudou a saber o que fazer?</h2>
+    <div class="notas" role="radiogroup" aria-label="Nota de 1 a 5">
+      <label><input type="radio" name="nota" value="1"><span>1</span></label>
+      <label><input type="radio" name="nota" value="2"><span>2</span></label>
+      <label><input type="radio" name="nota" value="3"><span>3</span></label>
+      <label><input type="radio" name="nota" value="4"><span>4</span></label>
+      <label><input type="radio" name="nota" value="5"><span>5</span></label>
+    </div>
+    <div class="pontas"><span>Não ajudou</span><span>Ajudou muito</span></div>
+  </div>
+
+  <div class="cartao">
+    <h2 id="q-acao">Você já fez a primeira ação do plano?</h2>
+    <div class="opcoes">
+      <label><input type="radio" name="acao" value="sim"><span>Sim, já fiz</span></label>
+      <label><input type="radio" name="acao" value="ainda_nao"><span>Ainda não, mas vou fazer</span></label>
+      <label><input type="radio" name="acao" value="nao_vou"><span>Não vou fazer</span></label>
+    </div>
+  </div>
+
+  <div class="cartao">
+    <h2 id="q-texto">O que achou do plano?</h2>
+    <p class="ajuda" id="ajuda-texto">Pode ser curto. Se alguma coisa ficou confusa, conte também.</p>
+    <textarea id="texto" maxlength="1500" aria-labelledby="q-texto"></textarea>
+  </div>
+
+  <div class="cartao">
+    <h2>Podemos mostrar o seu comentário no site?</h2>
+    <p class="ajuda">Ajuda quem está com dívida a confiar no plano. Nada vai para o site sem a sua autorização, e você pode pedir para tirar quando quiser.</p>
+    <div class="opcoes">
+      <label><input type="radio" name="autoriza" value="nao" checked><span>Não, é só para vocês</span></label>
+      <label><input type="radio" name="autoriza" value="primeiro_nome"><span id="op-nome">Sim, com o meu primeiro nome</span></label>
+      <label><input type="radio" name="autoriza" value="anonimo"><span>Sim, sem o meu nome</span></label>
+    </div>
+    <label id="caixa-cidade" hidden>Cidade (opcional)<input type="text" id="cidade" maxlength="60" autocomplete="address-level2"></label>
+    <p class="pequeno">O sobrenome e o e-mail nunca aparecem.</p>
+  </div>
+
+  <div class="erro-box" id="erro" hidden></div>
+  <button type="submit" class="enviar" id="btn">Enviar</button>
+</form>
+
+<div id="pronto" hidden>
+  <div class="cartao">
+    <h2 id="pronto-titulo">Obrigado. Recebemos.</h2>
+    <p id="pronto-texto">Cada resposta ajuda a melhorar o plano de quem vem depois.</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var q = new URLSearchParams(location.search);
+  var id = q.get('id') || '', a = q.get('a') || '', m = q.get('m') || 'plano';
+  var $ = function (x) { return document.getElementById(x); };
+  function falhou(msg) { $('titulo').textContent = 'Este link não funcionou.'; $('abre').hidden = false; $('abre').textContent = msg; }
+  function marcar(nome, valor) { var el = document.querySelector('input[name="' + nome + '"][value="' + valor + '"]'); if (el) el.checked = true; }
+  function valor(nome) { var el = document.querySelector('input[name="' + nome + '"]:checked'); return el ? el.value : null; }
+  if (!id || !a) { falhou('Abra pelo botão do e-mail que você recebeu ou pelo link na última página do plano.'); return; }
+
+  if (q.get('parar') === '1') {
+    $('rotulo').textContent = 'E-mails';
+    $('titulo').textContent = 'Um momento...';
+    fetch('/api/avaliacao', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: id, a: a, parar: true }) })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { if (!j.ok) throw new Error(j.erro); $('titulo').textContent = 'Pronto. Você não vai mais receber estes e-mails.'; $('abre').hidden = false; $('abre').textContent = 'O seu plano continua com você. Se precisar, é só escrever para contato@desaperto.com.'; })
+      .catch(function (e) { falhou(e.message || 'Tente de novo mais tarde.'); });
+    return;
+  }
+
+  if (m === '30d') {
+    $('rotulo').textContent = 'Um mês depois';
+    $('q-acao').textContent = 'Você está seguindo o plano?';
+    document.querySelector('input[name="acao"][value="sim"]').nextElementSibling.textContent = 'Sim, estou seguindo';
+    document.querySelector('input[name="acao"][value="ainda_nao"]').nextElementSibling.textContent = 'Comecei, mas parei';
+    document.querySelector('input[name="acao"][value="nao_vou"]').nextElementSibling.textContent = 'Não comecei';
+    $('q-texto').textContent = 'O que mudou para você?';
+    $('ajuda-texto').textContent = 'Pode ser pouco: uma ligação feita, uma parcela adiantada, um mês sem cheque especial, um acordo fechado.';
+  }
+
+  fetch('/api/avaliacao?id=' + encodeURIComponent(id) + '&a=' + encodeURIComponent(a) + '&m=' + encodeURIComponent(m))
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      if (!j.ok) throw new Error(j.erro);
+      var nome = j.primeiro_nome;
+      $('titulo').textContent = m === '30d' ? (nome ? nome + ', como está sendo?' : 'Como está sendo?') : (nome ? nome + ', o plano ficou claro?' : 'O plano ficou claro?');
+      $('abre').hidden = false;
+      $('abre').textContent = m === '30d' ? 'Faz um mês que o seu plano chegou. Leva 2 minutos.' : 'Leva 1 minuto. Só a nota já ajuda.';
+      if (nome) $('op-nome').textContent = 'Sim, com o meu primeiro nome (' + nome + ')';
+      if (j.ja) {
+        if (j.ja.nota) marcar('nota', j.ja.nota);
+        if (j.ja.acao) marcar('acao', j.ja.acao);
+        if (j.ja.autoriza) marcar('autoriza', j.ja.autoriza);
+        $('texto').value = j.ja.texto || '';
+        $('cidade').value = j.ja.cidade || '';
+      }
+      mostrarCidade();
+      $('form').hidden = false;
+    })
+    .catch(function (e) { falhou(e.message || 'Tente de novo mais tarde.'); });
+
+  function mostrarCidade() { $('caixa-cidade').hidden = (valor('autoriza') || 'nao') === 'nao'; }
+  document.querySelectorAll('input[name="autoriza"]').forEach(function (el) { el.addEventListener('change', mostrarCidade); });
+
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var nota = valor('nota'), texto = $('texto').value.trim();
+    if (!nota && !texto) { $('erro').hidden = false; $('erro').textContent = 'Escolha uma nota de 1 a 5 ou escreva alguma coisa.'; return; }
+    $('erro').hidden = true; $('btn').disabled = true; $('btn').textContent = 'Enviando...';
+    fetch('/api/avaliacao', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({
+      id: id, a: a, m: m, nota: nota ? Number(nota) : null, acao: valor('acao'), texto: texto, autoriza: valor('autoriza') || 'nao', cidade: $('cidade').value.trim()
+    }) })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j.ok) throw new Error(j.erro);
+        $('form').hidden = true; $('abre').hidden = true; $('pronto').hidden = false;
+        $('titulo').textContent = 'Obrigado.';
+        if (nota && Number(nota) <= 2) {
+          $('pronto-titulo').textContent = 'Sentimos que o plano não ajudou.';
+          $('pronto-texto').textContent = 'Responda o e-mail do plano contando o que travou. A gente olha o seu caso e ajusta.';
+        } else if (valor('acao') === 'ainda_nao' || valor('acao') === 'nao_vou') {
+          $('pronto-texto').textContent = 'Se alguma ação travou, responda o e-mail do plano contando qual. Às vezes falta só um detalhe para destravar.';
+        }
+      })
+      .catch(function (er) { $('erro').hidden = false; $('erro').textContent = 'Não foi possível enviar: ' + (er.message || 'tente de novo') + '.'; $('btn').disabled = false; $('btn').textContent = 'Enviar'; });
+  });
+})();
+</script>

@@ -10,5 +10,10 @@
   X-Robots-Tag: noindex, nofollow
   Cache-Control: no-store
 
+/avaliar
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+  Referrer-Policy: no-referrer
+
 /img/*
   Cache-Control: public, max-age=604800

@@ -40,3 +40,10 @@ Configuração extra:
 - Respostas: desaperto.com/admin, com a `ADMIN_TOKEN`.
 - Cada resposta é apagada sozinha 90 dias depois do envio.
 - Toda mudança enviada para este repositório é publicada sozinha em cerca de 1 minuto.
+
+## Avaliações
+- O PDF traz, na última página, um link assinado para a pessoa avaliar. Dois dias depois do plano (se ela ainda não avaliou) e 30 dias depois, o site manda um e-mail pedindo a avaliação.
+- Os e-mails saem pelo workflow `.github/workflows/lembretes.yml`, uma vez por dia (8h47 de Brasília), no máximo 40 por dia.
+- Na /admin, seção Avaliações: "Pôr no site" publica o comentário (só os autorizados). "Corrigir e pôr" permite arrumar erro de digitação.
+- A página inicial mostra a seção "Quem já recebeu o plano" sozinha quando houver 3 ou mais comentários publicados.
+- A tabela `avaliacoes` e as colunas novas são criadas sozinhas pelo site na primeira vez.

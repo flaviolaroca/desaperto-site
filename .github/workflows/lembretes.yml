@@ -1,0 +1,22 @@
+# Uma vez por dia, manda os pedidos de avaliação de 2 e de 30 dias depois do plano.
+# Também dá para rodar à mão: Actions → Pedidos de avaliação → Run workflow.
+name: Pedidos de avaliação
+
+on:
+  schedule:
+    - cron: '47 11 * * *'   # 8h47 em Brasília
+  workflow_dispatch:
+
+jobs:
+  enviar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Pedir ao site para enviar
+        env:
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+        run: |
+          test -n "$ADMIN_TOKEN" || { echo "Falta o segredo ADMIN_TOKEN no GitHub"; exit 1; }
+          code=$(curl -sS -o saida.json -w "%{http_code}" -X POST -H "authorization: Bearer $ADMIN_TOKEN" https://desaperto.com/api/admin/lembretes)
+          cat saida.json; echo
+          test "$code" = "200" || { echo "::error::O site respondeu $code."; exit 1; }

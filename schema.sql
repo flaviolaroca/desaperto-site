@@ -26,3 +26,16 @@ CREATE INDEX IF NOT EXISTS idx_respostas_origem ON respostas (origem_hash, criad
 -- ALTER TABLE respostas ADD COLUMN plano_gerado_em TEXT;
 -- ALTER TABLE respostas ADD COLUMN plano_resumo TEXT;
 -- ALTER TABLE respostas ADD COLUMN plano_erro TEXT;
+
+-- Avaliações (o site cria sozinho na primeira vez; está aqui só para registro).
+CREATE TABLE IF NOT EXISTS avaliacoes (
+  id TEXT PRIMARY KEY, resposta_id TEXT NOT NULL, protocolo TEXT, momento TEXT NOT NULL, -- plano | 2d | 30d
+  criado_em TEXT NOT NULL, atualizado_em TEXT NOT NULL,
+  nota INTEGER, acao TEXT, texto TEXT, autoriza TEXT NOT NULL DEFAULT 'nao', -- nao | primeiro_nome | anonimo
+  primeiro_nome TEXT, cidade TEXT, contexto TEXT,
+  status TEXT NOT NULL DEFAULT 'nova', texto_publicado TEXT, aprovado_em TEXT, -- nova | aprovada | recusada
+  UNIQUE (resposta_id, momento));
+-- Colunas novas em respostas (o site também cria sozinho):
+-- ALTER TABLE respostas ADD COLUMN aval_2d_em TEXT;
+-- ALTER TABLE respostas ADD COLUMN aval_30d_em TEXT;
+-- ALTER TABLE respostas ADD COLUMN sem_emails INTEGER NOT NULL DEFAULT 0;

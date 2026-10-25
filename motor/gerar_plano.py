@@ -23,7 +23,7 @@ def main():
     os.makedirs(saida, exist_ok=True)
     r = json.load(open(entrada))
     ini = inicio_do_plano(data)
-    doc, res, cons = plano_pdf.montar(r, textos_generico.textos, ini)
+    doc, res, cons = plano_pdf.montar(r, textos_generico.textos, ini, link_avaliar=os.environ.get('AVALIAR_URL') or None)
     open(os.path.join(saida, 'plano.html'), 'w').write(doc)
     original = motor.rodar(r, ini)  # a situação de hoje, antes de qualquer cenário
     alertas = [{'codigo': c, 'texto': t} for c, t in (original.get('alertas') or [])]

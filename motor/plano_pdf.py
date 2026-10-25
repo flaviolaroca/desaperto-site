@@ -235,7 +235,7 @@ def mes_respostas(inicio):
     return (a, m - 1) if m > 1 else (a - 1, 12)
 
 
-def montar(r, textos, inicio=(2026, 11)):
+def montar(r, textos, inicio=(2026, 11), link_avaliar=None):
     res = motor.rodar(r, inicio)
     original = res
     cenario = None
@@ -273,11 +273,30 @@ def montar(r, textos, inicio=(2026, 11)):
                fila=fila, plano=plano, cenario=cenario, rep=rep, original=original, rot=rot, rotp=rotp, cheque=cheque, app=app, emp=emp, parcelas_plano=parcelas_plano, sobra_plano=sobra_plano)
     T = textos(ctx)
     if sobra_plano >= 0:
-        capa_sobra = f'<div><span class="rot">Depois de pagar as contas e as parcelas, sobram</span><b>{brl(sobra_plano)}</b><small>Esse dinheiro não fica parado: vai para a dívida da vez. A página "Mês a mês" diz quanto e para qual.</small></div>'
+        capa_sobra = f'<div><span class="rot">Depois de pagar as contas e as parcelas, sobram</span><b>{brl(sobra_plano)}</b><small>Esse dinheiro não fica parado: vai para pagar as dívidas, uma por vez. A página "Mês a mês" mostra quanto vai para qual.</small></div>'
     else:
-        prox_pos = next((m for m in res['meses'] if (m['sobra'] - m.get('do_guardado', 0)) > 0), None)
-        depois = f' A partir de {mes_longo((prox_pos["ano"], prox_pos["mes"]))}, volta a sobrar dinheiro, e ele vai para a dívida da vez.' if prox_pos else ''
-        capa_sobra = f'<div><span class="rot">Neste primeiro mês, as contas e as parcelas passam do que entra em</span><b>{brl(-sobra_plano)}</b><small>{"O dinheiro guardado cobre essa diferença." if (r.get("guardado") or 0) >= -sobra_plano else "Essa diferença precisa de uma solução antes de tudo: veja a página Mês a mês."}{depois}</small></div>'
+        falta = -sobra_plano
+        m1 = res['meses'][0] if res['meses'] else None
+        prox_pos = next((m for m in res['meses'] if (m['sobra'] - m.get('do_guardado', 0) - sum(v for _, v in m.get('extras_entrada', []))) > 0), None)
+        # o motivo do aperto: o pagamento que mais cai entre este mês e o mês em que volta a sobrar
+        motivo, queda = '', ''
+        if m1 and prox_pos and prox_pos is not m1:
+            quedas = []
+            for nome_p, v1 in m1.get('pagamentos', {}).items():
+                v2 = prox_pos.get('pagamentos', {}).get(nome_p, 0)
+                if v1 - v2 > 0.5:
+                    dd = next((x for x in plano if x['nome'] == nome_p), None)
+                    if dd: quedas.append((v1 - v2, v1, v2, dd))
+            if quedas:
+                _, v1, v2, dd = max(quedas, key=lambda q: q[0])
+                obj = objeto(dd)
+                plural = obj.split(' ', 1)[0] in ('os', 'as')
+                motivo = f' O motivo: {e(obj)} {e(dd["credor"])} ainda {"somam" if plural else "custa"} {brl(v1)} neste mês.'
+                queda = (f'{"elas caem" if plural else "cai"} para {brl(v2)} e ' if v2 > 0.5 else f'{"elas acabam" if plural else "acaba"} e ')
+        cobre = ' Use o dinheiro que você tem guardado para cobrir.' if (r.get('guardado') or 0) >= falta else ' Essa diferença precisa ser resolvida antes de tudo: a página "Mês a mês" mostra como.'
+        depois = f' Em {mes_longo((prox_pos["ano"], prox_pos["mes"]))}, {queda}volta a sobrar. Essa sobra vai para pagar as dívidas, uma por vez.' if prox_pos else ''
+        capa_sobra = (f'<div><span class="rot">Neste primeiro mês, falta dinheiro</span><b class="falta">faltam {brl(falta)}</b>'
+                      f'<small>As contas e as parcelas deste mês somam {brl(falta)} a mais do que você recebe.{motivo}{cobre}{depois}</small></div>')
     fora_txt = ''
     for d in plano:
         if d['banda'] == 'fora' and d['sub'] == 'parcelada' and d.get('restam'):
@@ -710,6 +729,7 @@ def montar(r, textos, inicio=(2026, 11)):
   <p class="secao">Antes de fechar</p>
   <h2>Você não precisa fazer isso sem apoio.</h2>
   <div class="caixa cvv">Se o peso estiver grande demais, você não precisa carregar isso sem ajuda: <b>CVV, ligue 188</b>, 24 horas, gratuito.</div>
+  {f'<div class="caixa avaliar"><b>O plano ficou claro?</b> Conte para a gente em 1 minuto: <a href="{e(link_avaliar)}">avaliar o meu plano</a>. A sua resposta ajuda a melhorar o plano de quem vem depois.</div>' if link_avaliar else ''}
   <h3 class="peq">Cuidado com golpes</h3>
   <ul class="golpes">
     <li>Ninguém precisa de taxa antecipada para "limpar seu nome".</li>
@@ -753,6 +773,8 @@ p {{ margin: 0; }}
 .claro > div {{ background: var(--branco); border-radius: 2.6mm; padding: 2.4mm 3mm; display: flex; flex-direction: column; gap: .6mm; }}
 .claro .rot {{ font-size: 7.6pt; color: var(--cinza); }}
 .claro b {{ font-family: Plex; font-weight: 600; font-size: 14pt; letter-spacing: -0.02em; }}
+.caixa.avaliar a {{ color: var(--verde); font-weight: 700; }}
+.claro b.falta {{ color: var(--ambar); }}
 .claro small {{ font-size: 7.4pt; color: var(--cinza); line-height: 1.35; }}
 .mes {{ list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1.6mm; }}
 .mes > li {{ background: var(--branco); border-radius: 2.6mm; padding: 2.2mm 3mm; display: grid; grid-template-columns: 11mm 1fr; gap: 0 2.4mm; }}

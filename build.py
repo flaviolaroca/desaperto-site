@@ -98,13 +98,14 @@ def main():
 
     open(os.path.join(PUB, 'termos.html'), 'w').write(pagina_simples('termos.html', 'Termos de uso · Desaperto', 'O combinado entre você e o Desaperto.', '/termos'))
     open(os.path.join(PUB, 'privacidade.html'), 'w').write(pagina_simples('privacidade.html', 'Privacidade · Desaperto', 'Como o Desaperto cuida das suas respostas.', '/privacidade'))
+    open(os.path.join(PUB, 'avaliar.html'), 'w').write(pagina_simples('avaliar.html', 'Sua avaliação · Desaperto', 'Conte como foi o seu plano.', '/avaliar', indexar=False))
     open(os.path.join(PUB, 'admin.html'), 'w').write(pagina_simples('admin.html', 'Área interna · Desaperto', 'Área interna.', '/admin', indexar=False))
 
     nao = '''<p class="rotulo">Página não encontrada</p><h1>Esse endereço não existe.</h1><p>Talvez o link tenha mudado. <a href="/">Voltar para o início</a> ou <a href="/comecar">montar o seu plano</a>.</p>'''
     open(os.path.join(AQUI, 'src', '404.html'), 'w').write(nao)
     open(os.path.join(PUB, '404.html'), 'w').write(pagina_simples('404.html', 'Página não encontrada · Desaperto', 'Página não encontrada.', '/404', indexar=False))
 
-    open(os.path.join(PUB, 'robots.txt'), 'w').write(f'User-agent: *\nDisallow: /admin\nDisallow: /api/\nSitemap: {URL}/sitemap.xml\n')
+    open(os.path.join(PUB, 'robots.txt'), 'w').write(f'User-agent: *\nDisallow: /admin\nDisallow: /avaliar\nDisallow: /api/\nSitemap: {URL}/sitemap.xml\n')
     urls = ['/', '/comecar', '/termos', '/privacidade']
     open(os.path.join(PUB, 'sitemap.xml'), 'w').write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + ''.join(f'  <url><loc>{URL}{u}</loc></url>\n' for u in urls) + '</urlset>\n')
     csp = ("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
@@ -120,6 +121,11 @@ def main():
 /admin
   X-Robots-Tag: noindex, nofollow
   Cache-Control: no-store
+
+/avaliar
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+  Referrer-Policy: no-referrer
 
 /img/*
   Cache-Control: public, max-age=604800

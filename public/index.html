@@ -206,6 +206,16 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
 .grade h3 { font-size: 1.1875rem; letter-spacing: -0.01em; }
 .grade p { color: #24332B; font-size: 1rem; }
 
+[hidden] { display: none !important; }
+/* ---------- depoimentos ---------- */
+.vozes .miolo { padding-block: 80px; display: grid; gap: 32px; }
+.lista-vozes { display: grid; gap: 14px; }
+.voz { margin: 0; background: var(--branco); border-radius: 22px; padding: 24px 22px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.voz blockquote { margin: 0; font-size: 1.125rem; line-height: 1.5; }
+.voz figcaption { font-size: .875rem; color: var(--cinza); display: flex; flex-direction: column; gap: 2px; }
+.voz figcaption b { color: var(--tinta); }
+.nota-vozes { font-size: .875rem; color: var(--cinza); max-width: 40rem; }
+
 /* ---------- nunca ---------- */
 .nunca .miolo { padding-block: 80px; display: grid; gap: 36px; }
 .lista-nunca { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-top: 2px solid var(--tinta); }
@@ -271,6 +281,8 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
   .trilho { grid-auto-columns: minmax(250px, 1fr); grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; margin-inline: 0; padding-inline: 0; gap: 34px 24px; }
   .dica-trilho { display: none; }
   .grade { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lista-vozes { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
+  .vozes .miolo { padding-block: 96px; }
   .lista-nunca li { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 28px; align-items: baseline; }
   .nunca .miolo { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); align-items: start; gap: 56px; }
   .perguntas .miolo { grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr); align-items: start; gap: 56px; }
@@ -506,6 +518,18 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
     </div>
   </section>
 
+  <!-- depoimentos: só aparece quando houver pelo menos 3 aprovados na área interna -->
+  <section class="vozes faixa" id="vozes" aria-labelledby="t-vozes" hidden>
+    <div class="miolo">
+      <div class="cab">
+        <p class="rotulo">Quem já recebeu o plano</p>
+        <h2 id="t-vozes">Em palavras de quem usou.</h2>
+      </div>
+      <div class="lista-vozes" id="lista-vozes"></div>
+      <p class="nota-vozes">Comentários reais de quem recebeu o plano, publicados com autorização. Cada plano é feito com os números de cada pessoa, e os resultados variam.</p>
+    </div>
+  </section>
+
   <!-- nunca -->
   <section class="nunca faixa" aria-labelledby="t-nunca">
     <div class="miolo">
@@ -517,7 +541,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
         <li><b>Pedir CPF, senha ou extrato.</b><span>Você informa só os valores. Ninguém entra na sua conta.</span></li>
         <li><b>Emprestar dinheiro.</b><span>O Desaperto não é banco, não indica banco e não oferece empréstimo.</span></li>
         <li><b>Cobrar para "limpar seu nome".</b><span>Isso é golpe. O plano mostra onde negociar de forma segura e o que é de graça.</span></li>
-        <li><b>Guardar suas respostas para sempre.</b><span>Elas são apagadas em até 90 dias depois que o plano chega.</span></li>
+        <li><b>Guardar suas respostas para sempre.</b><span>Elas são apagadas em até 90 dias depois que o plano chega. Seu comentário só aparece aqui se você autorizar.</span></li>
       </ul>
     </div>
   </section>
@@ -594,6 +618,20 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
 <script>
 (function () {
   'use strict';
+  // depoimentos aprovados na área interna (só mostra a seção com 3 ou mais)
+  try {
+    fetch('/api/depoimentos').then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+      var d = j && j.depoimentos ? j.depoimentos.slice(0, 6) : [];
+      if (d.length < 3) return;
+      var esc = function (x) { return String(x == null ? '' : x).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+      document.getElementById('lista-vozes').innerHTML = d.map(function (x) {
+        var extra = [x.contexto, x.depois_de_um_mes ? 'um mês depois do plano' : ''].filter(Boolean).join(' · ');
+        return '<figure class="voz"><blockquote>' + esc('\u201C' + x.texto + '\u201D') + '</blockquote><figcaption><b>' + esc(x.quem) + '</b>' + (extra ? '<span>' + esc(extra) + '</span>' : '') + '</figcaption></figure>';
+      }).join('');
+      document.getElementById('vozes').hidden = false;
+    }).catch(function () {});
+  } catch (e) {}
+
   var topo = document.getElementById('topo');
   function aoRolar() { topo.classList.toggle('rolou', window.scrollY > 8); }
   window.addEventListener('scroll', aoRolar, { passive: true }); aoRolar();

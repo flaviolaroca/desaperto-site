@@ -49,7 +49,14 @@ jobs:
           "
 
       - name: Calcular e montar o plano
-        run: python3 motor/gerar_plano.py trabalho/dados.json "$(cat trabalho/data.txt)" trabalho
+        run: |
+          # link assinado para a pessoa avaliar o plano (o mesmo cálculo de lib/api.js, assinaturaAval)
+          export AVALIAR_URL=$(python3 -c "
+          import hashlib, os, urllib.parse
+          i = os.environ['ID']; a = hashlib.sha256(('avaliar|' + i + '|' + os.environ['ADMIN_TOKEN'].strip()).encode()).hexdigest()[:32]
+          print(os.environ['SITE'] + '/avaliar?id=' + urllib.parse.quote(i) + '&m=plano&a=' + a)
+          ")
+          python3 motor/gerar_plano.py trabalho/dados.json "$(cat trabalho/data.txt)" trabalho
 
       - name: Gerar o PDF
         run: node motor/gerar_pdf.js trabalho/plano.html trabalho/plano.pdf
