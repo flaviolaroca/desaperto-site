@@ -74,7 +74,7 @@ main .in { max-width: 34rem; }
   'use strict';
   var q = new URLSearchParams(location.search), $t = document.getElementById('tela');
   function esc(x) { return String(x == null ? '' : x).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-  function contar(e) { try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: e })); } catch (er) {} }
+  function contar(e) { try { if (localStorage.getItem('desaperto-nao-contar')) return; } catch (er) {} try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: e })); } catch (er) {} }
   contar('v_progresso');
   fetch('/api/progresso?id=' + encodeURIComponent(q.get('id') || '') + '&a=' + encodeURIComponent(q.get('a') || ''))
     .then(function (r) { return r.json(); })

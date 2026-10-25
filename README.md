@@ -72,3 +72,9 @@ Configuração extra:
 - /cartao.js desenha a imagem (1080 x 1920) com a contagem e a barra de progresso, sem valores e sem nome.
 - Aparece na página /pagar (depois da data e depois do pagamento) e em /progresso, que tem link no e-mail do plano e no e-mail de cada mês.
 - Opcional: variável `PIX_RECEBEDOR` com o nome exato que aparece como recebedor no app do banco (veja no seu pagamento de teste). A tela do Pix passa a mostrar esse nome. Sem ela, mostra "o nome do responsável pelo Desaperto".
+
+## Links de teste grátis
+No painel, em "Links de teste grátis", crie um link para cada testador (desaperto.com/teste/CODIGO). Quem abre faz a versão rápida e o plano completo sem pagar: fica como pago com valor zero. Não entra no funil nem nas vendas, não tem botão de devolver e recebe os pedidos de avaliação normalmente. Cada link tem um limite de usos e pode ser desativado.
+
+## Zerar métricas
+No painel, "Zerar métricas" apaga a contagem de acessos e passa a contar a partir daquele momento. Vendas e respostas não são apagadas. Ao entrar no painel, o aparelho deixa de entrar na contagem (botão para voltar a contar).

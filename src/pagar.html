@@ -62,6 +62,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
   function esc(x) { return String(x == null ? '' : x).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function reais(v) { return 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
   function contar(e) {
+    try { if (localStorage.getItem('desaperto-nao-contar')) return; } catch (er) {}
     try { var k = 'desaperto-ev-' + e; if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); } catch (er) {}
     try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: e })); } catch (er) {}
   }

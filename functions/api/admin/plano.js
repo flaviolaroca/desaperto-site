@@ -13,7 +13,7 @@ export async function onRequest({ request, env }) {
   const url = new URL(request.url);
   const id = url.searchParams.get('id');
   if (!id) return erro('Falta o id.');
-  const linha = await env.DB.prepare('SELECT id, teste FROM respostas WHERE id = ?').bind(id).first();
+  const linha = await env.DB.prepare('SELECT id, teste, pag_status FROM respostas WHERE id = ?').bind(id).first();
   if (!linha) return erro('Resposta não encontrada.', 404);
 
   if (request.method === 'PUT') {
@@ -35,7 +35,7 @@ export async function onRequest({ request, env }) {
     await env.DB.prepare("UPDATE respostas SET status = 'plano_pronto', plano_resumo = ?, plano_gerado_em = ?, plano_erro = NULL WHERE id = ?")
       .bind(JSON.stringify(corpo.resumo), agora(), id).run();
     await garantirTabelas(env.DB);
-    if (!linha.teste) await evento(env.DB, 'plano_pronto');
+    if (!linha.teste) await evento(env.DB, linha.pag_status === 'convite' ? 'convite_plano' : 'plano_pronto');
     // Com cobrança: se já pagou, libera o plano; se não, manda a data grátis com o link para pagar.
     if (cobrancaAtiva(env)) {
       const l = await env.DB.prepare('SELECT id, nome, email, protocolo, plano_resumo, pago_em, aviso_data_em, teste FROM respostas WHERE id = ?').bind(id).first();

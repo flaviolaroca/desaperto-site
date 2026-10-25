@@ -1,7 +1,9 @@
 // POST /api/respostas  -> guarda as respostas do questionário e devolve um protocolo.
 // PUT  /api/respostas  -> a própria pessoa corrige as respostas já enviadas (precisa do id e da chave).
 import { json, erro, sha256, aleatorio, protocolo, agora, lerCorpo, validarRespostas, limparAntigas, enviarEmail, escapar, pedirPlano, LIMITE_POR_HORA,
-  garantirTabelas, evento, cobrancaAtiva, assinaturaPagar, enviarDataGratis } from '../../lib/api.js';
+  garantirTabelas, evento, cobrancaAtiva, assinaturaPagar, enviarDataGratis, limparCodigo, conviteValido, usarConvite, enviarCompletar } from '../../lib/api.js';
+
+function rapido0(corpo, r) { return corpo.rapido === true && r.rapido === true && !corpo.teste; }
 
 async function origem(request, env) {
   const ip = request.headers.get('cf-connecting-ip') || 'sem-ip';
@@ -20,6 +22,12 @@ export async function onRequestPost({ request, env }) {
   const umaHora = new Date(Date.now() - 3600e3).toISOString();
   const recentes = await env.DB.prepare('SELECT COUNT(*) AS n FROM respostas WHERE origem_hash = ? AND criado_em > ?').bind(org, umaHora).first();
   if (recentes && recentes.n >= LIMITE_POR_HORA) return erro('Muitos envios seguidos deste aparelho. Espere um pouco e tente de novo.', 429);
+
+  // Link de teste grátis: confere antes de guardar, para avisar logo se já foi usado
+  try { await garantirTabelas(env.DB); } catch {}
+  const convite = rapido0(corpo, r) ? limparCodigo(corpo.convite) : '';
+  if (convite && !(await conviteValido(env.DB, convite)))
+    return erro('Este link de teste já foi usado ou foi desativado. Peça um link novo para quem te mandou.', 409);
 
   const id = crypto.randomUUID();
   const chave = aleatorio(24);
@@ -50,8 +58,19 @@ export async function onRequestPost({ request, env }) {
   if (rapido) {
     // Versão rápida: não roda o motor. A data aproximada já veio calculada; o plano exato vem depois das respostas completas.
     await env.DB.prepare("UPDATE respostas SET status = 'rapido', estimativa = ? WHERE id = ?").bind(estimativa, id).run();
-    if (!teste) await evento(env.DB, 'rapido_enviou');
     const primeiro = r.nome.trim().split(/\s+/)[0];
+    if (convite) {
+      // Teste grátis: fica como pago com valor zero e pula direto para completar as respostas.
+      const usou = await usarConvite(env.DB, convite);
+      if (usou) {
+        await env.DB.prepare("UPDATE respostas SET pago_em = ?, pago_valor = 0, pag_status = 'convite', convite = ? WHERE id = ?").bind(agora(), convite, id).run();
+        await evento(env.DB, 'convite_usou');
+        await enviarEmail(env, { para: env.EMAIL_AVISO, assunto: `Teste grátis: ${primeiro} · ${prot}`, texto: `Alguém entrou pelo link de teste ${convite}.\nProtocolo: ${prot}\nDívidas: ${r.dividas.length}\nVeja em https://desaperto.com/admin` });
+        await enviarCompletar(env, { id, nome: r.nome, email: r.email.trim(), pag_status: 'convite' }, new URL(request.url).origin);
+        return json({ ok: true, id, chave, protocolo: prot, pagar }, 201);
+      }
+    }
+    if (!teste) await evento(env.DB, 'rapido_enviou');
     await enviarEmail(env, { para: env.EMAIL_AVISO, assunto: `${teste ? '[teste] ' : ''}Data rápida: ${primeiro} · ${prot}`, texto: `Alguém fez a versão rápida.\nProtocolo: ${prot}\nDívidas: ${r.dividas.length}\nVeja em https://desaperto.com/admin` });
     if (!teste && cobrancaAtiva(env)) {
       const origemUrl = new URL(request.url).origin;
@@ -93,12 +112,12 @@ export async function onRequestPut({ request, env }) {
   if (problema) return erro(problema);
   if (r.rapido) return erro('Faltam as respostas completas.');
   try { await garantirTabelas(env.DB); } catch {}
-  const linha = await env.DB.prepare('SELECT chave_hash, protocolo, status, teste FROM respostas WHERE id = ?').bind(id).first();
+  const linha = await env.DB.prepare('SELECT chave_hash, protocolo, status, teste, pag_status FROM respostas WHERE id = ?').bind(id).first();
   const valido = linha && (typeof chave === 'string' ? linha.chave_hash === (await sha256(chave)) : a === (await assinaturaPagar(env, id)));
   if (!valido) return erro('Não encontramos esse envio. Envie de novo como novo.', 404);
   if (linha.status === 'rapido') {
     await env.DB.prepare('UPDATE respostas SET completado_em = ? WHERE id = ?').bind(agora(), id).run();
-    if (!linha.teste) await evento(env.DB, 'completou');
+    if (!linha.teste) await evento(env.DB, linha.pag_status === 'convite' ? 'convite_completou' : 'completou');
   }
   await env.DB.prepare("UPDATE respostas SET dados = ?, nome = ?, email = ?, atualizado_em = ?, status = 'recebido', plano_resumo = NULL, plano_erro = NULL, aviso_data_em = NULL WHERE id = ?")
     .bind(JSON.stringify(r), r.nome.trim(), r.email.trim().toLowerCase(), agora(), id).run();

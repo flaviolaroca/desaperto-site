@@ -12,13 +12,13 @@ async function buscar(env, id, a) {
 
 function situacao(env, l, a) {
   const base = { primeiro_nome: (l.nome || '').trim().split(/\s+/)[0] || '', email: mascararEmail(l.email), protocolo: l.protocolo,
-    preco: preco(env), preco_txt: reaisCentavos(preco(env)), cobrar: cobrancaAtiva(env), pago: !!l.pago_em,
+    preco: preco(env), preco_txt: reaisCentavos(preco(env)), cobrar: cobrancaAtiva(env), pago: !!l.pago_em && l.pag_status !== 'convite', convite: l.pag_status === 'convite',
     recebedor: String(env.PIX_RECEBEDOR || '').trim().slice(0, 80), objetivo: String(l.objetivo || '').trim().slice(0, 140) };
   if (l.status === 'rapido') {
     const data = dataDaLinha(l);
     if (l.devolvido_em) return { ...base, estado: 'devolvido', data };
-    const continuar = `/comecar?continuar=${encodeURIComponent(l.id)}&a=${a}`;
-    if (l.pago_em || !base.cobrar) return { ...base, estado: 'completar', data, continuar, gratis: !base.cobrar };
+    const continuar = `/comecar?continuar=${encodeURIComponent(l.id)}&a=${a}${base.convite ? '&t=1' : ''}`;
+    if (l.pago_em || !base.cobrar) return { ...base, estado: 'completar', data, continuar, gratis: !base.cobrar || base.convite };
     if (l.pag_id && l.pag_status === 'pending' && l.pag_expira && new Date(l.pag_expira).getTime() > Date.now() + 60e3)
       return { ...base, estado: 'pix', data, pix: { qr: l.pag_qr, img: l.pag_qr_img, expira: l.pag_expira } };
     return { ...base, estado: 'oferta', data };
@@ -30,7 +30,7 @@ function situacao(env, l, a) {
   if (l.devolvido_em) return { ...base, estado: 'devolvido', data };
   if (resumo.dados_graves && !l.pago_em && l.status !== 'plano_enviado') return { ...base, estado: 'revisao' };
   if (l.status === 'plano_enviado') return { ...base, estado: 'enviado', data };
-  if (l.pago_em || !base.cobrar) return { ...base, estado: 'pago', data, revisao: !!resumo.precisa_revisao, gratis: !base.cobrar };
+  if (l.pago_em || !base.cobrar) return { ...base, estado: 'pago', data, revisao: !!resumo.precisa_revisao, gratis: !base.cobrar || base.convite };
   if (l.pag_id && l.pag_status === 'pending' && l.pag_expira && new Date(l.pag_expira).getTime() > Date.now() + 60e3)
     return { ...base, estado: 'pix', data, pix: { qr: l.pag_qr, img: l.pag_qr_img, expira: l.pag_expira } };
   return { ...base, estado: 'oferta', data };

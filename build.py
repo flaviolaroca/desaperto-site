@@ -113,11 +113,12 @@ def main():
     open(os.path.join(AQUI, 'src', '404.html'), 'w').write(nao)
     open(os.path.join(PUB, '404.html'), 'w').write(pagina_simples('404.html', 'Página não encontrada · Desaperto', 'Página não encontrada.', '/404', indexar=False))
 
-    open(os.path.join(PUB, 'robots.txt'), 'w').write(f'User-agent: *\nDisallow: /admin\nDisallow: /avaliar\nDisallow: /pagar\nDisallow: /progresso\nDisallow: /api/\nSitemap: {URL}/sitemap.xml\n')
+    open(os.path.join(PUB, 'robots.txt'), 'w').write(f'User-agent: *\nDisallow: /admin\nDisallow: /avaliar\nDisallow: /pagar\nDisallow: /progresso\nDisallow: /teste\nDisallow: /api/\nSitemap: {URL}/sitemap.xml\n')
     urls = ['/', '/rapido', '/comecar', '/termos', '/privacidade']
     open(os.path.join(PUB, 'sitemap.xml'), 'w').write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + ''.join(f'  <url><loc>{URL}{u}</loc></url>\n' for u in urls) + '</urlset>\n')
     csp = ("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
            "font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
+    open(os.path.join(PUB, '_redirects'), 'w').write('/teste/:codigo /rapido?convite=:codigo 302\n')
     open(os.path.join(PUB, '_headers'), 'w').write(f'''/*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin

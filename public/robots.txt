@@ -3,5 +3,6 @@ Disallow: /admin
 Disallow: /avaliar
 Disallow: /pagar
 Disallow: /progresso
+Disallow: /teste
 Disallow: /api/
 Sitemap: https://desaperto.com/sitemap.xml

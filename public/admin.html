@@ -90,6 +90,13 @@ td.n { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; 
 .acoes { display: flex; flex-wrap: wrap; gap: 6px; }
 .acoes button { padding: 6px 12px; font-size: .8125rem; }
 pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .75rem; overflow: auto; max-height: 50vh; margin: 8px 0 0; }
+.convite-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin: 0 0 10px; }
+.convite-form label { display: flex; flex-direction: column; gap: 4px; font-size: .875rem; flex: 1 1 12rem; }
+.convite-form input { font: inherit; padding: 9px 12px; border-radius: 12px; border: 1.5px solid #CFC4AE; background: var(--branco); }
+.convites { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 28px; }
+.convites .cv { background: var(--branco); border-radius: 14px; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: .9375rem; }
+.convites .cv code { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .875rem; word-break: break-all; }
+.convites .cv.off { opacity: .55; }
 </style>
 
 <p class="rotulo">Área interna</p>
@@ -103,6 +110,19 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
 <section id="sec-funil" hidden>
   <div class="barra"><h2 style="margin:0">Funil</h2><div class="acoes"><button type="button" class="sec" data-dias="7">7 dias</button><button type="button" class="sec" data-dias="30">30 dias</button><button type="button" class="sec" data-dias="90">90 dias</button></div></div>
   <div class="funil" id="funil"></div>
+  <div class="barra" style="margin-top:-14px"><p class="msg-linha" id="aparelho"></p><div class="acoes"><button type="button" class="sec" id="btn-aparelho"></button><button type="button" class="sec" id="btn-zerar">Zerar métricas</button></div></div>
+  <p class="msg" id="zerar-conf" hidden>Apagar toda a contagem de acessos e começar do zero agora? Vendas e respostas não são apagadas. <button type="button" id="btn-zerar-sim">Sim, zerar</button> <button type="button" class="sec" id="btn-zerar-nao">Cancelar</button></p>
+</section>
+
+<section id="sec-convites" hidden>
+  <div class="barra"><h2 style="margin:0">Links de teste grátis</h2></div>
+  <form class="convite-form" id="form-convite">
+    <label>Para quem (só para você lembrar)<input type="text" id="cv-para" maxlength="80" placeholder="Ex.: Joana, colega do trabalho"></label>
+    <label>Quantas pessoas podem usar<input type="number" id="cv-usos" min="1" max="100" value="1"></label>
+    <button type="submit">Criar link</button>
+  </form>
+  <p class="msg-linha">Quem abre o link faz a versão rápida e o plano completo sem pagar. Não entra no funil nem conta como venda. Os pedidos de avaliação chegam normalmente.</p>
+  <div class="convites" id="convites"></div>
 </section>
 
 <div class="barra" id="barra" hidden>
@@ -141,6 +161,7 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
   var MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
   function pagamento(x) {
     if (x.devolvido_em) return ' <span class="chip">Devolvido</span>';
+    if (x.pag_status === 'convite') return ' <span class="chip ok">Teste grátis</span>';
     if (x.pago_em) return ' <span class="chip ok">Pago ' + (x.pago_valor ? 'R$ ' + Number(x.pago_valor).toFixed(2).replace('.', ',') : '') + '</span>';
     if (!cobrar) return '';
     if (x.pag_status === 'pending') return ' <span class="chip rev">Pix gerado</span>';
@@ -185,7 +206,7 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
         var temPdf = x.status === 'plano_pronto' || x.status === 'plano_enviado';
         var acoes = (temPdf ? '<button type="button" data-pdf="' + x.id + '">Ver plano</button>' : '') +
           (x.status === 'plano_pronto' ? (enviando === x.id ? '<button type="button" data-enviar-sim="' + x.id + '">Confirmar envio para ' + esc(x.email) + '</button><button type="button" class="perigo" data-cancelar>Cancelar</button>' : '<button type="button" data-enviar="' + x.id + '">' + (cobrar && !x.pago_em ? 'Enviar sem cobrar' : 'Enviar plano') + '</button>') : '') +
-          (x.pago_em && !x.devolvido_em ? (devolvendo === x.id ? '<button type="button" class="perigo" data-devolver-sim="' + x.id + '">Confirmar: devolver o Pix</button><button type="button" class="perigo" data-cancelar>Cancelar</button>' : '<button type="button" class="sec" data-devolver="' + x.id + '">Devolver</button>') : '') +
+          (x.pago_em && !x.devolvido_em && x.pag_status !== 'convite' ? (devolvendo === x.id ? '<button type="button" class="perigo" data-devolver-sim="' + x.id + '">Confirmar: devolver o Pix</button><button type="button" class="perigo" data-cancelar>Cancelar</button>' : '<button type="button" class="sec" data-devolver="' + x.id + '">Devolver</button>') : '') +
           '<button type="button" class="sec" data-ver="' + x.id + '">' + (aberto && aberto.id === x.id ? 'Fechar' : 'Respostas') + '</button>' +
           (x.status === 'rapido' ? '' : '<button type="button" class="sec" data-gerar="' + x.id + '">' + (x.status === 'recebido' || x.status === 'erro_plano' ? 'Gerar plano' : 'Gerar de novo') + '</button>') +
           '<button type="button" class="sec" data-baixar="' + x.id + '">Baixar</button>' +
@@ -200,7 +221,7 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
   }
   function carregar() {
     $('barra').hidden = false; $('msg').textContent = 'Carregando...';
-    return api('GET').then(function (j) { lista = j.respostas || []; cobrar = !!j.cobrar; $('form-entrar').hidden = true; desenhar(); carregarAval(); carregarFunil(); })
+    return api('GET').then(function (j) { lista = j.respostas || []; cobrar = !!j.cobrar; $('form-entrar').hidden = true; desenhar(); carregarAval(); carregarFunil(); carregarConvites(); marcarAparelho(); })
       .catch(function (e) { $('msg').textContent = e.message === 'Acesso negado.' ? 'Chave de acesso errada. Confira se é exatamente igual à salva na Cloudflare (maiúsculas, minúsculas e símbolos contam).' : e.message; $('form-entrar').hidden = false; });
   }
   function completa(id) { return api('GET', '?id=' + encodeURIComponent(id)).then(function (j) { return j.resposta; }); }
@@ -262,12 +283,68 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
       var origens = Object.keys(t).filter(function (k) { return k.indexOf('origem_') === 0; }).sort(function (a, b) { return t[b] - t[a]; })
         .map(function (k) { return k.slice(7) + ' <b>' + t[k] + '</b>'; }).join(' · ');
       var conv = t.v_inicio ? (100 * (j.vendas || 0) / t.v_inicio).toFixed(1).replace('.', ',') + '%' : '-';
-      $('funil').innerHTML = '<div class="resumo-f"><span>Últimos ' + j.dias + ' dias</span><span>Vendas <b>' + (j.vendas || 0) + '</b></span><span>Receita <b>R$ ' + Number(j.receita || 0).toFixed(2).replace('.', ',') + '</b></span><span>Visita → venda <b>' + conv + '</b></span>' + (t.devolvido ? '<span>Devoluções <b>' + t.devolvido + '</b></span>' : '') + '</div>' + linhas +
+      $('funil').innerHTML = '<div class="resumo-f"><span>Últimos ' + j.dias + ' dias</span>' + (t.convite_usou ? '<span>Testes grátis <b>' + t.convite_usou + '</b></span>' : '') + '<span>Vendas <b>' + (j.vendas || 0) + '</b></span><span>Receita <b>R$ ' + Number(j.receita || 0).toFixed(2).replace('.', ',') + '</b></span><span>Visita → venda <b>' + conv + '</b></span>' + (t.devolvido ? '<span>Devoluções <b>' + t.devolvido + '</b></span>' : '') + '</div>' + linhas +
         (origens ? '<div class="resumo-f"><span>De onde vieram:</span><span>' + origens + '</span></div>' : '') +
-        '<p class="msg-linha">A porcentagem é em relação ao passo de cima. Não conta os envios em modo teste.' + (cobrar ? '' : ' A cobrança está desligada: falta o segredo MP_ACCESS_TOKEN na Cloudflare.') + '</p>';
+        '<p class="msg-linha">A porcentagem é em relação ao passo de cima. Não conta os envios em modo teste nem os links de teste grátis.' + (j.zerado_em ? ' Contando desde ' + new Date(j.zerado_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + '.' : '') + (cobrar ? '' : ' A cobrança está desligada: falta o segredo MP_ACCESS_TOKEN na Cloudflare.') + '</p>';
     });
   }
   $('sec-funil').addEventListener('click', function (e) { var d = e.target.getAttribute('data-dias'); if (d) { diasFunil = Number(d); carregarFunil(); } });
+
+  // ---------- este aparelho não conta ----------
+  function naoConta() { try { return !!localStorage.getItem('desaperto-nao-contar'); } catch (e) { return false; } }
+  function mostrarAparelho() {
+    var n = naoConta();
+    $('aparelho').textContent = n ? 'Os seus acessos neste aparelho não entram na contagem.' : 'Atenção: os acessos deste aparelho estão entrando na contagem.';
+    $('btn-aparelho').textContent = n ? 'Voltar a contar este aparelho' : 'Não contar este aparelho';
+  }
+  function marcarAparelho() {  // ao entrar no painel, este aparelho para de contar (uma vez; depois vale o botão)
+    try { if (!localStorage.getItem('desaperto-aparelho-visto')) { localStorage.setItem('desaperto-nao-contar', '1'); localStorage.setItem('desaperto-aparelho-visto', '1'); } } catch (e) {}
+    mostrarAparelho();
+  }
+  $('btn-aparelho').addEventListener('click', function () {
+    try { if (naoConta()) localStorage.removeItem('desaperto-nao-contar'); else localStorage.setItem('desaperto-nao-contar', '1'); } catch (e) {}
+    mostrarAparelho();
+  });
+  $('btn-zerar').addEventListener('click', function () { $('zerar-conf').hidden = false; });
+  $('btn-zerar-nao').addEventListener('click', function () { $('zerar-conf').hidden = true; });
+  $('btn-zerar-sim').addEventListener('click', function () {
+    fetch('/api/admin/funil', { method: 'POST', headers: { authorization: 'Bearer ' + token, 'content-type': 'application/json' }, body: JSON.stringify({ zerar: true }) })
+      .then(function (r) { return r.json(); }).then(function (j) { $('zerar-conf').hidden = true; if (!j.ok) { $('aparelho').textContent = 'Não zerou: ' + j.erro; return; } carregarFunil(); });
+  });
+
+  // ---------- links de teste grátis ----------
+  var convites = [], copiado = null;
+  function apiConv(metodo, corpo) {
+    return fetch('/api/admin/convites', { method: metodo, headers: { authorization: 'Bearer ' + token, 'content-type': 'application/json' }, body: corpo ? JSON.stringify(corpo) : undefined })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok || !j.ok) throw new Error(j.erro || 'Erro ' + r.status); return j; }); });
+  }
+  function linkConv(c) { return location.origin + '/teste/' + c; }
+  function desenharConvites() {
+    $('sec-convites').hidden = false;
+    $('convites').innerHTML = convites.length ? convites.map(function (c) {
+      var esgotado = c.usos >= c.usos_max;
+      return '<div class="cv' + (c.ativo && !esgotado ? '' : ' off') + '"><b>' + esc(c.para || 'Sem nome') + '</b><code>' + esc(linkConv(c.codigo)) + '</code>' +
+        '<span>Usado ' + c.usos + ' de ' + c.usos_max + (c.planos ? ' · ' + c.planos + ' plano' + (c.planos > 1 ? 's' : '') + ' enviado' + (c.planos > 1 ? 's' : '') : '') + (c.ativo ? '' : ' · desativado') + '</span>' +
+        '<span class="acoes"><button type="button" class="sec" data-cv-copiar="' + esc(c.codigo) + '">' + (copiado === c.codigo ? 'Copiado' : 'Copiar mensagem') + '</button>' +
+        '<button type="button" class="sec" data-cv-ativo="' + esc(c.codigo) + '" data-v="' + (c.ativo ? 0 : 1) + '">' + (c.ativo ? 'Desativar' : 'Ativar') + '</button></span></div>';
+    }).join('') : '<p class="msg-linha">Nenhum link criado ainda.</p>';
+  }
+  function carregarConvites() { return apiConv('GET').then(function (j) { convites = j.convites || []; desenharConvites(); }).catch(function () {}); }
+  $('form-convite').addEventListener('submit', function (e) {
+    e.preventDefault();
+    apiConv('POST', { para: $('cv-para').value.trim(), usos: Number($('cv-usos').value) || 1 }).then(function () { $('cv-para').value = ''; $('cv-usos').value = '1'; carregarConvites(); })
+      .catch(function (er) { $('convites').insertAdjacentHTML('afterbegin', '<p class="msg-linha">Não criou: ' + esc(er.message) + '</p>'); });
+  });
+  $('convites').addEventListener('click', function (e) {
+    var t = e.target, c;
+    if ((c = t.getAttribute('data-cv-copiar'))) {
+      var txt = 'Oi! Estou testando uma ferramenta que mostra em que mês dá para sair das dívidas e monta um plano mês a mês. Para você é grátis. Leva uns 5 minutos e não pede CPF nem senha. Depois me conta com sinceridade o que achou: ' + linkConv(c);
+      var ok = function () { copiado = c; desenharConvites(); setTimeout(function () { copiado = null; desenharConvites(); }, 2000); };
+      try { navigator.clipboard.writeText(txt).then(ok, function () { window.prompt('Copie a mensagem:', txt); }); } catch (er) { window.prompt('Copie a mensagem:', txt); }
+    } else if ((c = t.getAttribute('data-cv-ativo'))) {
+      apiConv('POST', { codigo: c, ativo: t.getAttribute('data-v') === '1' }).then(carregarConvites);
+    }
+  });
   // ---------- avaliações ----------
   var avals = [], editando = null, apagandoAval = null, pendentes = null;
   function apiAval(metodo, url, corpo) {

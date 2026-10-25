@@ -36,8 +36,8 @@ export async function onRequestPost({ request, env }) {
   }
   // pagou a versão rápida e não completou as respostas: lembra uma vez, 2 dias depois
   let completar = [];
-  if (cobrancaAtiva(env)) {
-    completar = (await env.DB.prepare(`SELECT id, nome, email FROM respostas WHERE status = 'rapido' AND pago_em IS NOT NULL AND devolvido_em IS NULL AND teste = 0
+  {  // vale para quem pagou e para quem entrou por link de teste grátis
+    completar = (await env.DB.prepare(`SELECT id, nome, email, pag_status FROM respostas WHERE status = 'rapido' AND pago_em IS NOT NULL AND devolvido_em IS NULL AND teste = 0
       AND pago_em <= ? AND completar_lembrete_em IS NULL LIMIT ?`).bind(new Date(t - 2 * dia).toISOString(), PAGTO_POR_DIA).all()).results;
   }
   // e-mail do mês

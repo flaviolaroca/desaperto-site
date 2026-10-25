@@ -706,6 +706,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
 
   // contagem do funil (sem cookie): visita e de onde veio
   function contar(e) {
+    try { if (localStorage.getItem('desaperto-nao-contar')) return; } catch (er) {}
     try { var k = 'desaperto-ev-' + e; if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); } catch (er) {}
     try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: e })); } catch (er) {}
   }

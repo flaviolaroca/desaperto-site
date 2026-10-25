@@ -615,8 +615,10 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
   }
 
   /* ---------- render ---------- */
+  var SEM_CONTAR = new URLSearchParams(location.search).get('t') === '1';
   function contar(e) {
-    if (TESTE) return;
+    try { if (localStorage.getItem('desaperto-nao-contar')) return; } catch (er) {}
+    if (TESTE || SEM_CONTAR) return;
     try { var k = 'desaperto-ev-' + e; if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); } catch (er) {}
     try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: e })); } catch (er) {}
   }

@@ -152,6 +152,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
 
 .cartao .chip.atraso { margin-right: 4px; }
 #nova select { min-height: 52px; }
+.convite { background: #DCEBE1; color: #16704A; border-radius: 14px; padding: 12px 16px; font-weight: 700; margin: 0 0 14px; }
 </style>
 
 </head>
@@ -182,6 +183,8 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
   var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
   function mesLongo(t) { return t ? MESES[t[1] - 1] + ' de ' + t[0] : ''; }
   function contar(e) {
+    if (typeof E !== 'undefined' && E && E.convite) return;  // quem testa pelo link grátis não entra no funil
+    try { if (localStorage.getItem('desaperto-nao-contar')) return; } catch (er) {}
     if (TESTE) return;
     try { var k = 'desaperto-ev-' + e; if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); } catch (er) {}
     try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: e })); } catch (er) {}
@@ -199,6 +202,10 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
   var E = { passo: 0, r: { dividas: [] } };
   try { var s0 = JSON.parse(localStorage.getItem(CHAVE) || 'null'); if (s0 && s0.r) E = s0; } catch (e) {}
   function salvar() { try { localStorage.setItem(CHAVE, JSON.stringify(E)); } catch (e) {} }
+  (function () {  // link de teste grátis: desaperto.com/teste/CODIGO
+    var c = (new URLSearchParams(location.search).get('convite') || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20);
+    if (c && c !== E.convite) { E.convite = c; salvar(); }
+  })();
   var $t = document.getElementById('tela');
   var TELAS = ['contato', 'renda', 'dividas', 'guardado', 'enviando'];
   var NOMES = ['Você', 'O que entra e o que sai', 'O que você deve', 'Para fechar'];
@@ -232,7 +239,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     var t = TELAS[E.passo], r = E.r;
     contar('etapa_r' + t);
     if (t === 'contato') {
-      $t.innerHTML = '<section class="tela"><p class="acolhe">Leva uns 5 minutos. Pode responder de cabeça.</p><h1>Vamos descobrir a sua data.</h1>' +
+      $t.innerHTML = '<section class="tela">' + (E.convite ? '<p class="convite">Link de teste: você recebe a sua data e o plano completo sem pagar nada.</p>' : '') + '<p class="acolhe">Leva uns 5 minutos. Pode responder de cabeça.</p><h1>Vamos descobrir a sua data.</h1>' +
         '<p class="lead">Com valores aproximados, a gente calcula o mês em que você sai das dívidas. É grátis.</p><div class="campos">' +
         '<div class="campo" data-campo="nome"><label for="q-nome">Seu primeiro nome</label><input type="text" id="q-nome" autocomplete="given-name" value="' + esc(r.nome || '') + '"></div>' +
         '<div class="campo" data-campo="email"><label for="q-email">Seu e-mail</label><p class="ajuda">Para mandar a sua data e, se quiser, o plano.</p><input type="email" id="q-email" autocomplete="email" value="' + esc(r.email || '') + '"></div>' +
@@ -379,7 +386,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     var g = r.gastosR || {};
     var respostas = { rapido: true, consent: true, nome: r.nome, email: r.email, renda: r.renda, guardado: r.guardado || 0, objetivo: r.objetivo || '',
       gastosR: g, dividasR: r.dividas, dividas: r.dividas.map(function (d) { return { tipo: (TIPOS.filter(function (x) { return x[1] === d.tipo; })[0] || ['Outra'])[0] }; }) };
-    fetch('/api/respostas', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ respostas: respostas, rapido: true, estimativa: est, teste: TESTE }) })
+    fetch('/api/respostas', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ respostas: respostas, rapido: true, estimativa: est, teste: TESTE, convite: E.convite || undefined }) })
       .then(function (resp) { return resp.json().then(function (j) { if (!resp.ok || !j.ok) throw new Error(j.erro || 'Não conseguimos enviar agora.'); return j; }); })
       .then(function (j) { E.envio = { id: j.id, pagar: j.pagar }; salvar(); location.href = j.pagar; })
       .catch(function (e) {
