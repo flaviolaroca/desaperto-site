@@ -1,0 +1,189 @@
+<style>
+main .in { max-width: 36rem; }
+#tela { display: flex; flex-direction: column; gap: 14px; }
+#tela h1 { margin-bottom: 4px; }
+h1 em { font-style: normal; color: var(--verde); }
+.cartao { background: var(--branco); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.cartao h2 { margin: 0; font-size: 1.125rem; }
+.numeros { display: grid; gap: 10px; }
+.numeros div { background: var(--branco); border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 2px; }
+.numeros small { color: var(--cinza); font-size: .875rem; }
+.numeros b { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; font-size: 1.25rem; letter-spacing: -.01em; }
+.inclui { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.inclui li { padding-left: 28px; position: relative; }
+.inclui li::before { content: ""; position: absolute; left: 2px; top: 6px; width: 14px; height: 8px; border-left: 2.5px solid var(--verde); border-bottom: 2.5px solid var(--verde); transform: rotate(-45deg); }
+.oferta { background: var(--tinta); color: var(--papel); border-radius: 22px; padding: 24px 22px; display: flex; flex-direction: column; gap: 14px; }
+.oferta .preco { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; font-size: 2.4rem; line-height: 1; letter-spacing: -.02em; }
+.oferta .sub { color: #C9D0CB; font-size: .9375rem; }
+.oferta .ancora { color: #DCEBE1; font-size: .9375rem; }
+.btn { font: inherit; font-weight: 700; border: 0; border-radius: 999px; padding: 16px 24px; cursor: pointer; background: var(--verde); color: #fff; font-size: 1.0625rem; text-align: center; text-decoration: none; display: inline-block; }
+.oferta .btn { background: #DCEBE1; color: var(--tinta); width: 100%; }
+.btn[disabled] { opacity: .6; cursor: default; }
+.btn.sec { background: var(--areia); color: var(--tinta); }
+.garantia { display: flex; gap: 12px; align-items: flex-start; font-size: .9375rem; }
+.garantia svg { flex: none; margin-top: 2px; }
+.pequeno { color: var(--cinza); font-size: .875rem; }
+.oferta .pequeno { color: #9AA59F; }
+.qr { align-self: center; width: 220px; height: 220px; border-radius: 12px; background: #fff; padding: 8px; }
+textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospace; width: 100%; min-height: 84px; padding: 10px 12px; border-radius: 12px; border: 1.5px solid #CFC4AE; background: var(--papel); color: var(--tinta); resize: none; word-break: break-all; }
+.passos { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px; }
+.esperando { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--verde); }
+.ponto { width: 10px; height: 10px; border-radius: 50%; background: var(--verde); animation: pulsa 1.2s ease-in-out infinite; }
+@keyframes pulsa { 0%, 100% { opacity: .25; transform: scale(.8); } 50% { opacity: 1; transform: scale(1); } }
+.barra-c { height: 8px; border-radius: 99px; background: var(--areia); overflow: hidden; }
+.barra-c i { display: block; height: 100%; width: 8%; background: var(--verde); border-radius: 99px; transition: width 2.5s ease; }
+.etapas-c { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.etapas-c li { color: #9AA59F; transition: color .4s; }
+.etapas-c li.feito { color: var(--tinta); }
+.etapas-c li.feito::before { content: "✓ "; color: var(--verde); font-weight: 700; }
+.erro-box { background: #F3E3C7; color: #5C3A0C; border-radius: 14px; padding: 12px 16px; font-size: .9375rem; }
+@media (prefers-reduced-motion: reduce) { .ponto { animation: none; } .barra-c i { transition: none; } }
+</style>
+
+<div id="tela" aria-live="polite"><p class="rotulo">Seu resultado</p><h1>Carregando...</h1></div>
+
+<script>
+(function () {
+  'use strict';
+  var q = new URLSearchParams(location.search);
+  var id = q.get('id') || '', a = q.get('a') || '';
+  var $t = document.getElementById('tela');
+  var s = null, timer = null, inicio = Date.now(), etapaG = 0;
+  function esc(x) { return String(x == null ? '' : x).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function reais(v) { return 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
+  function contar(e) {
+    try { var k = 'desaperto-ev-' + e; if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); } catch (er) {}
+    try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: e })); } catch (er) {}
+  }
+  var ESCUDO = '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5l-8-3Z" fill="#DCEBE1"/><path d="m8.5 12 2.5 2.5 4.5-5" fill="none" stroke="#16704A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function buscar() {
+    return fetch('/api/pagamento?id=' + encodeURIComponent(id) + '&a=' + encodeURIComponent(a), { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { if (!j.ok) throw new Error(j.erro || 'Não encontrado'); s = j; desenhar(); })
+      .catch(function (e) { if (!s) falhou(e.message); });
+  }
+  function falhou(msg) {
+    $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>Este link não funcionou.</h1><p>' + esc(msg) + '</p><p>Se precisar, escreva para contato@desaperto.com.</p>';
+  }
+  function repetir(ms) { clearTimeout(timer); timer = setTimeout(buscar, ms); }
+
+  function titulo(d, nome) {
+    var n = nome ? esc(nome) + ', ' : '';
+    if (d.tipo === 'lei') return n + 'a conta não fecha. <em>Mas existe saída.</em>';
+    if (d.tipo === 'sem_data') return n + 'as suas contas estão prontas.';
+    return n + (d.carro ? 'vendendo o carro, você sai' : 'você sai') + ' das dívidas em <em>' + esc(d.saida_txt) + '</em>.';
+  }
+  function numeros(d) {
+    var h = '';
+    if (d.tipo === 'lei') {
+      if (d.diferenca) h += '<div><small>Do jeito que está, falta por mês</small><b>' + reais(d.diferenca) + '</b></div>';
+      if (d.parcela) h += '<div><small>Proposta única para os credores, pela Lei do Superendividamento</small><b>' + reais(d.parcela) + ' por mês</b><small>em ' + d.meses + ' parcelas' + (d.saida_txt ? ', terminando em ' + esc(d.saida_txt) : '') + '</small></div>';
+    } else {
+      if (d.primeira_txt) h += '<div><small>A primeira dívida acaba já em</small><b>' + esc(d.primeira_txt) + '</b></div>';
+      if (d.economia > 50) h += '<div><small>Seguindo a ordem certa, você deixa de pagar de juros nos próximos 12 meses</small><b>' + reais(d.economia) + '</b></div>';
+    }
+    return h ? '<div class="numeros">' + h + '</div>' : '';
+  }
+  function inclui(d) {
+    var itens = d.tipo === 'lei'
+      ? ['O que proteger primeiro: casa, comida e contas.', 'A proposta para os credores, com o valor de cada um.', 'O passo a passo para pedir a renegociação, de graça, no Procon ou na Defensoria Pública.', 'O dossiê pronto para levar: dívidas, orçamento e a proposta.']
+      : ['A ordem: qual dívida pagar primeiro e por quê.', 'O mês a mês: quanto pagar, em qual dívida e onde, até a última.', 'O que falar com o banco e quanto oferecer nas dívidas atrasadas.', 'Os seus direitos e o que fazer se um mês apertar.', 'Se você escolheu: um e-mail no começo de cada mês com o que fazer naquele mês.'];
+    return '<div class="cartao"><h2>O que vem no plano completo</h2><ul class="inclui">' + itens.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
+  }
+  function ancora(d) {
+    if (!(d.economia > 50) || !s.preco) return '';
+    var dias = Math.ceil(s.preco / (d.economia / 365));
+    return dias <= 31 ? '<p class="ancora">Custa menos que ' + (dias <= 1 ? '1 dia' : dias + ' dias') + ' dos juros que o plano evita.</p>' : '';
+  }
+
+  function desenhar() {
+    var d = s.data || {}, nome = s.primeiro_nome;
+    clearTimeout(timer);
+    if (s.estado === 'gerando') {
+      var passou = (Date.now() - inicio) / 1000;
+      var ETAPAS = ['Somando as dívidas', 'Ordenando pelos juros', 'Calculando mês a mês', 'Encontrando a sua data'];
+      etapaG = Math.min(ETAPAS.length - 1, Math.floor(passou / 12));
+      if (passou > 240) {
+        $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>Está demorando mais que o normal.</h1><p>Pode fechar esta página. Assim que as contas ficarem prontas, a sua data chega no e-mail <b>' + esc(s.email) + '</b>.</p><p class="pequeno">Olhe também em Spam e em Promoções.</p>';
+        repetir(15000); return;
+      }
+      $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>' + (nome ? esc(nome) + ', estamos' : 'Estamos') + ' fazendo as suas contas.</h1><p>Leva cerca de 1 minuto. Não precisa fazer nada.</p>' +
+        '<div class="cartao"><div class="barra-c"><i style="width:' + Math.min(92, 8 + passou * 1.1) + '%"></i></div><ul class="etapas-c">' +
+        ETAPAS.map(function (x, i) { return '<li' + (i < etapaG ? ' class="feito"' : '') + '>' + x + (i === etapaG ? '...' : '') + '</li>'; }).join('') + '</ul></div>' +
+        '<p class="pequeno">Se precisar sair, tudo bem: a sua data também chega no e-mail ' + esc(s.email) + '.</p>';
+      repetir(3000); return;
+    }
+    if (s.estado === 'erro') {
+      $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>Não conseguimos terminar as contas.</h1><p>Já fomos avisados. A gente confere as suas respostas e te escreve no e-mail <b>' + esc(s.email) + '</b> em até 24 horas.</p><p class="pequeno">Protocolo ' + esc(s.protocolo) + '</p>';
+      return;
+    }
+    if (s.estado === 'revisao') {
+      $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>Algumas respostas não batem.</h1><p>Antes de mostrar a sua data, a gente confere com cuidado para não te dar um número errado. Você recebe um e-mail em <b>' + esc(s.email) + '</b> em até 24 horas.</p><p class="pequeno">Nada foi cobrado. Protocolo ' + esc(s.protocolo) + '.</p>';
+      return;
+    }
+    if (s.estado === 'devolvido') {
+      $t.innerHTML = '<p class="rotulo">Seu plano</p><h1>O pagamento deste plano foi devolvido.</h1><p>Se precisar de alguma coisa, escreva para contato@desaperto.com.</p>';
+      return;
+    }
+    if (s.estado === 'enviado') {
+      $t.innerHTML = '<p class="rotulo">' + (s.pago ? 'Pagamento confirmado' : 'Seu plano') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) +
+        '<div class="cartao"><h2>' + (s.pago ? 'Pagamento confirmado. O seu plano foi enviado.' : 'O seu plano já foi enviado.') + '</h2><p>Ele está no e-mail <b>' + esc(s.email) + '</b>, em PDF. Se não achar na caixa de entrada, olhe em Spam e em Promoções, ou escreva para contato@desaperto.com.</p></div>' +
+        '<div class="cartao"><h2>Por onde começar</h2><p>Abra o PDF na página 3: são três passos para esta semana, com o tempo que cada um leva. Deixe o app do banco à mão.</p></div>';
+      return;
+    }
+    if (s.estado === 'pago') {
+      var txt = s.gratis ? 'O seu plano completo está a caminho do e-mail <b>' + esc(s.email) + '</b>. Chega em poucos minutos.'
+        : s.revisao ? 'Como a sua conta tem um detalhe que pede atenção, a gente confere o plano antes de enviar. Ele chega no e-mail <b>' + esc(s.email) + '</b> em até 24 horas.'
+        : 'O seu plano está a caminho do e-mail <b>' + esc(s.email) + '</b>. Chega em poucos minutos.';
+      $t.innerHTML = '<p class="rotulo">' + (s.gratis ? 'Seu resultado' : 'Pagamento confirmado') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) +
+        '<div class="cartao"><h2>' + (s.gratis ? 'Pronto.' : 'Pagamento confirmado. Obrigado.') + '</h2><p>' + txt + '</p><p class="pequeno">Se não aparecer na caixa de entrada, olhe em Spam e em Promoções.</p></div>' +
+        '<div class="cartao"><h2>Enquanto o e-mail chega</h2><p>Abra o app do banco e deixe à mão. O primeiro passo do plano é para esta semana e leva poucos minutos.</p></div>';
+      if (!s.gratis) repetir(8000);
+      return;
+    }
+    if (s.estado === 'oferta') {
+      contar('v_pagar_data');
+      $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) + inclui(d) +
+        '<div class="oferta"><div><span class="preco">' + esc(s.preco_txt) + '</span></div><p class="sub">Uma vez só, por Pix. Sem assinatura. O plano chega no seu e-mail em poucos minutos.</p>' + ancora(d) +
+        '<button type="button" class="btn" id="btn-pix">Pagar ' + esc(s.preco_txt) + ' com Pix</button><div id="erro" class="erro-box" hidden></div>' +
+        '<p class="pequeno">Pagamento processado pelo Mercado Pago. O Desaperto não vê nem guarda dados do seu banco.</p></div>' +
+        '<div class="garantia">' + ESCUDO + '<p><b>Garantia de 7 dias.</b> Se o plano não te ajudar, responda o e-mail do plano e devolvemos o valor inteiro. Sem perguntas difíceis.</p></div>' +
+        '<p class="pequeno">Protocolo ' + esc(s.protocolo) + '. A data acima é sua, de graça, pague ou não.</p>';
+      document.getElementById('btn-pix').addEventListener('click', gerarPix);
+      return;
+    }
+    if (s.estado === 'pix') {
+      var p = s.pix, img = p.img ? '<img class="qr" alt="QR code do Pix" src="data:image/png;base64,' + p.img + '">' : '';
+      $t.innerHTML = '<p class="rotulo">Pagamento por Pix</p><h1>Falta só o Pix de ' + esc(s.preco_txt) + '.</h1>' +
+        '<div class="cartao">' + img + '<h2>Pix copia e cola</h2><textarea class="codigo" id="codigo" readonly>' + esc(p.qr) + '</textarea><button type="button" class="btn" id="btn-copiar">Copiar o código</button>' +
+        '<ol class="passos"><li>Abra o app do seu banco e vá em Pix.</li><li>Escolha "Pix copia e cola" e cole o código' + (img ? ', ou leia o QR code com a câmera' : '') + '.</li><li>Confira o valor, ' + esc(s.preco_txt) + ', e confirme.</li></ol></div>' +
+        '<div class="cartao"><p class="esperando"><span class="ponto"></span>Esperando o pagamento...</p><p class="pequeno">Assim que o banco confirmar, esta página muda sozinha e o plano vai para o seu e-mail. O código vale até ' + new Date(p.expira).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + '.</p></div>' +
+        '<div class="garantia">' + ESCUDO.replace('#DCEBE1', '#DCEBE1') + '<p><b>Garantia de 7 dias.</b> Se o plano não te ajudar, devolvemos o valor.</p></div>';
+      document.getElementById('btn-copiar').addEventListener('click', copiar);
+      repetir(4000);
+      return;
+    }
+  }
+
+  function gerarPix() {
+    var b = document.getElementById('btn-pix'), e = document.getElementById('erro');
+    contar('clicou_pix');
+    b.disabled = true; b.textContent = 'Gerando o Pix...'; e.hidden = true;
+    fetch('/api/pagamento', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: id, a: a }) })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { if (!j.ok) throw new Error(j.erro); s = j; desenhar(); window.scrollTo(0, 0); })
+      .catch(function (er) { b.disabled = false; b.textContent = 'Pagar ' + s.preco_txt + ' com Pix'; e.hidden = false; e.textContent = er.message || 'Não conseguimos gerar o Pix. Tente de novo.'; });
+  }
+  function copiar() {
+    var b = document.getElementById('btn-copiar'), t = document.getElementById('codigo');
+    contar('copiou_pix');
+    var ok = function () { b.textContent = 'Código copiado'; setTimeout(function () { if (b.isConnected) b.textContent = 'Copiar o código'; }, 2500); };
+    try { navigator.clipboard.writeText(t.value).then(ok, function () { t.select(); document.execCommand('copy'); ok(); }); }
+    catch (er) { t.select(); try { document.execCommand('copy'); ok(); } catch (er2) {} }
+  }
+
+  if (!id || !a) { falhou('Abra pelo link do e-mail ou pelo fim do questionário.'); return; }
+  buscar();
+})();
+</script>

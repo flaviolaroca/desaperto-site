@@ -64,6 +64,8 @@ a { color: inherit; }
 .lead { font-size: 1.1875rem; line-height: 1.5; max-width: 34rem; color: #2B3530; }
 .lead b { font-weight: 700; color: var(--tinta); }
 .cta-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+.preco-hero { margin: -6px 0 0; font-size: 1rem; color: var(--cinza); }
+.preco-hero b { color: var(--tinta); font-family: var(--f-num); font-weight: 600; }
 .garantias { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0; padding: 0; list-style: none; font-size: .9375rem; color: var(--cinza); }
 .garantias li { display: flex; align-items: center; gap: 7px; }
 .garantias li::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--verde); flex: none; }
@@ -103,6 +105,12 @@ a { color: inherit; }
 .frases li:nth-child(6) { font-stretch: 89%; }
 .frases li:nth-child(7) { font-stretch: 94%; }
 .frases li:nth-child(8) { font-stretch: 100%; border-bottom: 0; }
+.frase { all: unset; box-sizing: border-box; display: flex; gap: 14px; align-items: baseline; width: 100%; cursor: pointer; color: var(--papel); transition: color .2s; -webkit-tap-highlight-color: transparent; }
+.frase::before { content: ""; flex: none; width: .62em; height: .62em; border-radius: 50%; border: 2px solid rgba(243, 239, 230, .38); transform: translateY(-.06em); transition: background-color .2s, border-color .2s; }
+.frase[aria-pressed="true"] { color: #DCEBE1; }
+.frase[aria-pressed="true"]::before { background: #9FD1B6; border-color: #9FD1B6; }
+.frase:focus-visible { outline: 3px solid #9FD1B6; outline-offset: 4px; border-radius: 6px; }
+.marcou { font-family: var(--f-marca); font-weight: 800; font-size: clamp(1.4rem, 5vw, 2rem); line-height: 1.15; color: #9FD1B6; }
 .reconhece .virada { font-size: 1.1875rem; max-width: 36rem; color: #D5DCD7; }
 .reconhece .virada b { color: var(--papel); }
 
@@ -205,6 +213,22 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
 .lista-nunca b { font-family: var(--f-marca); font-size: 1.375rem; letter-spacing: -0.015em; line-height: 1.2; }
 .lista-nunca span { color: #2B3530; }
 
+/* ---------- preço ---------- */
+.preco .miolo { padding-block: 80px; display: grid; gap: 32px; }
+.preco .cab p:not(.rotulo) { color: #2B3530; max-width: 36rem; }
+.caixa-preco { background: var(--tinta); color: var(--papel); border-radius: 26px; padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; align-items: flex-start; }
+.cp-topo { display: flex; flex-direction: column; gap: 6px; }
+.cp-valor { font-size: clamp(2.6rem, 10vw, 3.6rem); line-height: 1; color: var(--papel); }
+.cp-sub { color: #C9D0CB; font-size: .9375rem; }
+.cp-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.cp-lista li { padding-left: 28px; position: relative; }
+.cp-lista li::before { content: ""; position: absolute; left: 2px; top: 7px; width: 13px; height: 7px; border-left: 2.5px solid #9FD1B6; border-bottom: 2.5px solid #9FD1B6; transform: rotate(-45deg); }
+.cp-ancora { color: #9FD1B6; font-weight: 600; }
+.caixa-preco .btn-principal { background: #DCEBE1; color: var(--tinta); }
+.caixa-preco .btn-principal:hover { background: var(--papel); }
+.cp-garantia { color: #C9D0CB; font-size: .9375rem; border-top: 1px solid rgba(243, 239, 230, .14); padding-top: 16px; width: 100%; }
+.cp-garantia b { color: var(--papel); }
+
 /* ---------- perguntas ---------- */
 .perguntas { background: var(--areia); }
 .perguntas .miolo { padding-block: 80px; display: grid; gap: 32px; }
@@ -267,6 +291,8 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
   .vozes .miolo { padding-block: 96px; }
   .lista-nunca li { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 28px; align-items: baseline; }
   .nunca .miolo { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); align-items: start; gap: 56px; }
+  .preco .miolo { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); align-items: start; gap: 56px; padding-block: 96px; }
+  .caixa-preco { padding: 36px 34px; }
   .perguntas .miolo { grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr); align-items: start; gap: 56px; }
   .rodape .cols { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
@@ -283,7 +309,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
 <header class="topo faixa" id="topo">
   <div class="miolo">
     <a class="logo" href="#inicio" aria-label="Desaperto, início">{{LOGO}}</a>
-    <a class="btn btn-principal btn-peq" href="comecar.html">Montar meu plano</a>
+    <a class="btn btn-principal btn-peq" href="comecar.html">Descobrir minha data</a>
   </div>
 </header>
 
@@ -295,12 +321,13 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
         <h1 class="solta">Descubra o mês em que você <em>sai das dívidas.</em></h1>
         <p class="lead">Você conta quanto ganha, quanto gasta e quanto deve. O <b>Desaperto</b> faz as contas e te entrega um plano: <b>qual dívida pagar primeiro, quanto pagar em cada mês e o que falar com o banco.</b></p>
         <div class="cta-linha">
-          <a class="btn btn-principal" href="comecar.html">Montar meu plano <span class="seta" aria-hidden="true">→</span></a>
+          <a class="btn btn-principal" href="comecar.html">Descobrir minha data <span class="seta" aria-hidden="true">→</span></a>
         </div>
-        <ul class="garantias" aria-label="Como funciona o questionário">
-          <li>Leva de 15 a 20 minutos</li>
-          <li>Dá para fazer pelo celular</li>
+        <p class="preco-hero">A data é grátis. O plano completo custa <b>R$ 34,90</b>, uma vez só.</p>
+        <ul class="garantias" aria-label="Como funciona">
+          <li>Leva de 15 a 20 minutos, pelo celular</li>
           <li>Não pede CPF, senha nem extrato</li>
+          <li>Garantia de 7 dias</li>
         </ul>
       </div>
 
@@ -326,17 +353,18 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
   <!-- reconhecer -->
   <section class="reconhece faixa" aria-labelledby="t-reconhece">
     <div class="miolo">
-      <p class="rotulo" id="t-reconhece">Se alguma dessas é sua</p>
+      <p class="rotulo" id="t-reconhece">Toque nas que são suas</p>
       <ul class="frases">
-        <li>Você recebe o salário e em três dias ele já foi.</li>
-        <li>Paga a fatura do cartão e a do mês seguinte já vem maior.</li>
-        <li>Acorda para trabalhar e sente que vive só para pagar dívida.</li>
-        <li>Pegou um empréstimo para pagar outro.</li>
-        <li>O celular toca e vem a angústia: é mais uma cobrança?</li>
-        <li>Tem vergonha de olhar para a própria vida financeira.</li>
-        <li>Sente que a vida está parada até as dívidas acabarem.</li>
-        <li>Não consegue ver um caminho em que tudo esteja quitado.</li>
+        <li><button type="button" class="frase" aria-pressed="false">Você recebe o salário e em três dias ele já foi.</button></li>
+        <li><button type="button" class="frase" aria-pressed="false">Paga a fatura do cartão e a do mês seguinte já vem maior.</button></li>
+        <li><button type="button" class="frase" aria-pressed="false">Acorda para trabalhar e sente que vive só para pagar dívida.</button></li>
+        <li><button type="button" class="frase" aria-pressed="false">Pegou um empréstimo para pagar outro.</button></li>
+        <li><button type="button" class="frase" aria-pressed="false">O celular toca e vem a angústia: é mais uma cobrança?</button></li>
+        <li><button type="button" class="frase" aria-pressed="false">Tem vergonha de olhar para a própria vida financeira.</button></li>
+        <li><button type="button" class="frase" aria-pressed="false">Sente que a vida está parada até as dívidas acabarem.</button></li>
+        <li><button type="button" class="frase" aria-pressed="false">Não consegue ver um caminho em que tudo esteja quitado.</button></li>
       </ul>
+      <p class="marcou" id="marcou" aria-live="polite" hidden></p>
       <p class="virada">Não é falta de esforço. São os juros, que crescem em cima dos juros. <b>Quando você sabe qual dívida pagar primeiro, o aperto começa a soltar.</b></p>
     </div>
   </section>
@@ -347,7 +375,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
       <div class="cab">
         <p class="rotulo">Um exemplo</p>
         <h2 id="t-caminho">Do jeito que está, não tem fim. Com um plano, tem data.</h2>
-        <p>A Ana ganha R$ 2.900 e deve R$ 8.122 no cartão, no cheque especial e em dois empréstimos. Ela não ganhou mais nem cortou tudo. Só passou a pagar as dívidas na ordem certa.</p>
+        <p>A Ana ganha R$ 2.900 e deve R$ 8.122 no cartão, no cheque especial e em dois empréstimos. Ela não ganhou mais nem cortou tudo. Só passou a pagar as dívidas na ordem certa. <b>Em dois meses, a primeira dívida acabou.</b></p>
       </div>
       <div class="trajeto">
         <p class="tr-topo">Quanto a Ana deve em cada mês</p>
@@ -377,7 +405,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
     <div class="miolo">
       <div class="cab">
         <p class="rotulo">Como funciona</p>
-        <h2 id="t-como">Você responde. A gente faz as contas. O plano chega.</h2>
+        <h2 id="t-como">Você responde. Vê a sua data. Recebe o plano.</h2>
       </div>
       <ol class="etapas">
         <li>
@@ -391,8 +419,8 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
           <span class="tempo">Com os seus números</span>
         </li>
         <li>
-          <h3>O plano chega no seu e-mail</h3>
-          <p>Um arquivo fácil de ler no celular, com a data em que você sai das dívidas e o que fazer em cada mês.</p>
+          <h3>Você vê a data e recebe o plano</h3>
+          <p>Na hora e de graça, você vê o mês em que sai das dívidas. Por R$ 34,90, o plano completo chega no seu e-mail: o que fazer em cada mês, até a última dívida.</p>
           <span class="tempo">Em poucos minutos</span>
         </li>
       </ol>
@@ -523,6 +551,30 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
     </div>
   </section>
 
+  <!-- preço -->
+  <section class="preco faixa" id="preco" aria-labelledby="t-preco">
+    <div class="miolo">
+      <div class="cab">
+        <p class="rotulo">Quanto custa</p>
+        <h2 id="t-preco">A data é grátis. O caminho custa R$ 34,90.</h2>
+        <p>Você responde, vê na hora o mês em que sai das dívidas e só paga se quiser o plano completo. Uma vez só, por Pix, sem assinatura.</p>
+      </div>
+      <div class="caixa-preco">
+        <div class="cp-topo"><span class="cp-valor num">R$ 34,90</span><span class="cp-sub">uma vez só · Pix · chega no e-mail em minutos</span></div>
+        <ul class="cp-lista">
+          <li>A ordem certa: qual dívida pagar primeiro e por quê</li>
+          <li>O mês a mês: quanto pagar, em qual dívida e onde, até a última</li>
+          <li>O que falar com o banco e quanto oferecer nas dívidas atrasadas</li>
+          <li>Os seus direitos e o que fazer se um mês apertar</li>
+          <li>Se quiser, um e-mail no começo de cada mês com o que fazer naquele mês</li>
+        </ul>
+        <p class="cp-ancora">É menos do que um mês de juros de R$ 500 no cheque especial.</p>
+        <a class="btn btn-principal" href="comecar.html">Descobrir minha data <span class="seta" aria-hidden="true">→</span></a>
+        <p class="cp-garantia"><b>Garantia de 7 dias.</b> Se o plano não te ajudar, responda o e-mail dele e devolvemos o valor inteiro.</p>
+      </div>
+    </div>
+  </section>
+
   <!-- perguntas -->
   <section class="perguntas faixa" aria-labelledby="t-perg">
     <div class="miolo">
@@ -531,6 +583,18 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
         <h2 id="t-perg">Antes de começar.</h2>
       </div>
       <div class="faq">
+        <details>
+          <summary>Quanto custa?</summary>
+          <p>A data em que você sai das dívidas é grátis: aparece na hora, assim que você termina de responder. O plano completo custa R$ 34,90, uma vez só, por Pix. Não é assinatura e não tem cobrança depois.</p>
+        </details>
+        <details>
+          <summary>Por que pagar, se o Serasa negocia de graça?</summary>
+          <p>O Serasa ajuda a negociar uma dívida de cada vez. O Desaperto olha todas juntas, com o seu salário e os seus gastos, e diz em que ordem pagar, quanto pagar em cada mês e quando cada uma acaba. Quando a negociação no Serasa vale a pena, o plano mostra quanto oferecer.</p>
+        </details>
+        <details>
+          <summary>E se o plano não me ajudar?</summary>
+          <p>Responda o e-mail do plano em até 7 dias e devolvemos o valor inteiro, pelo mesmo Pix.</p>
+        </details>
         <details>
           <summary>Preciso saber os valores exatos?</summary>
           <p>Quanto mais certo o valor, mais certa a data. Quase tudo está no app do banco. Se não achar algum valor, marque "não encontrei". O plano faz uma conta aproximada e avisa onde fez isso.</p>
@@ -564,8 +628,8 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
     <div class="miolo">
       <p class="marca-grande" id="marca-grande" aria-label="desaperto"><span>d</span><span>e</span><span>s</span><span>a</span><span>p</span><span>e</span><span>r</span><span>t</span><span>o</span></p>
       <h2 id="t-final">O primeiro desaperto é olhar para ela.</h2>
-      <p>Separe 20 minutos e abra o app do banco. Assim que você terminar, o plano chega no seu e-mail.</p>
-      <a class="btn btn-claro" href="comecar.html">Montar meu plano <span class="seta" aria-hidden="true">→</span></a>
+      <p>Separe 20 minutos e abra o app do banco. Assim que você terminar, vê a sua data, de graça.</p>
+      <a class="btn btn-claro" href="comecar.html">Descobrir minha data <span class="seta" aria-hidden="true">→</span></a>
     </div>
   </section>
 </main>
@@ -607,6 +671,31 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
       document.getElementById('vozes').hidden = false;
     }).catch(function () {});
   } catch (e) {}
+
+
+  // contagem do funil (sem cookie): visita e de onde veio
+  function contar(e) {
+    try { var k = 'desaperto-ev-' + e; if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); } catch (er) {}
+    try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: e })); } catch (er) {}
+  }
+  contar('v_inicio');
+  (function () {
+    var u = new URLSearchParams(location.search), o = (u.get('utm_source') || '').toLowerCase(), r = document.referrer;
+    var mapa = ['instagram', 'tiktok', 'whatsapp', 'google', 'facebook', 'youtube', 'email'];
+    var achou = mapa.filter(function (x) { return o.indexOf(x) >= 0 || (r && r.indexOf(x) >= 0) || (x === 'instagram' && o === 'ig') || (x === 'facebook' && /fb|l\.facebook/.test(o + r)); })[0];
+    contar('origem_' + (achou || (o || (r && r.indexOf(location.host) < 0) ? 'outro' : 'direto')));
+  })();
+
+  // frases: a pessoa toca nas que são dela
+  var frases = document.querySelectorAll('.frase'), marcou = document.getElementById('marcou');
+  frases.forEach(function (b) {
+    b.addEventListener('click', function () {
+      b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+      var n = document.querySelectorAll('.frase[aria-pressed="true"]').length;
+      marcou.hidden = n === 0;
+      marcou.textContent = n === 0 ? '' : n === 1 ? 'Você marcou 1. Isso tem saída.' : n === frases.length ? 'Você marcou todas. Respira: isso tem saída.' : 'Você marcou ' + n + '. Isso tem saída.';
+    });
+  });
 
   var topo = document.getElementById('topo');
   function aoRolar() { topo.classList.toggle('rolou', window.scrollY > 8); }

@@ -82,6 +82,8 @@ a { color: inherit; }
 .lead { font-size: 1.1875rem; line-height: 1.5; max-width: 34rem; color: #2B3530; }
 .lead b { font-weight: 700; color: var(--tinta); }
 .cta-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+.preco-hero { margin: -6px 0 0; font-size: 1rem; color: var(--cinza); }
+.preco-hero b { color: var(--tinta); font-family: var(--f-num); font-weight: 600; }
 .garantias { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0; padding: 0; list-style: none; font-size: .9375rem; color: var(--cinza); }
 .garantias li { display: flex; align-items: center; gap: 7px; }
 .garantias li::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--verde); flex: none; }
@@ -121,6 +123,12 @@ a { color: inherit; }
 .frases li:nth-child(6) { font-stretch: 89%; }
 .frases li:nth-child(7) { font-stretch: 94%; }
 .frases li:nth-child(8) { font-stretch: 100%; border-bottom: 0; }
+.frase { all: unset; box-sizing: border-box; display: flex; gap: 14px; align-items: baseline; width: 100%; cursor: pointer; color: var(--papel); transition: color .2s; -webkit-tap-highlight-color: transparent; }
+.frase::before { content: ""; flex: none; width: .62em; height: .62em; border-radius: 50%; border: 2px solid rgba(243, 239, 230, .38); transform: translateY(-.06em); transition: background-color .2s, border-color .2s; }
+.frase[aria-pressed="true"] { color: #DCEBE1; }
+.frase[aria-pressed="true"]::before { background: #9FD1B6; border-color: #9FD1B6; }
+.frase:focus-visible { outline: 3px solid #9FD1B6; outline-offset: 4px; border-radius: 6px; }
+.marcou { font-family: var(--f-marca); font-weight: 800; font-size: clamp(1.4rem, 5vw, 2rem); line-height: 1.15; color: #9FD1B6; }
 .reconhece .virada { font-size: 1.1875rem; max-width: 36rem; color: #D5DCD7; }
 .reconhece .virada b { color: var(--papel); }
 
@@ -223,6 +231,22 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
 .lista-nunca b { font-family: var(--f-marca); font-size: 1.375rem; letter-spacing: -0.015em; line-height: 1.2; }
 .lista-nunca span { color: #2B3530; }
 
+/* ---------- preço ---------- */
+.preco .miolo { padding-block: 80px; display: grid; gap: 32px; }
+.preco .cab p:not(.rotulo) { color: #2B3530; max-width: 36rem; }
+.caixa-preco { background: var(--tinta); color: var(--papel); border-radius: 26px; padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; align-items: flex-start; }
+.cp-topo { display: flex; flex-direction: column; gap: 6px; }
+.cp-valor { font-size: clamp(2.6rem, 10vw, 3.6rem); line-height: 1; color: var(--papel); }
+.cp-sub { color: #C9D0CB; font-size: .9375rem; }
+.cp-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.cp-lista li { padding-left: 28px; position: relative; }
+.cp-lista li::before { content: ""; position: absolute; left: 2px; top: 7px; width: 13px; height: 7px; border-left: 2.5px solid #9FD1B6; border-bottom: 2.5px solid #9FD1B6; transform: rotate(-45deg); }
+.cp-ancora { color: #9FD1B6; font-weight: 600; }
+.caixa-preco .btn-principal { background: #DCEBE1; color: var(--tinta); }
+.caixa-preco .btn-principal:hover { background: var(--papel); }
+.cp-garantia { color: #C9D0CB; font-size: .9375rem; border-top: 1px solid rgba(243, 239, 230, .14); padding-top: 16px; width: 100%; }
+.cp-garantia b { color: var(--papel); }
+
 /* ---------- perguntas ---------- */
 .perguntas { background: var(--areia); }
 .perguntas .miolo { padding-block: 80px; display: grid; gap: 32px; }
@@ -285,6 +309,8 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
   .vozes .miolo { padding-block: 96px; }
   .lista-nunca li { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 28px; align-items: baseline; }
   .nunca .miolo { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); align-items: start; gap: 56px; }
+  .preco .miolo { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); align-items: start; gap: 56px; padding-block: 96px; }
+  .caixa-preco { padding: 36px 34px; }
   .perguntas .miolo { grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr); align-items: start; gap: 56px; }
   .rodape .cols { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
@@ -305,7 +331,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
   <div class="miolo">
     <a class="logo" href="#inicio" aria-label="Desaperto, início"><svg xmlns="http://www.w3.org/2000/svg" viewBox="24.6 -724.5 4784.3 911.5" aria-hidden="true" focusable="false"><path fill="currentColor" d="M154.2 12Q107.5 12 78.7 -18.4Q49.9 -48.8 37.3 -111.4Q24.6 -174 24.6 -269.7Q24.6 -364 36.5 -423.5Q48.5 -483 75.9 -511.3Q103.4 -539.5 147.9 -539.5Q175.1 -539.5 193.4 -530.5Q211.7 -521.5 224.1 -505.5Q236.6 -489.5 244 -468.5H249V-724.5H384.2V0H272.9L264.8 -61.7H259.8Q248.2 -31.3 223.2 -9.6Q198.3 12 154.2 12ZM206.5 -108.8Q223.5 -108.8 232.7 -120.9Q241.9 -132.9 245.7 -157.4Q249.6 -181.9 249.6 -219.4V-299.4Q249.6 -329.1 247.2 -349.9Q244.8 -370.8 239.8 -384.1Q234.7 -397.5 226.2 -403.7Q217.8 -410 205.6 -410Q190.9 -410 181.7 -398.9Q172.5 -387.7 168.1 -363.7Q163.7 -339.7 163.7 -299.4V-219.4Q163.7 -180.5 167.9 -156.1Q172 -131.6 181.5 -120.2Q190.9 -108.8 206.5 -108.8Z M627.7 12Q558.5 12 513.5 -15.9Q468.5 -43.8 446.9 -104.6Q425.2 -165.4 425.2 -263.5Q425.2 -363.9 448.5 -424.4Q471.7 -485 517.6 -512.2Q563.4 -539.4 631.1 -539.4Q698.6 -539.4 742.1 -514.5Q785.6 -489.6 806.5 -431.3Q827.5 -372.9 827.5 -271.7V-237.7H569.8Q570 -188.6 575.1 -157.1Q580.1 -125.5 593 -110.3Q605.9 -95.1 629.4 -95.1Q644.4 -95.1 655.1 -100.4Q665.8 -105.8 672.5 -117Q679.2 -128.2 682.5 -145.8Q685.7 -163.5 686.1 -188H825.9Q825.5 -137 813.1 -99.2Q800.6 -61.4 776 -36.9Q751.5 -12.5 714.3 -0.2Q677.1 12 627.7 12ZM570.1 -312.8H682.5Q682.5 -346.1 680 -368.9Q677.5 -391.7 671.6 -405.8Q665.8 -420 655.5 -426.2Q645.1 -432.3 629.6 -432.3Q607.3 -432.3 594.7 -419.4Q582.1 -406.5 576.5 -380.3Q571 -354.1 570.1 -312.8Z M1066.2 12Q1015.7 12 978.3 0.9Q940.9 -10.2 916 -31Q891.2 -51.8 878.8 -81Q866.4 -110.1 866.4 -146.5Q866.4 -150.7 866.8 -157Q867.1 -163.2 867.9 -169.3H1001.8Q1001 -163.2 1001 -159Q1001 -154.9 1001 -150.6Q1001.4 -132.3 1009.3 -119.1Q1017.2 -105.8 1031.9 -98.9Q1046.7 -92 1066.6 -92Q1083.1 -92 1097.2 -96.8Q1111.3 -101.7 1120 -112.8Q1128.8 -124 1128.8 -141.9Q1128.8 -164.6 1113.5 -177.3Q1098.3 -190 1073.7 -198.5Q1049.2 -206.9 1021 -216Q995 -224 969.1 -235Q943.2 -245.9 921.7 -263.6Q900.2 -281.3 887.1 -308.8Q874.1 -336.2 874.1 -377.5Q874.1 -420.8 889.6 -451.4Q905 -482 932.4 -501.6Q959.8 -521.2 995.7 -530.3Q1031.5 -539.4 1071.8 -539.4Q1111.1 -539.4 1145 -530.6Q1179 -521.8 1204.7 -504.2Q1230.4 -486.6 1244.6 -460.4Q1258.9 -434.3 1258.9 -399.8Q1258.9 -393.1 1258.5 -385Q1258.1 -377 1257.3 -371.6H1124.4V-386.9Q1124.4 -403.5 1117.3 -414.1Q1110.2 -424.6 1097.6 -430Q1084.9 -435.4 1068.1 -435.4Q1057.1 -435.4 1047.1 -432.8Q1037 -430.3 1029.3 -424.8Q1021.6 -419.2 1017.1 -411.2Q1012.6 -403.3 1012.6 -392Q1012.6 -374.1 1025.4 -362.8Q1038.2 -351.6 1059.4 -344.1Q1080.5 -336.6 1105.2 -328.2Q1132.6 -319.8 1161.9 -309.8Q1191.3 -299.8 1216.4 -283.2Q1241.5 -266.5 1257.1 -238.8Q1272.6 -211 1272.6 -166.6Q1272.6 -118.1 1257 -84Q1241.3 -49.9 1213.4 -28.7Q1185.5 -7.5 1147.8 2.3Q1110.2 12 1066.2 12Z M1477.9 12Q1446.8 12 1418.8 4.4Q1390.8 -3.2 1369.1 -20.3Q1347.3 -37.4 1335 -65.8Q1322.7 -94.2 1322.7 -135.1Q1322.7 -186 1342.5 -221.3Q1362.4 -256.5 1400.7 -278.3Q1438.9 -300 1494.9 -309.9Q1550.8 -319.7 1622.8 -319.7V-362.6Q1622.8 -383.1 1615.8 -397.2Q1608.8 -411.3 1594.7 -419.1Q1580.6 -426.9 1557.7 -426.9Q1535.3 -426.9 1519.9 -420.2Q1504.6 -413.4 1497.2 -401.7Q1489.9 -390 1489.9 -374.1V-365.3H1342.7Q1341.7 -369.6 1341.7 -373.5Q1341.7 -377.4 1341.7 -382.5Q1341.7 -432 1367.9 -467Q1394.1 -502.1 1443.2 -520.7Q1492.4 -539.3 1561.1 -539.3Q1623.1 -539.3 1671.4 -523Q1719.8 -506.7 1747.7 -470.2Q1775.6 -433.6 1775.6 -371.8V-139.3Q1775.6 -123.1 1783.9 -113.7Q1792.1 -104.4 1806.8 -104.4H1834.8V-6.3Q1821.2 0.4 1798.4 6Q1775.6 11.5 1747 11.5Q1716.7 11.5 1694 3.3Q1671.3 -4.9 1657.1 -19.9Q1642.9 -35 1637.7 -55.2H1631.9Q1616.4 -36.2 1595 -20.9Q1573.6 -5.6 1544.9 3.2Q1516.1 12 1477.9 12ZM1536.9 -100.5Q1556 -100.5 1571.7 -107.3Q1587.5 -114.1 1598.9 -126.1Q1610.3 -138.1 1616.5 -155.1Q1622.8 -172 1622.8 -192.2V-234.2Q1573.5 -234.2 1541.3 -225.1Q1509.1 -216 1493.6 -198.7Q1478 -181.5 1478 -156.4Q1478 -137.7 1485.3 -125.2Q1492.5 -112.6 1505.8 -106.6Q1519 -100.5 1536.9 -100.5Z M1899.9 187V-527.2H2030.1L2043 -456.3H2049.6Q2074.2 -498.3 2112.8 -518.7Q2151.3 -539.2 2201.1 -539.2Q2265.4 -539.2 2310.4 -509.2Q2355.4 -479.3 2379.1 -417.9Q2402.9 -356.4 2402.9 -261.7Q2402.9 -168.7 2379 -107.9Q2355.2 -47.1 2310.8 -17.6Q2266.5 12 2204.9 12Q2174.2 12 2147.7 4.7Q2121.2 -2.6 2100.4 -17.6Q2079.7 -32.7 2065.1 -54.8H2058.8V187ZM2150 -116.1Q2183.6 -116.1 2203.7 -130.5Q2223.9 -144.9 2232.8 -173Q2241.7 -201.2 2241.7 -242.7V-285.6Q2241.7 -327.5 2232.9 -355.8Q2224 -384.1 2203.8 -398.3Q2183.6 -412.5 2149.9 -412.5Q2117.5 -412.5 2097.1 -396.5Q2076.7 -380.5 2067.3 -351.1Q2057.9 -321.6 2057.9 -281.1V-248Q2057.9 -217.8 2063.1 -193.5Q2068.4 -169.1 2079.5 -151.9Q2090.6 -134.7 2108.2 -125.4Q2125.8 -116.1 2150 -116.1Z M2775.4 12Q2684.4 12 2620.2 -17.5Q2555.9 -47 2522.2 -108Q2488.4 -169 2488.4 -263.5Q2488.4 -357.4 2521.9 -418.2Q2555.3 -479 2618 -509.1Q2680.6 -539.1 2768.8 -539.1Q2856.5 -539.1 2917.1 -510Q2977.8 -481 3009.2 -420.9Q3040.6 -360.8 3040.6 -266.5V-231.1H2655.2Q2656.2 -189.2 2668.3 -159.9Q2680.4 -130.6 2706.3 -115.9Q2732.3 -101.1 2774 -101.1Q2799.2 -101.1 2818.7 -107.1Q2838.2 -113.1 2851.7 -124.4Q2865.2 -135.8 2872.2 -152Q2879.1 -168.2 2879.2 -188.2H3040.5Q3040.5 -140 3022.3 -102.5Q3004.2 -65 2969.6 -39.6Q2935.1 -14.2 2886.1 -1.1Q2837.1 12 2775.4 12ZM2656.6 -321.9H2871.8Q2871.8 -348.1 2864.9 -367.5Q2858 -386.9 2845.2 -400Q2832.4 -413 2814.3 -419.3Q2796.1 -425.6 2773.3 -425.6Q2736.9 -425.6 2712.3 -413.6Q2687.7 -401.7 2674.4 -378.9Q2661.1 -356 2656.6 -321.9Z M3163.9 0V-527.3H3304.4L3316.4 -443H3324Q3337 -472.2 3357.2 -494.1Q3377.4 -515.9 3404.8 -527.9Q3432.2 -539.8 3464.9 -539.8Q3483.8 -539.8 3499.9 -536.5Q3515.9 -533.3 3526.3 -528.8V-384.7H3461.4Q3428.5 -384.7 3404.7 -375.2Q3380.8 -365.6 3365.5 -347.6Q3350.3 -329.6 3342.9 -304.6Q3335.5 -279.6 3335.5 -248.7V0Z M3869.1 12Q3807.8 12 3766.1 -3.2Q3724.4 -18.3 3703.2 -53.3Q3682 -88.3 3682 -147.4V-404H3589.6V-527.4H3688.4L3724.1 -683.7H3860.2V-527.4H3993.3V-404H3860.2V-183.2Q3860.2 -148.3 3874.5 -129.9Q3888.9 -111.4 3932 -111.4H3993.3V-5.8Q3979.6 -0.9 3956.7 3.3Q3933.8 7.5 3910.2 9.7Q3886.6 12 3869.1 12Z M4460.9 12Q4355.5 12 4277.3 -18.7Q4199.1 -49.5 4156 -110.7Q4112.9 -171.9 4112.9 -264Q4112.9 -356.5 4156 -417.8Q4199.1 -479.1 4277.3 -509.3Q4355.5 -539.5 4460.9 -539.5Q4566.2 -539.5 4644.4 -509.3Q4722.7 -479.1 4765.8 -417.8Q4808.9 -356.5 4808.9 -264Q4808.9 -171.9 4765.8 -110.7Q4722.7 -49.5 4644.4 -18.7Q4566.2 12 4460.9 12ZM4460.9 -113.5Q4513.1 -113.5 4548.2 -131.2Q4583.2 -148.8 4600.6 -180.5Q4618.1 -212.2 4618.1 -254V-274Q4618.1 -316.2 4600.6 -347.7Q4583.2 -379.2 4548.2 -396.6Q4513.1 -414.1 4460.9 -414.1Q4408.7 -414.1 4373.6 -396.6Q4338.6 -379.2 4321.1 -347.7Q4303.7 -316.2 4303.7 -274V-254Q4303.7 -212.2 4321.1 -180.5Q4338.6 -148.8 4373.6 -131.2Q4408.7 -113.5 4460.9 -113.5Z"/></svg>
 </a>
-    <a class="btn btn-principal btn-peq" href="/comecar">Montar meu plano</a>
+    <a class="btn btn-principal btn-peq" href="/comecar">Descobrir minha data</a>
   </div>
 </header>
 
@@ -317,12 +343,13 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
         <h1 class="solta">Descubra o mês em que você <em>sai das dívidas.</em></h1>
         <p class="lead">Você conta quanto ganha, quanto gasta e quanto deve. O <b>Desaperto</b> faz as contas e te entrega um plano: <b>qual dívida pagar primeiro, quanto pagar em cada mês e o que falar com o banco.</b></p>
         <div class="cta-linha">
-          <a class="btn btn-principal" href="/comecar">Montar meu plano <span class="seta" aria-hidden="true">→</span></a>
+          <a class="btn btn-principal" href="/comecar">Descobrir minha data <span class="seta" aria-hidden="true">→</span></a>
         </div>
-        <ul class="garantias" aria-label="Como funciona o questionário">
-          <li>Leva de 15 a 20 minutos</li>
-          <li>Dá para fazer pelo celular</li>
+        <p class="preco-hero">A data é grátis. O plano completo custa <b>R$ 34,90</b>, uma vez só.</p>
+        <ul class="garantias" aria-label="Como funciona">
+          <li>Leva de 15 a 20 minutos, pelo celular</li>
           <li>Não pede CPF, senha nem extrato</li>
+          <li>Garantia de 7 dias</li>
         </ul>
       </div>
 
@@ -349,17 +376,18 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
   <!-- reconhecer -->
   <section class="reconhece faixa" aria-labelledby="t-reconhece">
     <div class="miolo">
-      <p class="rotulo" id="t-reconhece">Se alguma dessas é sua</p>
+      <p class="rotulo" id="t-reconhece">Toque nas que são suas</p>
       <ul class="frases">
-        <li>Você recebe o salário e em três dias ele já foi.</li>
-        <li>Paga a fatura do cartão e a do mês seguinte já vem maior.</li>
-        <li>Acorda para trabalhar e sente que vive só para pagar dívida.</li>
-        <li>Pegou um empréstimo para pagar outro.</li>
-        <li>O celular toca e vem a angústia: é mais uma cobrança?</li>
-        <li>Tem vergonha de olhar para a própria vida financeira.</li>
-        <li>Sente que a vida está parada até as dívidas acabarem.</li>
-        <li>Não consegue ver um caminho em que tudo esteja quitado.</li>
+        <li><button type="button" class="frase" aria-pressed="false">Você recebe o salário e em três dias ele já foi.</button></li>
+        <li><button type="button" class="frase" aria-pressed="false">Paga a fatura do cartão e a do mês seguinte já vem maior.</button></li>
+        <li><button type="button" class="frase" aria-pressed="false">Acorda para trabalhar e sente que vive só para pagar dívida.</button></li>
+        <li><button type="button" class="frase" aria-pressed="false">Pegou um empréstimo para pagar outro.</button></li>
+        <li><button type="button" class="frase" aria-pressed="false">O celular toca e vem a angústia: é mais uma cobrança?</button></li>
+        <li><button type="button" class="frase" aria-pressed="false">Tem vergonha de olhar para a própria vida financeira.</button></li>
+        <li><button type="button" class="frase" aria-pressed="false">Sente que a vida está parada até as dívidas acabarem.</button></li>
+        <li><button type="button" class="frase" aria-pressed="false">Não consegue ver um caminho em que tudo esteja quitado.</button></li>
       </ul>
+      <p class="marcou" id="marcou" aria-live="polite" hidden></p>
       <p class="virada">Não é falta de esforço. São os juros, que crescem em cima dos juros. <b>Quando você sabe qual dívida pagar primeiro, o aperto começa a soltar.</b></p>
     </div>
   </section>
@@ -370,7 +398,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
       <div class="cab">
         <p class="rotulo">Um exemplo</p>
         <h2 id="t-caminho">Do jeito que está, não tem fim. Com um plano, tem data.</h2>
-        <p>A Ana ganha R$ 2.900 e deve R$ 8.122 no cartão, no cheque especial e em dois empréstimos. Ela não ganhou mais nem cortou tudo. Só passou a pagar as dívidas na ordem certa.</p>
+        <p>A Ana ganha R$ 2.900 e deve R$ 8.122 no cartão, no cheque especial e em dois empréstimos. Ela não ganhou mais nem cortou tudo. Só passou a pagar as dívidas na ordem certa. <b>Em dois meses, a primeira dívida acabou.</b></p>
       </div>
       <div class="trajeto">
         <p class="tr-topo">Quanto a Ana deve em cada mês</p>
@@ -400,7 +428,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
     <div class="miolo">
       <div class="cab">
         <p class="rotulo">Como funciona</p>
-        <h2 id="t-como">Você responde. A gente faz as contas. O plano chega.</h2>
+        <h2 id="t-como">Você responde. Vê a sua data. Recebe o plano.</h2>
       </div>
       <ol class="etapas">
         <li>
@@ -414,8 +442,8 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
           <span class="tempo">Com os seus números</span>
         </li>
         <li>
-          <h3>O plano chega no seu e-mail</h3>
-          <p>Um arquivo fácil de ler no celular, com a data em que você sai das dívidas e o que fazer em cada mês.</p>
+          <h3>Você vê a data e recebe o plano</h3>
+          <p>Na hora e de graça, você vê o mês em que sai das dívidas. Por R$ 34,90, o plano completo chega no seu e-mail: o que fazer em cada mês, até a última dívida.</p>
           <span class="tempo">Em poucos minutos</span>
         </li>
       </ol>
@@ -546,6 +574,30 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
     </div>
   </section>
 
+  <!-- preço -->
+  <section class="preco faixa" id="preco" aria-labelledby="t-preco">
+    <div class="miolo">
+      <div class="cab">
+        <p class="rotulo">Quanto custa</p>
+        <h2 id="t-preco">A data é grátis. O caminho custa R$ 34,90.</h2>
+        <p>Você responde, vê na hora o mês em que sai das dívidas e só paga se quiser o plano completo. Uma vez só, por Pix, sem assinatura.</p>
+      </div>
+      <div class="caixa-preco">
+        <div class="cp-topo"><span class="cp-valor num">R$ 34,90</span><span class="cp-sub">uma vez só · Pix · chega no e-mail em minutos</span></div>
+        <ul class="cp-lista">
+          <li>A ordem certa: qual dívida pagar primeiro e por quê</li>
+          <li>O mês a mês: quanto pagar, em qual dívida e onde, até a última</li>
+          <li>O que falar com o banco e quanto oferecer nas dívidas atrasadas</li>
+          <li>Os seus direitos e o que fazer se um mês apertar</li>
+          <li>Se quiser, um e-mail no começo de cada mês com o que fazer naquele mês</li>
+        </ul>
+        <p class="cp-ancora">É menos do que um mês de juros de R$ 500 no cheque especial.</p>
+        <a class="btn btn-principal" href="/comecar">Descobrir minha data <span class="seta" aria-hidden="true">→</span></a>
+        <p class="cp-garantia"><b>Garantia de 7 dias.</b> Se o plano não te ajudar, responda o e-mail dele e devolvemos o valor inteiro.</p>
+      </div>
+    </div>
+  </section>
+
   <!-- perguntas -->
   <section class="perguntas faixa" aria-labelledby="t-perg">
     <div class="miolo">
@@ -554,6 +606,18 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
         <h2 id="t-perg">Antes de começar.</h2>
       </div>
       <div class="faq">
+        <details>
+          <summary>Quanto custa?</summary>
+          <p>A data em que você sai das dívidas é grátis: aparece na hora, assim que você termina de responder. O plano completo custa R$ 34,90, uma vez só, por Pix. Não é assinatura e não tem cobrança depois.</p>
+        </details>
+        <details>
+          <summary>Por que pagar, se o Serasa negocia de graça?</summary>
+          <p>O Serasa ajuda a negociar uma dívida de cada vez. O Desaperto olha todas juntas, com o seu salário e os seus gastos, e diz em que ordem pagar, quanto pagar em cada mês e quando cada uma acaba. Quando a negociação no Serasa vale a pena, o plano mostra quanto oferecer.</p>
+        </details>
+        <details>
+          <summary>E se o plano não me ajudar?</summary>
+          <p>Responda o e-mail do plano em até 7 dias e devolvemos o valor inteiro, pelo mesmo Pix.</p>
+        </details>
         <details>
           <summary>Preciso saber os valores exatos?</summary>
           <p>Quanto mais certo o valor, mais certa a data. Quase tudo está no app do banco. Se não achar algum valor, marque "não encontrei". O plano faz uma conta aproximada e avisa onde fez isso.</p>
@@ -587,8 +651,8 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
     <div class="miolo">
       <p class="marca-grande" id="marca-grande" aria-label="desaperto"><span>d</span><span>e</span><span>s</span><span>a</span><span>p</span><span>e</span><span>r</span><span>t</span><span>o</span></p>
       <h2 id="t-final">O primeiro desaperto é olhar para ela.</h2>
-      <p>Separe 20 minutos e abra o app do banco. Assim que você terminar, o plano chega no seu e-mail.</p>
-      <a class="btn btn-claro" href="/comecar">Montar meu plano <span class="seta" aria-hidden="true">→</span></a>
+      <p>Separe 20 minutos e abra o app do banco. Assim que você terminar, vê a sua data, de graça.</p>
+      <a class="btn btn-claro" href="/comecar">Descobrir minha data <span class="seta" aria-hidden="true">→</span></a>
     </div>
   </section>
 </main>
@@ -631,6 +695,31 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
       document.getElementById('vozes').hidden = false;
     }).catch(function () {});
   } catch (e) {}
+
+
+  // contagem do funil (sem cookie): visita e de onde veio
+  function contar(e) {
+    try { var k = 'desaperto-ev-' + e; if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); } catch (er) {}
+    try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: e })); } catch (er) {}
+  }
+  contar('v_inicio');
+  (function () {
+    var u = new URLSearchParams(location.search), o = (u.get('utm_source') || '').toLowerCase(), r = document.referrer;
+    var mapa = ['instagram', 'tiktok', 'whatsapp', 'google', 'facebook', 'youtube', 'email'];
+    var achou = mapa.filter(function (x) { return o.indexOf(x) >= 0 || (r && r.indexOf(x) >= 0) || (x === 'instagram' && o === 'ig') || (x === 'facebook' && /fb|l\.facebook/.test(o + r)); })[0];
+    contar('origem_' + (achou || (o || (r && r.indexOf(location.host) < 0) ? 'outro' : 'direto')));
+  })();
+
+  // frases: a pessoa toca nas que são dela
+  var frases = document.querySelectorAll('.frase'), marcou = document.getElementById('marcou');
+  frases.forEach(function (b) {
+    b.addEventListener('click', function () {
+      b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+      var n = document.querySelectorAll('.frase[aria-pressed="true"]').length;
+      marcou.hidden = n === 0;
+      marcou.textContent = n === 0 ? '' : n === 1 ? 'Você marcou 1. Isso tem saída.' : n === frases.length ? 'Você marcou todas. Respira: isso tem saída.' : 'Você marcou ' + n + '. Isso tem saída.';
+    });
+  });
 
   var topo = document.getElementById('topo');
   function aoRolar() { topo.classList.toggle('rolou', window.scrollY > 8); }

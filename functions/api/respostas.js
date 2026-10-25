@@ -1,6 +1,7 @@
 // POST /api/respostas  -> guarda as respostas do questionário e devolve um protocolo.
 // PUT  /api/respostas  -> a própria pessoa corrige as respostas já enviadas (precisa do id e da chave).
-import { json, erro, sha256, aleatorio, protocolo, agora, lerCorpo, validarRespostas, limparAntigas, enviarEmail, escapar, pedirPlano, LIMITE_POR_HORA } from '../../lib/api.js';
+import { json, erro, sha256, aleatorio, protocolo, agora, lerCorpo, validarRespostas, limparAntigas, enviarEmail, escapar, pedirPlano, LIMITE_POR_HORA,
+  garantirTabelas, evento, cobrancaAtiva, assinaturaPagar } from '../../lib/api.js';
 
 async function origem(request, env) {
   const ip = request.headers.get('cf-connecting-ip') || 'sem-ip';
@@ -37,6 +38,8 @@ export async function onRequestPost({ request, env }) {
     }
   }
   try { await limparAntigas(env.DB); } catch {}
+  try { await garantirTabelas(env.DB); } catch {}
+  if (!teste) await evento(env.DB, 'enviou');
   if (await pedirPlano(env, id)) {
     try { await env.DB.prepare("UPDATE respostas SET status = 'gerando' WHERE id = ?").bind(id).run(); } catch {}
   }
@@ -48,7 +51,7 @@ export async function onRequestPost({ request, env }) {
     assunto: `${teste ? '[teste] ' : ''}Nova resposta: ${primeiroNome} · ${prot}`,
     texto: `Chegou uma resposta nova.\nProtocolo: ${prot}\nNome: ${r.nome}\nDívidas: ${r.dividas.length}\nVeja em https://desaperto.com/admin`,
   });
-  if (!teste) {
+  if (!teste && !cobrancaAtiva(env)) {  // com cobrança, o primeiro e-mail é o da data grátis, quando o plano fica pronto
     await enviarEmail(env, {
       para: r.email.trim(),
       assunto: 'Recebemos suas respostas',
@@ -56,7 +59,7 @@ export async function onRequestPost({ request, env }) {
       html: `<p>${escapar(primeiroNome)}, recebemos suas respostas.</p><p>Seu plano de desaperto está sendo montado e chega neste e-mail em poucos minutos.<br>Protocolo: <b>${prot}</b></p><p style="color:#555D58;font-size:13px">O Desaperto nunca pede senha, nunca manda boleto e nunca cobra para limpar nome.</p><p><b>desaperto</b> · desaperto.com</p>`,
     });
   }
-  return json({ ok: true, id, chave, protocolo: prot }, 201);
+  return json({ ok: true, id, chave, protocolo: prot, pagar: `/pagar?id=${encodeURIComponent(id)}&a=${await assinaturaPagar(env, id)}` }, 201);
 }
 
 export async function onRequestPut({ request, env }) {
@@ -69,12 +72,13 @@ export async function onRequestPut({ request, env }) {
   if (problema) return erro(problema);
   const linha = await env.DB.prepare('SELECT chave_hash, protocolo FROM respostas WHERE id = ?').bind(id).first();
   if (!linha || linha.chave_hash !== (await sha256(chave))) return erro('Não encontramos esse envio. Envie de novo como novo.', 404);
-  await env.DB.prepare("UPDATE respostas SET dados = ?, nome = ?, email = ?, atualizado_em = ?, status = 'recebido', plano_resumo = NULL, plano_erro = NULL WHERE id = ?")
+  try { await garantirTabelas(env.DB); } catch {}
+  await env.DB.prepare("UPDATE respostas SET dados = ?, nome = ?, email = ?, atualizado_em = ?, status = 'recebido', plano_resumo = NULL, plano_erro = NULL, aviso_data_em = NULL WHERE id = ?")
     .bind(JSON.stringify(r), r.nome.trim(), r.email.trim().toLowerCase(), agora(), id).run();
   if (await pedirPlano(env, id)) {
     try { await env.DB.prepare("UPDATE respostas SET status = 'gerando' WHERE id = ?").bind(id).run(); } catch {}
   }
-  return json({ ok: true, id, protocolo: linha.protocolo });
+  return json({ ok: true, id, protocolo: linha.protocolo, pagar: `/pagar?id=${encodeURIComponent(id)}&a=${await assinaturaPagar(env, id)}` });
 }
 
 export async function onRequest() {

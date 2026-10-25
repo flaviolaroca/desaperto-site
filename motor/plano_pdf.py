@@ -246,6 +246,7 @@ def montar(r, textos, inicio=(2026, 11), link_avaliar=None):
     rep = res.get('repactuacao') if not cenario else None
     cons = motor.conservador(r, inicio)
     nome = r.get('nome') or 'você'
+    objetivo = re.sub(r'\s+', ' ', str(r.get('objetivo') or '')).strip().rstrip('.')[:140]
     fila = res['fila']
     plano = res['plano']
     e = html.escape
@@ -304,7 +305,10 @@ def montar(r, textos, inicio=(2026, 11), link_avaliar=None):
             t_, c_ = nome_exibicao(d)
             fora_txt += f' O {t_.lower()} {e(c_)}, que cobra menos juros, segue normal até {mes_longo(fim)}.'
     acoes = T['acoes']
-    qs = [d['quitada_em'] for d in plano if d.get('quitada_em') and d['sub'] != 'futuro']
+    _por_id = {}
+    for d in plano:
+        if d['sub'] != 'futuro' and d['banda'] != 'fora': _por_id.setdefault(d['id'], []).append(d)
+    qs = [max(x['quitada_em'] for x in xs) for xs in _por_id.values() if all(x.get('quitada_em') for x in xs)]
     primeira_txt = ''
     if qs and min(qs) != res.get('saida') and not cenario:
         n_ate = 1 + (min(qs)[0] * 12 + min(qs)[1]) - (inicio[0] * 12 + inicio[1])
@@ -463,6 +467,7 @@ def montar(r, textos, inicio=(2026, 11), link_avaliar=None):
     def mes_ant(m):
         return (m['ano'], m['mes'] - 1) if m['mes'] > 1 else (m['ano'] - 1, 12)
 
+    acoes_mensais = []
     foco_visto = set()
     ultimo_mes = res['meses'][-1] if res['meses'] else None
     # progresso: quantas dívidas (como a pessoa contou no questionário) já acabaram
@@ -541,7 +546,7 @@ def montar(r, textos, inicio=(2026, 11), link_avaliar=None):
             if cenario and m is res['meses'][0] and res_tot > 2 * res['meta_colchao']:
                 acoes_m.append((f'O resto da venda, <b>{brl(res_tot)}</b>, fica guardado com você: é a sua reserva e pode virar a entrada de um carro mais barato, à vista', None))
             elif m is ultimo_mes and res.get('saida') == (m['ano'], m['mes']) and not m.get('extras'):
-                acoes_m.append((f'Pague só a última parcela. Os <b>{brl(res_tot)}</b> que iam para as dívidas ficam com você. Use os primeiros meses para montar uma reserva de 3 meses de contas e, depois, escolha um objetivo seu', None))
+                acoes_m.append(((f'Pague só a última parcela. Os <b>{brl(res_tot)}</b> que iam para as dívidas ficam com você. Use os primeiros meses para montar uma reserva de 3 meses de contas e, depois, comece o que você escolheu: {e(objetivo[0].lower() + objetivo[1:])}' if objetivo else f'Pague só a última parcela. Os <b>{brl(res_tot)}</b> que iam para as dívidas ficam com você. Use os primeiros meses para montar uma reserva de 3 meses de contas e, depois, escolha um objetivo seu'), None))
             else:
                 acoes_m.append((f'Guarde <b>{brl(res_tot)}</b> na reserva para imprevistos', None))
         if m.get('deficit'):
@@ -555,6 +560,21 @@ def montar(r, textos, inicio=(2026, 11), link_avaliar=None):
             vitoria = ('Primeira dívida paga.', 'É a prova de que o plano funciona. Agora é repetir o que deu certo, uma de cada vez.')
         elif t == metade_t:
             vitoria = ('Metade do caminho.', f'Você já tirou {brl(res["T"] - m["saldo_total"])} das costas. Falta menos do que você já pagou.')
+        simples = []
+        if vitoria: simples.append(vitoria[0] + ' ' + vitoria[1])
+        if subiu: simples.append(re.sub(r'<[^>]+>', '', subiu))
+        for texto_a, nome_a in acoes_m:
+            linha = re.sub(r'<[^>]+>', '', texto_a) + '.'
+            if nome_a:
+                d_a = next(x for x in plano if x['nome'] == nome_a)
+                resta = m.get('saldos', {}).get(nome_a, 0)
+                if not (d_a['sub'] == 'atrasada' and d_a.get('acordo_oferta')) and resta > 0.5:
+                    linha += f' Depois disso, faltam {brl(resta)}.'
+            simples.append(html.unescape(linha))
+        simples += [f'Conquista: {x}.' for x in marcos_m]
+        pg_m = pagas_ate(t)
+        acoes_mensais.append({'mes': [t[0], t[1]], 'de': html.unescape(' + '.join(de)), 'acoes': simples, 'pagas': pg_m, 'total': n_div,
+                              'faltam_meses': meses_ate(t, saida_t) if saida_t else None})
         return {'m': m, 'de': de, 'subiu': subiu, 'acoes': acoes_m, 'marcos': marcos_m, 'vitoria': vitoria,
                 'chave': (tuple(de), tuple(a for a in acoes_m)) if not marcos_m and not subiu and not vitoria else None}
 
@@ -615,6 +635,7 @@ def montar(r, textos, inicio=(2026, 11), link_avaliar=None):
                 f'<ul>{"".join("<li>" + x + "</li>" for x in linhas)}</ul>{prog}</div></li>', peso)
 
     # meses iguais em sequência viram um bloco só ("fev/27 a mai/27"), mostrando quanto a dívida cai no período
+    res['acoes_mensais'] = acoes_mensais
     linhas_mes, grupo = [], []
     for m in res['meses']:
         item = linha_mes(m)

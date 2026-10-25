@@ -18,6 +18,17 @@ def inicio_do_plano(data):
     return (a, m + 1) if m < 12 else (a + 1, 1)
 
 
+def primeira(res, ini):
+    """Mês em que a primeira dívida da lista acaba (se for antes da saída)."""
+    por_id = {}
+    for d in res.get('plano') or []:
+        if d['sub'] != 'futuro' and d.get('banda') != 'fora': por_id.setdefault(d['id'], []).append(d)
+    # uma dívida só acaba quando todas as partes dela acabam (ex.: parcelas atrasadas + o contrato)
+    qs = [max(x['quitada_em'] for x in xs) for xs in por_id.values() if all(x.get('quitada_em') for x in xs)]
+    if not qs or (res.get('saida') and min(qs) == res['saida']): return None
+    return list(min(qs))
+
+
 def main():
     entrada, data, saida = sys.argv[1], sys.argv[2], sys.argv[3]
     os.makedirs(saida, exist_ok=True)
@@ -40,6 +51,14 @@ def main():
         'premissas': res.get('premissas') or [],
         'precisa_revisao': any(a['codigo'] in GRAVES for a in alertas) or not original.get('conta_fecha'),
         'dividas': len(r.get('dividas') or []),
+        'dados_graves': any(a['codigo'] in GRAVES for a in alertas),
+        # para a data grátis (página /pagar e e-mail): nada aqui identifica a pessoa
+        'total': round(original.get('T') or 0),
+        'diferenca': round(original.get('diferenca') or 0),
+        'economia_12': None if rep else max(0, round((original.get('juros_sem_12') or 0) - (res.get('juros_com_12') or 0))),
+        'primeira': None if rep else primeira(res, ini),
+        'rep': ({'parcela': round(rep['parcela']), 'meses': rep['meses'], 'saida': list(rep['saida']) if rep.get('saida') else None} if rep and rep.get('proposta') else ({'proposta': False} if rep else None)),
+        'acoes_mensais': [] if rep else (res.get('acoes_mensais') or []),
     }
     json.dump(resumo, open(os.path.join(saida, 'resumo.json'), 'w'), ensure_ascii=False, indent=1)
     print(json.dumps(resumo, ensure_ascii=False))

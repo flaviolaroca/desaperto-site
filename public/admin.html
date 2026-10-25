@@ -58,6 +58,14 @@ main .in { max-width: 64rem; }
 input[type=password] { font: inherit; padding: 12px 14px; border-radius: 12px; border: 1.5px solid #CFC4AE; background: var(--papel); }
 button { font: inherit; font-weight: 700; border: 0; border-radius: 999px; padding: 10px 16px; cursor: pointer; background: var(--verde); color: #fff; }
 button.sec { background: var(--areia); color: var(--tinta); }
+.funil { background: var(--branco); border-radius: 18px; padding: 16px 18px; display: grid; gap: 14px; margin-bottom: 28px; }
+.funil .linha-f { display: grid; grid-template-columns: minmax(0, 14rem) minmax(0, 1fr) 4.5rem 4rem; gap: 10px; align-items: center; font-size: .9375rem; }
+.funil .bar { height: 10px; border-radius: 99px; background: var(--papel); overflow: hidden; }
+.funil .bar i { display: block; height: 100%; background: var(--verde); border-radius: 99px; }
+.funil .n { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; text-align: right; }
+.funil .p { color: var(--cinza); font-size: .8125rem; text-align: right; }
+.funil .resumo-f { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: .9375rem; }
+.funil .resumo-f b { font-family: "IBM Plex Mono", ui-monospace, monospace; }
 textarea.pub { font: inherit; width: 100%; min-width: 16rem; min-height: 90px; padding: 8px 10px; border-radius: 10px; border: 1.5px solid #CFC4AE; background: var(--papel); }
 .coment { max-width: 26rem; white-space: pre-wrap; }
 .coment small { display: block; color: var(--cinza); margin-top: 6px; }
@@ -85,12 +93,17 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
 </style>
 
 <p class="rotulo">Área interna</p>
-<h1>Respostas e avaliações.</h1>
+<h1>Área interna.</h1>
 
 <form class="entrar" id="form-entrar">
   <label for="token">Chave de acesso<input type="password" id="token" autocomplete="current-password" required></label>
   <button type="submit">Entrar</button>
 </form>
+
+<section id="sec-funil" hidden>
+  <div class="barra"><h2 style="margin:0">Funil</h2><div class="acoes"><button type="button" class="sec" data-dias="7">7 dias</button><button type="button" class="sec" data-dias="30">30 dias</button><button type="button" class="sec" data-dias="90">90 dias</button></div></div>
+  <div class="funil" id="funil"></div>
+</section>
 
 <div class="barra" id="barra" hidden>
   <p class="msg" id="msg">Carregando...</p>
@@ -112,7 +125,7 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
   'use strict';
   var token = '';
   try { token = sessionStorage.getItem('desaperto-admin') || ''; } catch (e) {}
-  var lista = [], aberto = null, confirmando = null, enviando = null;
+  var lista = [], aberto = null, confirmando = null, enviando = null, devolvendo = null, cobrar = false;
   var $ = function (id) { return document.getElementById(id); };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function data(iso) { if (!iso) return ''; var d = new Date(iso); return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }
@@ -126,6 +139,14 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
   }
   var MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  function pagamento(x) {
+    if (x.devolvido_em) return ' <span class="chip">Devolvido</span>';
+    if (x.pago_em) return ' <span class="chip ok">Pago ' + (x.pago_valor ? 'R$ ' + Number(x.pago_valor).toFixed(2).replace('.', ',') : '') + '</span>';
+    if (!cobrar) return '';
+    if (x.pag_status === 'pending') return ' <span class="chip rev">Pix gerado</span>';
+    if (x.status === 'plano_pronto' && x.aviso_data_em) return ' <span class="chip">Viu a data</span>';
+    return '';
+  }
   function situacao(x) {
     var p = x.plano_resumo;
     if (x.status === 'plano_enviado') return '<span class="chip ok">Plano enviado</span>';
@@ -148,7 +169,7 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
       .catch(function (e) { $('msg').textContent = 'Erro: ' + e.message; });
   }
   function desenharMsg() {
-    var prontos = lista.filter(function (x) { return x.status === 'plano_pronto'; }).length;
+    var prontos = lista.filter(function (x) { return x.status === 'plano_pronto' && (!cobrar || x.pago_em); }).length;
     $('msg').textContent = (lista.length ? lista.length + (lista.length === 1 ? ' resposta' : ' respostas') : 'Nenhuma resposta ainda') + (prontos ? '. ' + prontos + (prontos === 1 ? ' plano esperando' : ' planos esperando') + ' a sua revisão.' : '.') + ' Tudo é apagado sozinho 90 dias depois do envio.';
   }
   function desenhar() {
@@ -157,11 +178,12 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
     $('tabela').hidden = false;
     $('tabela').innerHTML = '<table><thead><tr><th>Recebido</th><th>Protocolo</th><th>Nome</th><th>Dívidas</th><th>Plano</th><th>Situação</th><th>Ações</th></tr></thead><tbody>' +
       lista.map(function (x) {
-        var sit = situacao(x);
+        var sit = situacao(x) + pagamento(x);
         if (x.teste) sit += ' <span class="chip t">teste</span>';
         var temPdf = x.status === 'plano_pronto' || x.status === 'plano_enviado';
         var acoes = (temPdf ? '<button type="button" data-pdf="' + x.id + '">Ver plano</button>' : '') +
-          (x.status === 'plano_pronto' ? (enviando === x.id ? '<button type="button" data-enviar-sim="' + x.id + '">Confirmar envio para ' + esc(x.email) + '</button><button type="button" class="perigo" data-cancelar>Cancelar</button>' : '<button type="button" data-enviar="' + x.id + '">Enviar plano</button>') : '') +
+          (x.status === 'plano_pronto' ? (enviando === x.id ? '<button type="button" data-enviar-sim="' + x.id + '">Confirmar envio para ' + esc(x.email) + '</button><button type="button" class="perigo" data-cancelar>Cancelar</button>' : '<button type="button" data-enviar="' + x.id + '">' + (cobrar && !x.pago_em ? 'Enviar sem cobrar' : 'Enviar plano') + '</button>') : '') +
+          (x.pago_em && !x.devolvido_em ? (devolvendo === x.id ? '<button type="button" class="perigo" data-devolver-sim="' + x.id + '">Confirmar: devolver o Pix</button><button type="button" class="perigo" data-cancelar>Cancelar</button>' : '<button type="button" class="sec" data-devolver="' + x.id + '">Devolver</button>') : '') +
           '<button type="button" class="sec" data-ver="' + x.id + '">' + (aberto && aberto.id === x.id ? 'Fechar' : 'Respostas') + '</button>' +
           '<button type="button" class="sec" data-gerar="' + x.id + '">' + (x.status === 'recebido' || x.status === 'erro_plano' ? 'Gerar plano' : 'Gerar de novo') + '</button>' +
           '<button type="button" class="sec" data-baixar="' + x.id + '">Baixar</button>' +
@@ -176,7 +198,7 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
   }
   function carregar() {
     $('barra').hidden = false; $('msg').textContent = 'Carregando...';
-    return api('GET').then(function (j) { lista = j.respostas || []; $('form-entrar').hidden = true; desenhar(); carregarAval(); })
+    return api('GET').then(function (j) { lista = j.respostas || []; cobrar = !!j.cobrar; $('form-entrar').hidden = true; desenhar(); carregarAval(); carregarFunil(); })
       .catch(function (e) { $('msg').textContent = e.message === 'Acesso negado.' ? 'Chave de acesso errada. Confira se é exatamente igual à salva na Cloudflare (maiúsculas, minúsculas e símbolos contam).' : e.message; $('form-entrar').hidden = false; });
   }
   function completa(id) { return api('GET', '?id=' + encodeURIComponent(id)).then(function (j) { return j.resposta; }); }
@@ -210,9 +232,40 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
     }
     else if ((id = t.getAttribute('data-apagar'))) { confirmando = id; desenhar(); }
     else if ((id = t.getAttribute('data-apagar-sim'))) api('DELETE', '?id=' + encodeURIComponent(id)).then(function () { confirmando = null; aberto = null; carregar(); });
-    else if (t.hasAttribute('data-cancelar')) { confirmando = null; enviando = null; desenhar(); }
+    else if ((id = t.getAttribute('data-devolver'))) { devolvendo = id; desenhar(); }
+    else if ((id = t.getAttribute('data-devolver-sim'))) {
+      $('msg').textContent = 'Devolvendo...';
+      fetch('/api/admin/devolver', { method: 'POST', headers: { authorization: 'Bearer ' + token, 'content-type': 'application/json' }, body: JSON.stringify({ id: id }) })
+        .then(function (r) { return r.json(); }).then(function (j) { devolvendo = null; if (!j.ok) { $('msg').textContent = 'Não devolveu: ' + j.erro; desenhar(); return; } carregar(); });
+    }
+    else if (t.hasAttribute('data-cancelar')) { confirmando = null; enviando = null; devolvendo = null; desenhar(); }
   });
 
+
+  // ---------- funil ----------
+  var diasFunil = 30;
+  var PASSOS = [['v_inicio', 'Visitas na página inicial'], ['v_comecar', 'Abriram o questionário'], ['etapa_contato', 'Começaram a responder'], ['etapa_renda', 'Chegaram na renda'],
+    ['etapa_gastos1', 'Chegaram nos gastos'], ['etapa_dividas', 'Chegaram nas dívidas'], ['etapa_revisao', 'Chegaram na revisão'], ['enviou', 'Enviaram'],
+    ['v_pagar_data', 'Viram a data'], ['clicou_pix', 'Clicaram em pagar'], ['pix_gerado', 'Pix gerado'], ['pagou', 'Pagaram']];
+  function carregarFunil() {
+    return fetch('/api/admin/funil?dias=' + diasFunil, { headers: { authorization: 'Bearer ' + token } }).then(function (r) { return r.json(); }).then(function (j) {
+      if (!j.ok) return;
+      $('sec-funil').hidden = false;
+      var t = j.total || {}, max = Math.max(1, t.v_inicio || 0, t.v_comecar || 0), ant = null;
+      var linhas = PASSOS.map(function (p) {
+        var n = t[p[0]] || 0, pct = ant ? Math.round(100 * n / ant) + '%' : '';
+        ant = n || ant;
+        return '<div class="linha-f"><span>' + p[1] + '</span><span class="bar"><i style="width:' + Math.round(100 * n / max) + '%"></i></span><span class="n">' + n + '</span><span class="p">' + pct + '</span></div>';
+      }).join('');
+      var origens = Object.keys(t).filter(function (k) { return k.indexOf('origem_') === 0; }).sort(function (a, b) { return t[b] - t[a]; })
+        .map(function (k) { return k.slice(7) + ' <b>' + t[k] + '</b>'; }).join(' · ');
+      var conv = t.v_inicio ? (100 * (j.vendas || 0) / t.v_inicio).toFixed(1).replace('.', ',') + '%' : '-';
+      $('funil').innerHTML = '<div class="resumo-f"><span>Últimos ' + j.dias + ' dias</span><span>Vendas <b>' + (j.vendas || 0) + '</b></span><span>Receita <b>R$ ' + Number(j.receita || 0).toFixed(2).replace('.', ',') + '</b></span><span>Visita → venda <b>' + conv + '</b></span>' + (t.devolvido ? '<span>Devoluções <b>' + t.devolvido + '</b></span>' : '') + '</div>' + linhas +
+        (origens ? '<div class="resumo-f"><span>De onde vieram:</span><span>' + origens + '</span></div>' : '') +
+        '<p class="msg-linha">A porcentagem é em relação ao passo de cima. Não conta os envios em modo teste.' + (cobrar ? '' : ' A cobrança está desligada: falta o segredo MP_ACCESS_TOKEN na Cloudflare.') + '</p>';
+    });
+  }
+  $('sec-funil').addEventListener('click', function (e) { var d = e.target.getAttribute('data-dias'); if (d) { diasFunil = Number(d); carregarFunil(); } });
   // ---------- avaliações ----------
   var avals = [], editando = null, apagandoAval = null, pendentes = null;
   function apiAval(metodo, url, corpo) {

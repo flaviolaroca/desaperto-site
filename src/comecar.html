@@ -41,6 +41,7 @@ main { flex: 1; display: flex; flex-direction: column; padding-top: 26px; }
 .tela { display: flex; flex-direction: column; gap: 22px; flex: 1; }
 h1 { font-size: 30px; line-height: 1.12; font-weight: 800; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
 .lead { margin: 0; font-size: 17px; color: #2E3832; }
+a.btn { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
 .acolhe { margin: 0; font-size: 15px; color: var(--verde); font-weight: 700; }
 .texto p { margin: 0 0 14px; }
 .texto p:last-child { margin-bottom: 0; }
@@ -335,9 +336,13 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       F({ id: 'nomeLimpo', tipo: 'unica', rotulo: 'Você precisa do nome limpo para algo nos próximos meses?', ops: ['Não', 'Sim, para alugar um imóvel', 'Sim, para um financiamento', 'Sim, para uma vaga de emprego', 'Sim, para outra coisa'] })
     ] },
     { id: 'dividas', etapa: 4, especial: 'dividas' },
-    { id: 'recursos', etapa: 5, acolhe: 'Falta pouco.', titulo: 'Duas últimas perguntas', campos: [
+    { id: 'recursos', etapa: 5, acolhe: 'Pronto: as dívidas eram a parte que quase todo mundo evita. Você fez.', titulo: 'Agora, duas perguntas rápidas', campos: [
       F({ id: 'guardado', tipo: 'dinheiro', rotulo: 'Você tem algum dinheiro guardado hoje? Quanto?', ajuda: 'Se não tem, coloque 0.' }),
       F({ id: 'emprestPagar', tipo: 'simnao', rotulo: 'Nos últimos 12 meses, você pegou algum empréstimo para pagar outra dívida?' })
+    ] },
+    { id: 'depois', etapa: 5, acolhe: 'Última pergunta antes de conferir.', titulo: 'E quando as dívidas acabarem?', campos: [
+      F({ id: 'objetivo', tipo: 'texto', rotulo: 'O que você quer fazer com o dinheiro que hoje vai para as dívidas?', ajuda: 'Opcional. Por exemplo: guardar para a entrada da casa, viajar com a família, voltar a estudar. Ele aparece no seu plano.', obrig: false }),
+      F({ id: 'acompanhar', tipo: 'unica', rotulo: 'Quer receber, no começo de cada mês, um e-mail dizendo o que fazer naquele mês?', ajuda: 'Só enquanto o plano durar. Dá para parar quando quiser, com um clique.', ops: ['Sim, quero', 'Não, obrigado'] })
     ] },
     { id: 'revisao', etapa: 5, especial: 'revisao' },
     { id: 'fim', etapa: 6, especial: 'fim' }
@@ -610,8 +615,14 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
   }
 
   /* ---------- render ---------- */
+  function contar(e) {
+    if (TESTE) return;
+    try { var k = 'desaperto-ev-' + e; if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); } catch (er) {}
+    try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: e })); } catch (er) {}
+  }
   function render() {
     var t = TELAS[E.passo];
+    contar('etapa_' + t.id.toLowerCase().replace(/[^a-z0-9]/g, ''));
     if (E.enviado && t.especial !== 'fim') { E.passo = indice('fim'); t = TELAS[E.passo]; }
     cabecalho(t);
     $tela.onclick = null;
@@ -657,6 +668,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     $tela.innerHTML = '<section class="tela"><h1>Agora, vamos olhar juntos.</h1><div class="texto">' +
       '<p>Nas próximas telas, vamos te pedir os números da sua vida real: quanto entra, quanto sai e o que você deve. Pode ser desconfortável ver o valor total. Tudo bem sentir isso. Respira e continua: é a partir desse número que o caminho aparece.</p>' +
       '<p>Os detalhes fazem toda a diferença. Um valor esquecido pode mudar a ordem certa de pagar. Uma data de vencimento pode te fazer economizar todo mês. Quanto mais real e completa for a sua resposta, mais o seu plano vai ser feito para você, e não para qualquer pessoa.</p>' +
+      '<p>No fim, você vê na hora, de graça, o mês em que sai das dívidas.</p>' +
       '<p>Separe uns 15 minutos tranquilos. Deixe aberto o app do seu banco e o do Serasa. Se bater o cansaço no meio, respira e segue no seu tempo. Seu progresso fica salvo neste aparelho.</p></div>' +
       '<div class="campo" data-campo="consent"><label class="check"><input type="checkbox" id="q-consent"' + (r.consent ? ' checked' : '') + '><span>Concordo que minhas respostas sejam usadas apenas para montar o meu plano, com análise apoiada por inteligência artificial, e apagadas em até 90 dias. Entendo que o Desaperto é uma ferramenta educacional e não substitui consultoria profissional. Li os <a href="/termos" target="_blank" rel="noopener">termos de uso</a> e a <a href="/privacidade" target="_blank" rel="noopener">política de privacidade</a>.</span></label></div>' +
       botoes('Começar', '').replace('</div>', '<p class="nota">Não pedimos CPF, senha nem extrato. Só os números.</p></div>') + '</section>';
@@ -765,7 +777,8 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       sec('Gastos', 'gastos1', [['Total no mês', reais(totalGastos())], ['Maior gasto', (function () { var g = r.gastos || {}, m = GASTOS.slice().sort(function (a, b) { return (g[b[0]] || 0) - (g[a[0]] || 0); })[0]; return m[1] + ' · ' + reais(g[m[0]]); })()]]) +
       sec('Dívidas', 'dividas', [['Quantidade', String((r.dividas || []).length)], ['Soma aproximada', reais(totalDividas())], totalParceladas() ? ['Compras parceladas, sem juros', reais(totalParceladas())] : null, ['Atrasadas', String((r.dividas || []).filter(function (d) { return d.s_status === 'Atrasada'; }).length)]]) +
       sec('Para fechar', 'recursos', [['Dinheiro guardado', reais(r.guardado)], ['Empréstimo para pagar dívida', r.emprestPagar || '—']]) +
-      '</div>' + '<div class="acoes"><div id="erro-envio" class="erro-envio oculto" role="alert"></div><button type="button" class="btn btn-principal" id="btn-enviar">' + (E.envio ? 'Enviar a correção' : 'Enviar e receber meu plano') + '</button><p class="nota">Suas respostas são apagadas em até 90 dias.</p></div></section>';
+      sec('Depois das dívidas', 'depois', [['O que você quer fazer', r.objetivo || '—'], ['E-mail do mês', r.acompanhar || '—']]) +
+      '</div>' + '<div class="acoes"><div id="erro-envio" class="erro-envio oculto" role="alert"></div><button type="button" class="btn btn-principal" id="btn-enviar">' + (E.envio ? 'Enviar a correção' : 'Enviar e ver minha data') + '</button><p class="nota">Você vê na hora, de graça, o mês em que sai das dívidas. Suas respostas são apagadas em até 90 dias.</p></div></section>';
     $tela.innerHTML = h;
     $tela.querySelectorAll('[data-ir]').forEach(function (b) { b.addEventListener('click', function () { ui.daRevisao = true; ir(indice(b.getAttribute('data-ir'))); }); });
     document.getElementById('btn-enviar').addEventListener('click', enviar);
@@ -790,8 +803,10 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     pedido.then(function (resp) {
       return resp.json().catch(function () { return {}; }).then(function (j) {
         if (resp.ok && j.ok) {
-          E.envio = { id: j.id || E.envio.id, chave: corrigindo ? E.envio.chave : j.chave, protocolo: j.protocolo };
-          E.enviado = true; E.enviadoEm = new Date().toISOString(); salvar(); ir(indice('fim'));
+          E.envio = { id: j.id || E.envio.id, chave: corrigindo ? E.envio.chave : j.chave, protocolo: j.protocolo, pagar: j.pagar || (E.envio && E.envio.pagar) };
+          E.enviado = true; E.enviadoEm = new Date().toISOString(); salvar();
+          if (E.envio.pagar && !TESTE) { location.href = E.envio.pagar; return; }
+          ir(indice('fim'));
         } else if (corrigindo && resp.status === 404) {
           E.envio = null; salvar(); falhou('Não encontramos o envio anterior. Toque em enviar de novo para mandar como novo.');
         } else falhou(j.erro);
@@ -803,7 +818,8 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     var r = R();
     $tela.innerHTML = '<section class="tela final"><h1>Pronto, ' + esc(r.nome || 'tudo certo') + '.</h1><div class="texto">' +
       '<p>Você fez a parte que muita gente adia: olhar para os números.</p>' +
-      '<p>Seu plano de desaperto está sendo montado e chega no seu e-mail em poucos minutos. Se não aparecer na caixa de entrada, olhe também em Spam e em Promoções.</p><p>Se alguma resposta precisar de confirmação, a gente te escreve antes de enviar.</p>' +
+      '<p>As suas contas estão sendo feitas. Em cerca de 1 minuto, você vê o mês em que sai das dívidas.</p>' +
+      (E.envio && E.envio.pagar ? '<p><a class="btn btn-principal" href="' + esc(E.envio.pagar) + '">Ver minha data</a></p>' : '<p>O resultado também chega no seu e-mail. Se não aparecer na caixa de entrada, olhe em Spam e em Promoções.</p>') +
       (E.envio && E.envio.protocolo ? '<p>Seu protocolo é <span class="protocolo">' + esc(E.envio.protocolo) + '</span>. Se precisar falar com a gente, escreva para contato@desaperto.com com esse código.</p>' : '') + '</div>' +
       '<div class="cvv">Se o peso estiver grande demais, você não precisa carregar isso sozinho. <strong>CVV: ligue 188</strong>, 24 horas, gratuito.</div>' +
       '<div class="acoes"><button type="button" class="btn btn-sec" id="btn-corrigir">Corrigir minhas respostas</button></div>' +
@@ -833,7 +849,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
         { tipo: 'Empréstimo pessoal no banco', credor: 'Banco A', s_status: 'Em dia', e_parcela: 480, e_restam: 20, e_reneg: 'Não', e_taxa: '2,9', e_quitar: null, e_quitar_naoSei: true, e_venc: 15, e_debito: 'Sim', s_serasa: 'Não' },
         { tipo: 'Empréstimo em app ou financeira', credor: 'App de crédito', s_status: 'Atrasada', a_cobrado: 1800, s_tempo: '3 a 12 meses', s_quem: 'Uma empresa de cobrança', s_proposta: 'Não', s_serasa: 'Sim', s_justica: 'Não' }
       ],
-      guardado: 0, emprestPagar: 'Não'
+      guardado: 0, emprestPagar: 'Não', objetivo: 'Viajar com a família', acompanhar: 'Sim, quero'
     };
     E.passo = indice('revisao'); salvar(); render(); window.scrollTo(0, 0);
   }
@@ -844,6 +860,14 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     if (b) { e.preventDefault(); b.click(); }
   });
 
+  contar('v_comecar');
+  (function () {  // de onde veio, só se não passou pela página inicial nesta visita
+    try { if (sessionStorage.getItem('desaperto-ev-v_inicio')) return; } catch (e) {}
+    var u = new URLSearchParams(location.search), o = (u.get('utm_source') || '').toLowerCase(), r = document.referrer;
+    var mapa = ['instagram', 'tiktok', 'whatsapp', 'google', 'facebook', 'youtube', 'email'];
+    var achou = mapa.filter(function (x) { return o.indexOf(x) >= 0 || (r && r.indexOf(x === 'whatsapp' ? 'whatsapp' : x) >= 0) || (x === 'instagram' && o === 'ig') || (x === 'facebook' && /fb|l\.facebook/.test(o + r)); })[0];
+    contar('origem_' + (achou || (o || (r && r.indexOf(location.host) < 0) ? 'outro' : 'direto')));
+  })();
   render();
 })();
 </script>

@@ -2,7 +2,8 @@
 // PUT  /api/admin/plano?id=...  corpo: o PDF          -> guarda o arquivo (apagado sozinho em 90 dias)
 // POST /api/admin/plano?id=...  { resumo } ou { erro } -> marca o plano como pronto ou com erro
 // GET  /api/admin/plano?id=...                         -> devolve o PDF (para ver na área interna)
-import { json, erro, agora, autorizado, negado, enviarPlano, enviarEmail, DIAS_GUARDADOS } from '../../../lib/api.js';
+import { json, erro, agora, autorizado, negado, enviarPlano, enviarEmail, DIAS_GUARDADOS, garantirTabelas, cobrancaAtiva, liberarPlano,
+  enviarDataGratis, evento } from '../../../lib/api.js';
 
 const PDF_MAXIMO = 8_000_000;
 
@@ -33,6 +34,22 @@ export async function onRequest({ request, env }) {
     if (!corpo || typeof corpo.resumo !== 'object') return erro('Falta o resumo.');
     await env.DB.prepare("UPDATE respostas SET status = 'plano_pronto', plano_resumo = ?, plano_gerado_em = ?, plano_erro = NULL WHERE id = ?")
       .bind(JSON.stringify(corpo.resumo), agora(), id).run();
+    await garantirTabelas(env.DB);
+    if (!linha.teste) await evento(env.DB, 'plano_pronto');
+    // Com cobrança: se já pagou, libera o plano; se não, manda a data grátis com o link para pagar.
+    if (cobrancaAtiva(env)) {
+      const l = await env.DB.prepare('SELECT id, nome, email, protocolo, plano_resumo, pago_em, aviso_data_em, teste FROM respostas WHERE id = ?').bind(id).first();
+      if (l.pago_em) return json({ ok: true, liberado: await liberarPlano(env, id, url.origin) });
+      if (corpo.resumo.dados_graves) {
+        await enviarEmail(env, { para: env.EMAIL_AVISO, assunto: `Conferir respostas antes da data: ${(l.nome || '').split(' ')[0]} · ${l.protocolo}`,
+          texto: `As respostas têm dados que não batem. A pessoa vê "estamos conferindo" e espera um e-mail seu em até 24 horas:\n\n${(corpo.resumo.alertas || []).map((a) => '- ' + a.texto).join('\n')}\n\nVeja em ${url.origin}/admin` });
+        return json({ ok: true, revisao: true });
+      }
+      if (!l.aviso_data_em && !l.teste) {
+        if (await enviarDataGratis(env, l, url.origin)) await env.DB.prepare('UPDATE respostas SET aviso_data_em = ? WHERE id = ?').bind(agora(), id).run();
+      }
+      return json({ ok: true, aguardando_pagamento: true });
+    }
     // Envio direto, a menos que ENVIO_AUTOMATICO = nao. Plano que pede revisão fica parado e avisa o Flávio.
     if (env.ENVIO_AUTOMATICO !== 'nao' && !corpo.resumo.precisa_revisao) {
       const r = await enviarPlano(env, id, url.origin);
