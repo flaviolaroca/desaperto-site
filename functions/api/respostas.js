@@ -57,7 +57,8 @@ export async function onRequestPost({ request, env }) {
   const pagar = `/pagar?id=${encodeURIComponent(id)}&a=${await assinaturaPagar(env, id)}`;
   if (rapido) {
     // Versão rápida: não roda o motor. A data aproximada já veio calculada; o plano exato vem depois das respostas completas.
-    await env.DB.prepare("UPDATE respostas SET status = 'rapido', estimativa = ? WHERE id = ?").bind(estimativa, id).run();
+    const org0 = typeof corpo.origem === 'string' ? corpo.origem.toLowerCase().replace(/[^a-z0-9:]/g, '').slice(0, 30) : '';
+    await env.DB.prepare("UPDATE respostas SET status = 'rapido', estimativa = ?, origem = ? WHERE id = ?").bind(estimativa, org0 || null, id).run();
     const primeiro = r.nome.trim().split(/\s+/)[0];
     if (convite) {
       // Teste grátis: fica como pago com valor zero e pula direto para completar as respostas.

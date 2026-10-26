@@ -14,7 +14,8 @@ export async function onRequestGet({ request, env }) {
   const { results } = await env.DB.prepare('SELECT evento, SUM(n) AS n FROM eventos WHERE dia >= ? GROUP BY evento').bind(desde).all();
   const total = Object.fromEntries(results.map((x) => [x.evento, x.n]));
   const v = await env.DB.prepare('SELECT COUNT(*) AS n, SUM(pago_valor) AS soma FROM respostas WHERE pago_em >= ? AND devolvido_em IS NULL AND pago_valor > 0 AND teste = 0').bind(desdeHora).first();
-  return json({ ok: true, dias, desde, zerado_em: z ? z.valor : null, total, vendas: v ? v.n : 0, receita: v && v.soma ? v.soma : 0 });
+  const po = (await env.DB.prepare("SELECT COALESCE(origem, 'sem origem') AS origem, COUNT(*) AS datas, SUM(CASE WHEN pago_em IS NOT NULL AND pago_valor > 0 AND devolvido_em IS NULL THEN 1 ELSE 0 END) AS vendas FROM respostas WHERE criado_em >= ? AND teste = 0 AND (pag_status IS NULL OR pag_status != 'convite') GROUP BY 1 ORDER BY 2 DESC LIMIT 20").bind(desdeHora).all()).results;
+  return json({ ok: true, dias, desde, zerado_em: z ? z.valor : null, total, vendas: v ? v.n : 0, receita: v && v.soma ? v.soma : 0, por_origem: po });
 }
 
 export async function onRequestPost({ request, env }) {

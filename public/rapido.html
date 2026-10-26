@@ -386,7 +386,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     var g = r.gastosR || {};
     var respostas = { rapido: true, consent: true, nome: r.nome, email: r.email, renda: r.renda, guardado: r.guardado || 0, objetivo: r.objetivo || '',
       gastosR: g, dividasR: r.dividas, dividas: r.dividas.map(function (d) { return { tipo: (TIPOS.filter(function (x) { return x[1] === d.tipo; })[0] || ['Outra'])[0] }; }) };
-    fetch('/api/respostas', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ respostas: respostas, rapido: true, estimativa: est, teste: TESTE, convite: E.convite || undefined }) })
+    fetch('/api/respostas', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ respostas: respostas, rapido: true, estimativa: est, teste: TESTE, convite: E.convite || undefined, origem: (function () { try { return localStorage.getItem('desaperto-origem') || ''; } catch (e) { return ''; } })() }) })
       .then(function (resp) { return resp.json().then(function (j) { if (!resp.ok || !j.ok) throw new Error(j.erro || 'Não conseguimos enviar agora.'); return j; }); })
       .then(function (j) { E.envio = { id: j.id, pagar: j.pagar }; salvar(); location.href = j.pagar; })
       .catch(function (e) {
@@ -403,6 +403,11 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     var mapa = ['instagram', 'tiktok', 'whatsapp', 'google', 'facebook', 'youtube', 'email'];
     var achou = mapa.filter(function (x) { return o.indexOf(x) >= 0 || (rf && rf.indexOf(x) >= 0) || (x === 'instagram' && o === 'ig'); })[0];
     contar('origem_' + (achou || (o || (rf && rf.indexOf(location.host) < 0) ? 'outro' : 'direto')));
+
+    // anúncio pago: ?utm_medium=anuncio&utm_content=a1 -> conta o anúncio e guarda para ligar à venda
+    var med = (u.get('utm_medium') || '').toLowerCase(), cont = (u.get('utm_content') || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
+    if (/anuncio|paid|cpc|ads/.test(med)) { contar('origem_anuncio'); if (cont) contar('anuncio_' + cont); try { localStorage.setItem('desaperto-origem', 'anuncio' + (cont ? ':' + cont : '')); } catch (e) {} }
+    else if (o) { try { if (!localStorage.getItem('desaperto-origem')) localStorage.setItem('desaperto-origem', o.replace(/[^a-z0-9]/g, '').slice(0, 20)); } catch (e) {} }
   })();
   render();
 })();

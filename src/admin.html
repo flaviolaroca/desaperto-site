@@ -232,6 +232,7 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
       var conv = t.v_inicio ? (100 * (j.vendas || 0) / t.v_inicio).toFixed(1).replace('.', ',') + '%' : '-';
       $('funil').innerHTML = '<div class="resumo-f"><span>Últimos ' + j.dias + ' dias</span>' + (t.convite_usou ? '<span>Testes grátis <b>' + t.convite_usou + '</b></span>' : '') + '<span>Vendas <b>' + (j.vendas || 0) + '</b></span><span>Receita <b>R$ ' + Number(j.receita || 0).toFixed(2).replace('.', ',') + '</b></span><span>Visita → venda <b>' + conv + '</b></span>' + (t.devolvido ? '<span>Devoluções <b>' + t.devolvido + '</b></span>' : '') + '</div>' + linhas +
         (origens ? '<div class="resumo-f"><span>De onde vieram:</span><span>' + origens + '</span></div>' : '') +
+        ((j.por_origem || []).length ? '<div class="resumo-f"><span>Datas e vendas por origem:</span><span>' + j.por_origem.map(function (x) { return esc(x.origem.replace('anuncio:', 'anúncio ')) + ' <b>' + x.datas + '</b> datas · <b>' + x.vendas + '</b> vendas'; }).join(' &nbsp;|&nbsp; ') + '</span></div>' : '') +
         '<p class="msg-linha">A porcentagem é em relação ao passo de cima. Não conta os envios em modo teste nem os links de teste grátis.' + (j.zerado_em ? ' Contando desde ' + new Date(j.zerado_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + '.' : '') + (cobrar ? '' : ' A cobrança está desligada: falta o segredo MP_ACCESS_TOKEN na Cloudflare.') + '</p>';
     });
   }

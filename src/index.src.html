@@ -692,6 +692,11 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
     var mapa = ['instagram', 'tiktok', 'whatsapp', 'google', 'facebook', 'youtube', 'email'];
     var achou = mapa.filter(function (x) { return o.indexOf(x) >= 0 || (r && r.indexOf(x) >= 0) || (x === 'instagram' && o === 'ig') || (x === 'facebook' && /fb|l\.facebook/.test(o + r)); })[0];
     contar('origem_' + (achou || (o || (r && r.indexOf(location.host) < 0) ? 'outro' : 'direto')));
+
+    // anúncio pago: ?utm_medium=anuncio&utm_content=a1 -> conta o anúncio e guarda para ligar à venda
+    var med = (u.get('utm_medium') || '').toLowerCase(), cont = (u.get('utm_content') || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
+    if (/anuncio|paid|cpc|ads/.test(med)) { contar('origem_anuncio'); if (cont) contar('anuncio_' + cont); try { localStorage.setItem('desaperto-origem', 'anuncio' + (cont ? ':' + cont : '')); } catch (e) {} }
+    else if (o) { try { if (!localStorage.getItem('desaperto-origem')) localStorage.setItem('desaperto-origem', o.replace(/[^a-z0-9]/g, '').slice(0, 20)); } catch (e) {} }
   })();
 
   var li = document.getElementById('link-indicar'); if (li) li.addEventListener('click', function () { contar('indicou'); });
