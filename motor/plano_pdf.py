@@ -64,6 +64,11 @@ function paginar() {
     depois.forEach((y) => nova.appendChild(y));
     pag.after(nova);
     while (sobra(pag) && lista.children.length > 1) nl.prepend(lista.lastElementChild);
+    // o que vem depois da lista (nota, totais) não fica sozinho numa página: leva junto o último item (ou o último par, na grade)
+    if (!nl.children.length && depois.length && lista.children.length > 1) {
+      const k = lista.classList.contains('dcards') ? Math.min(2, lista.children.length - 1) : 1;
+      for (let j = 0; j < k; j++) nl.prepend(lista.lastElementChild);
+    }
     if (lista.tagName === 'OL') nl.start = (lista.start || 1) + lista.children.length;
     if (!nl.children.length) nl.remove();
   }
@@ -651,10 +656,11 @@ def montar(r, textos, inicio=(2026, 11), link_avaliar=None):
         pags.append(f'''
 <section class="pag">
   <p class="secao">O caminho, mês a mês{' (continua)' if bi else ''}</p>
-  {('<h2>O que pagar, quanto e onde.</h2>' + grafico_html + '<p class="nota">Barras: quanto você deve no fim de cada mês. Abaixo, só o que você paga <b>a mais</b>; as parcelas normais continuam todo mês.</p>') if bi == 0 else ''}
+  {('<h2>O que pagar, quanto e onde.</h2>' + ((grafico_html + '<p class="nota">Barras: quanto você deve no fim de cada mês. Abaixo, só o que você paga <b>a mais</b>; as parcelas normais continuam todo mês.</p>') if len(meses) >= 3 else '<p class="nota">Abaixo, só o que você paga <b>a mais</b>; as parcelas normais continuam todo mês.</p>')) if bi == 0 else ''}
   <ol class="mes" data-flui>{''.join(bloco)}</ol>
-  {'<div class="caixa"><b>Como adiantar:</b> no app do banco, use "antecipar parcelas" e escolha as últimas do contrato. O desconto nos juros é maior e a dívida acaba antes. Se o desconto mostrado for pequeno, não adiante: passe o dinheiro para a próxima da lista.</div>' if bi == len(mblocos) - 1 else ''}
 </section>''')
+    # "Como adiantar" vai para as regras (antes ficava sozinho numa página no fim do mês a mês)
+    tem_antecipar = any('antecipe' in h for h, _ in linhas_mes)
 
     # 7. Negociação
     if app:
@@ -696,7 +702,7 @@ def montar(r, textos, inicio=(2026, 11), link_avaliar=None):
 <section class="pag">
   <p class="secao">Se algo sair do previsto</p>
   <h2>Regras simples para não sair do caminho.</h2>
-  <ul class="regras" data-flui>{''.join(f'<li><h3>{a}</h3><p>{b}</p></li>' for a, b in T['regras'])}
+  <ul class="regras" data-flui>{''.join(f'<li><h3>{a}</h3><p>{b}</p></li>' for a, b in ([('Na hora de adiantar parcelas', 'No app do banco, use "antecipar parcelas" e escolha as últimas do contrato. O desconto nos juros é maior e a dívida acaba antes. Se o desconto mostrado for pequeno, não adiante: passe o dinheiro para a próxima da lista.')] if tem_antecipar else []) + list(T['regras']))}
   </ul>
 </section>''')
 
@@ -726,8 +732,8 @@ def montar(r, textos, inicio=(2026, 11), link_avaliar=None):
     for bi, bloco in enumerate(cblocos[:-1]):
         pags.append(f'''
 <section class="pag">
-  <p class="secao">Suas dívidas</p>
-  <h2>Marque cada uma quando quitar.</h2>
+  <p class="secao">Suas dívidas{' (continua)' if bi else ''}</p>
+  {'' if bi else '<h2>Marque cada uma quando quitar.</h2>'}
   <div class="dcards" data-flui>{''.join(bloco)}</div>
 </section>''')
     pags.append(f'''
