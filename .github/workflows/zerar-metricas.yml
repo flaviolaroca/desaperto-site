@@ -1,0 +1,23 @@
+# Zera a contagem de acessos do painel (o mesmo que o botão "Zerar métricas").
+# Roda quando o arquivo .github/zerar-metricas.txt muda, ou à mão: Actions → Zerar métricas → Run workflow.
+name: Zerar métricas
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/zerar-metricas.txt']
+  workflow_dispatch:
+
+jobs:
+  zerar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Pedir ao site para zerar
+        env:
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+        run: |
+          test -n "$ADMIN_TOKEN" || { echo "Falta o segredo ADMIN_TOKEN no GitHub"; exit 1; }
+          code=$(curl -sS -o saida.json -w "%{http_code}" -X POST -H "authorization: Bearer $ADMIN_TOKEN" -H "content-type: application/json" -d '{"zerar":true}' https://desaperto.com/api/admin/funil)
+          cat saida.json; echo
+          test "$code" = "200" || { echo "::error::O site respondeu $code."; exit 1; }
