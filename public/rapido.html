@@ -176,9 +176,9 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
 <script>
 (function () {
   'use strict';
-  // Versão rápida: 3 telas de cabeça, sem abrir app, e a data APROXIMADA na tela, de graça. O e-mail só é pedido depois de ver a data.
+  // Versão rápida: 2 telas de cabeça (as dívidas e o mês), e a data APROXIMADA na tela, de graça. O e-mail só é pedido depois de ver a data.
   // O plano exato vem depois do pagamento, com o questionário completo (/comecar?continuar=...).
-  var CHAVE = 'desaperto.rapido.v2';
+  var CHAVE = 'desaperto.rapido.v3';
   var TESTE = location.hash === '#teste';
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function num(v) { if (typeof v === 'number') return v; var i = parseInt(String(v == null ? '' : v).split(',')[0].replace(/\D/g, ''), 10); return isNaN(i) ? null : i; }
@@ -211,14 +211,14 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     if (c && c !== E.convite) { E.convite = c; salvar(); }
   })();
   var $t = document.getElementById('tela');
-  var TELAS = ['renda', 'dividas', 'guardado', 'data', 'enviando'];
-  var NOMES = ['O que entra e o que sai', 'O que você deve', 'Para fechar', 'Sua data'];
+  var TELAS = ['dividas', 'mes', 'data', 'enviando'];
+  var NOMES = ['O que você deve', 'Seu mês', 'Sua data'];
 
   function cab() {
-    var i = Math.min(E.passo, 3);
-    document.getElementById('etapa-nome').textContent = 'Passo ' + (i + 1) + ' de 4 · ' + NOMES[i];
-    document.getElementById('barra-i').style.width = Math.max(6, Math.round((E.passo / 4) * 100)) + '%';
-    document.getElementById('btn-voltar').style.visibility = E.passo > 0 && E.passo < 4 ? 'visible' : 'hidden';
+    var i = Math.min(E.passo, 2);
+    document.getElementById('etapa-nome').textContent = 'Passo ' + (i + 1) + ' de 3 · ' + NOMES[i];
+    document.getElementById('barra-i').style.width = Math.max(8, Math.round(((E.passo + 1) / 3) * 100)) + '%';
+    document.getElementById('btn-voltar').style.visibility = E.passo > 0 && E.passo < 3 ? 'visible' : 'hidden';
   }
   function ir(p) { E.passo = p; salvar(); render(); window.scrollTo(0, 0); }
   document.getElementById('btn-voltar').addEventListener('click', function () { if (E.passo > 0) ir(E.passo - 1); });
@@ -242,35 +242,13 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     cab();
     var t = TELAS[E.passo], r = E.r;
     contar('etapa_r' + t);
-    if (t === 'renda') {
-      var g = r.gastosR || {};
-      $t.innerHTML = '<section class="tela">' + (E.convite ? '<p class="convite">Link de teste: você recebe a sua data e o plano completo sem pagar nada.</p>' : '') + '<p class="acolhe">Leva uns 5 minutos. Pode responder de cabeça.</p><h1>O que entra e o que sai</h1><p class="lead">Valores de um mês normal. Um chute bom já serve. Você vê a sua data antes de deixar qualquer contato.</p><div class="campos">' +
-        campoDinheiro('renda', 'Quanto cai na sua conta por mês?', 'O salário que entra de fato, já sem os descontos.', r.renda) +
-        '<p class="bloco-titulo">Gastos do mês, sem contar as dívidas</p>' +
-        campoDinheiro('moradia', 'Aluguel ou condomínio', 'Se não paga, coloque 0.', g.moradia) +
-        campoDinheiro('casa', 'Mercado e contas da casa', 'Luz, água, gás, internet, celular e mercado.', g.casa) +
-        campoDinheiro('transporte', 'Transporte', 'Ônibus, combustível, aplicativo.', g.transporte) +
-        campoDinheiro('resto', 'Todo o resto', 'Farmácia, escola, lanches, roupas, assinaturas, ajuda à família.', g.resto) +
-        '</div><div class="acoes"><button type="button" class="btn btn-principal" id="btn-seguir">Continuar</button></div></section>';
-      ligarDinheiro();
-      document.getElementById('btn-seguir').addEventListener('click', function () {
-        limparErros();
-        var v = function (id) { return num(document.getElementById('q-' + id).value); };
-        r.renda = v('renda'); r.gastosR = { moradia: v('moradia'), casa: v('casa'), transporte: v('transporte'), resto: v('resto') }; salvar();
-        var ok = true;
-        if (!r.renda) { erro('renda', 'Coloque quanto entra por mês.'); ok = false; }
-        ['moradia', 'casa', 'transporte', 'resto'].forEach(function (k) { if (r.gastosR[k] == null) { erro(k, 'Coloque um valor. Se não tiver, coloque 0.'); ok = false; } });
-        if (ok) ir(1);
-      });
-      return;
-    }
     if (t === 'dividas') {
       var lista = r.dividas.map(function (d, i) {
         var nome = (TIPOS.filter(function (x) { return x[1] === d.tipo; })[0] || ['Dívida'])[0];
         return '<div class="cartao"><div class="cartao-topo"><div><h2>' + esc(nome) + '</h2><p class="quem">' + (d.atrasada ? '<span class="chip atraso">Atrasada</span> ' : '') + (d.parcela ? 'parcela de ' + reais(d.parcela) : 'sem parcela fixa') + '</p></div><span class="valor">' + reais(d.valor) + '</span></div>' +
           '<div class="cartao-acoes"><button type="button" class="link" data-tirar="' + i + '">Tirar</button></div></div>';
       }).join('');
-      $t.innerHTML = '<section class="tela"><h1>O que você deve</h1><p class="lead">Coloque cada dívida com o valor aproximado. Não precisa abrir o app agora.</p>' +
+      $t.innerHTML = '<section class="tela">' + (E.convite ? '<p class="convite">Link de teste: você recebe a sua data e o plano completo sem pagar nada.</p>' : '') + '<p class="acolhe">Leva uns 3 minutos. Pode responder de cabeça.</p><h1>O que você deve</h1><p class="lead">Coloque cada dívida com o valor aproximado. Não precisa abrir o app. Você vê a sua data antes de deixar qualquer contato.</p>' +
         '<div class="cartoes">' + (lista || '<div class="vazio">Nenhuma dívida ainda. Adicione a primeira abaixo.</div>') + '</div>' +
         '<div class="bloco" id="nova"><p class="bloco-titulo">Adicionar dívida</p>' +
         '<div class="campo" data-campo="tipo"><label for="q-tipo">Tipo</label><select id="q-tipo"><option value="">Escolha</option>' + TIPOS.map(function (x) { return '<option value="' + x[1] + '">' + esc(x[0]) + '</option>'; }).join('') + '</select></div>' +
@@ -295,22 +273,26 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       $t.querySelectorAll('[data-tirar]').forEach(function (b) { b.addEventListener('click', function () { r.dividas.splice(Number(b.getAttribute('data-tirar')), 1); salvar(); render(); }); });
       document.getElementById('btn-seguir').addEventListener('click', function () {
         if (!r.dividas.length) { limparErros(); erro('tipo', 'Adicione pelo menos uma dívida.'); return; }
-        ir(2);
+        ir(1);
       });
       return;
     }
-    if (t === 'guardado') {
-      $t.innerHTML = '<section class="tela"><p class="acolhe">Última pergunta.</p><h1>Para fechar</h1><div class="campos">' +
-        campoDinheiro('guardado', 'Você tem algum dinheiro guardado hoje? Quanto, mais ou menos?', 'Se não tem, coloque 0.', r.guardado) +
-        '<div class="campo" data-campo="objetivo"><label for="q-objetivo">E quando acabar, o que você quer fazer com esse dinheiro?</label><p class="ajuda">Opcional. Por exemplo: a entrada da casa, uma viagem com a família, voltar a estudar.</p><input type="text" id="q-objetivo" maxlength="120" value="' + esc(r.objetivo || '') + '"></div>' + '</div>' +
-        '<div class="acoes"><button type="button" class="btn btn-principal" id="btn-seguir">Ver a minha data</button><p class="nota">A data é calculada com valores aproximados e é grátis.</p></div></section>';
+    if (t === 'mes') {
+      var g = r.gastosR || {};
+      $t.innerHTML = '<section class="tela"><p class="acolhe">Falta pouco.</p><h1>O seu mês</h1><p class="lead">Valores de um mês normal. Um chute bom já serve.</p><div class="campos">' +
+        campoDinheiro('renda', 'Quanto cai na sua conta por mês?', 'O salário que entra de fato, já sem os descontos.', r.renda) +
+        campoDinheiro('gastos', 'Quanto vai para as contas do mês, sem contar as dívidas?', 'Aluguel, mercado, luz, água, transporte, farmácia. Some de cabeça.', g.total) +
+        campoDinheiro('guardado', 'Tem algum dinheiro guardado?', 'Se não tem, deixe 0.', r.guardado) +
+        '</div><div class="acoes"><button type="button" class="btn btn-principal" id="btn-seguir">Ver a minha data</button><p class="nota">Grátis. Você vê a data antes de deixar qualquer contato.</p></div></section>';
       ligarDinheiro();
       document.getElementById('btn-seguir').addEventListener('click', function () {
         limparErros();
-        r.guardado = num(document.getElementById('q-guardado').value);
-        r.objetivo = document.getElementById('q-objetivo').value.trim().slice(0, 120);
-        if (r.guardado == null) { erro('guardado', 'Coloque um valor. Se não tiver, coloque 0.'); return; }
-        salvar(); ir(3);
+        var v = function (id) { return num(document.getElementById('q-' + id).value); };
+        r.renda = v('renda'); r.gastosR = { total: v('gastos') }; r.guardado = v('guardado') || 0; salvar();
+        var ok = true;
+        if (!r.renda) { erro('renda', 'Coloque quanto entra por mês.'); ok = false; }
+        if (r.gastosR.total == null) { erro('gastos', 'Coloque um valor, mesmo que aproximado.'); ok = false; }
+        if (ok) ir(2);
       });
       return;
     }
@@ -360,7 +342,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
   // Quando uma dívida acaba, a parcela dela passa a ajudar nas outras. Dívida atrasada: acordo estimado em 60% do valor.
   function simular(r, aperto) {
     var hoje = new Date(), ano = hoje.getFullYear(), mes = hoje.getMonth() + 2; if (mes > 12) { mes = 1; ano++; }
-    var g = r.gastosR || {}, gastos = (g.moradia || 0) + (g.casa || 0) + (g.transporte || 0) + (g.resto || 0);
+    var g = r.gastosR || {}, gastos = g.total != null ? g.total : (g.moradia || 0) + (g.casa || 0) + (g.transporte || 0) + (g.resto || 0);
     // Como o plano faz: fatura do cartão em aberto e cheque especial viram parcelamento em 12 vezes (juro bem menor).
     var pmt = function (S, i, n) { return i ? S * i / (1 - Math.pow(1 + i, -n)) : S / n; };
     var ds = r.dividas.map(function (d) {
@@ -416,7 +398,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       });
   }
 
-  if (E.passo >= 4) E.passo = 3;
+  if (E.passo > 2) E.passo = 2;
   contar('v_rapido');
   (function () {  // de onde veio, só se não passou pela página inicial nesta visita
     try { if (sessionStorage.getItem('desaperto-ev-v_inicio')) return; } catch (e) {}

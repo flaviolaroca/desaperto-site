@@ -267,8 +267,8 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
 
   // ---------- funil ----------
   var diasFunil = 30;
-  var PASSOS = [['v_inicio', 'Visitas na página inicial'], ['tempo_10s', 'Ficaram 10 segundos ou mais'], ['v_rapido', 'Abriram a versão rápida'], ['etapa_rdividas', 'Passaram de renda e gastos'],
-    ['etapa_rguardado', 'Passaram das dívidas'], ['etapa_rdata', 'Viram a data na tela'], ['rapido_enviou', 'Deixaram o e-mail'], ['clicou_pix', 'Clicaram em pagar'], ['pix_gerado', 'Pix gerado'], ['pagou', 'Pagaram'],
+  var PASSOS = [['v_inicio', 'Visitas na página inicial'], ['tempo_10s', 'Ficaram 10 segundos ou mais'], ['v_rapido', 'Abriram a versão rápida'], ['etapa_rmes', 'Passaram das dívidas'],
+    ['etapa_rdata', 'Viram a data na tela'], ['rapido_enviou', 'Deixaram o e-mail'], ['clicou_pix', 'Clicaram em pagar'], ['pix_gerado', 'Pix gerado'], ['pagou', 'Pagaram'],
     ['completou', 'Completaram as respostas'], ['plano_pronto', 'Plano gerado']];
   function carregarFunil() {
     return fetch('/api/admin/funil?dias=' + diasFunil, { headers: { authorization: 'Bearer ' + token } }).then(function (r) { return r.json(); }).then(function (j) {
