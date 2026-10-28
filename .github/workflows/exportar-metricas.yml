@@ -1,0 +1,37 @@
+# Copia para o repositório os números do funil (só contagens somadas, sem dado de pessoa).
+# Roda quando .github/pedir-metricas.txt muda, ou à mão: Actions → Exportar métricas → Run workflow.
+name: Exportar métricas
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/pedir-metricas.txt']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  exportar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Buscar o funil no site
+        env:
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+        run: |
+          test -n "$ADMIN_TOKEN" || { echo "Falta o segredo ADMIN_TOKEN no GitHub"; exit 1; }
+          mkdir -p metricas
+          for d in 1 2 7 30; do
+            code=$(curl -sS -o metricas/funil-$d.json -w "%{http_code}" -H "authorization: Bearer $ADMIN_TOKEN" "https://desaperto.com/api/admin/funil?dias=$d")
+            test "$code" = "200" || { echo "::error::O site respondeu $code."; cat metricas/funil-$d.json; exit 1; }
+          done
+          date -u +%Y-%m-%dT%H:%M:%SZ > metricas/exportado-em.txt
+      - name: Guardar no repositório
+        run: |
+          git config user.name "desaperto-metricas"
+          git config user.email "metricas@desaperto.com"
+          git add metricas
+          git commit -m "Métricas do funil $(cat metricas/exportado-em.txt)" || exit 0
+          git push
