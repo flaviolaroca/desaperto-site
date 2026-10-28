@@ -133,6 +133,10 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
 .cartao .chip.atraso { margin-right: 4px; }
 #nova select { min-height: 52px; }
 .convite { background: #DCEBE1; color: #16704A; border-radius: 14px; padding: 12px 16px; font-weight: 700; margin: 0 0 14px; }
+.verde { color: var(--verde); }
+.resultado { display: flex; flex-direction: column; gap: 10px; font-size: 18px; line-height: 1.5; }
+.resultado p { margin: 0; }
+#guardar { margin-top: 8px; }
 </style>
 <div class="app">
   <header class="topo">
@@ -149,9 +153,9 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
 <script>
 (function () {
   'use strict';
-  // Versão rápida: 4 telas, de cabeça, sem abrir app. Dá uma data APROXIMADA, de graça.
+  // Versão rápida: 3 telas de cabeça, sem abrir app, e a data APROXIMADA na tela, de graça. O e-mail só é pedido depois de ver a data.
   // O plano exato vem depois do pagamento, com o questionário completo (/comecar?continuar=...).
-  var CHAVE = 'desaperto.rapido.v1';
+  var CHAVE = 'desaperto.rapido.v2';
   var TESTE = location.hash === '#teste';
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function num(v) { if (typeof v === 'number') return v; var i = parseInt(String(v == null ? '' : v).split(',')[0].replace(/\D/g, ''), 10); return isNaN(i) ? null : i; }
@@ -184,8 +188,8 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     if (c && c !== E.convite) { E.convite = c; salvar(); }
   })();
   var $t = document.getElementById('tela');
-  var TELAS = ['contato', 'renda', 'dividas', 'guardado', 'enviando'];
-  var NOMES = ['Você', 'O que entra e o que sai', 'O que você deve', 'Para fechar'];
+  var TELAS = ['renda', 'dividas', 'guardado', 'data', 'enviando'];
+  var NOMES = ['O que entra e o que sai', 'O que você deve', 'Para fechar', 'Sua data'];
 
   function cab() {
     var i = Math.min(E.passo, 3);
@@ -215,27 +219,9 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     cab();
     var t = TELAS[E.passo], r = E.r;
     contar('etapa_r' + t);
-    if (t === 'contato') {
-      $t.innerHTML = '<section class="tela">' + (E.convite ? '<p class="convite">Link de teste: você recebe a sua data e o plano completo sem pagar nada.</p>' : '') + '<p class="acolhe">Leva uns 5 minutos. Pode responder de cabeça.</p><h1>Vamos descobrir a sua data.</h1>' +
-        '<p class="lead">Com valores aproximados, a gente calcula o mês em que você sai das dívidas. É grátis.</p><div class="campos">' +
-        '<div class="campo" data-campo="nome"><label for="q-nome">Seu primeiro nome</label><input type="text" id="q-nome" autocomplete="given-name" value="' + esc(r.nome || '') + '"></div>' +
-        '<div class="campo" data-campo="email"><label for="q-email">Seu e-mail</label><p class="ajuda">Para mandar a sua data e, se quiser, o plano.</p><input type="email" id="q-email" autocomplete="email" value="' + esc(r.email || '') + '"></div>' +
-        '<div class="campo" data-campo="consent"><label class="check"><input type="checkbox" id="q-consent"' + (r.consent ? ' checked' : '') + '><span>Concordo que minhas respostas sejam usadas só para calcular a minha data e montar o meu plano, e apagadas em até 90 dias. Li os <a href="/termos" target="_blank" rel="noopener">termos de uso</a> e a <a href="/privacidade" target="_blank" rel="noopener">política de privacidade</a>.</span></label></div>' +
-        '</div><div class="acoes"><button type="button" class="btn btn-principal" id="btn-seguir">Começar</button><p class="nota">Não pedimos CPF, senha nem extrato.</p></div></section>';
-      document.getElementById('btn-seguir').addEventListener('click', function () {
-        limparErros();
-        r.nome = document.getElementById('q-nome').value.trim(); r.email = document.getElementById('q-email').value.trim(); r.consent = document.getElementById('q-consent').checked; salvar();
-        var ok = true;
-        if (!r.nome) { erro('nome', 'Preencha o seu nome.'); ok = false; }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(r.email)) { erro('email', 'Confira o e-mail. Ele precisa ter o formato nome@exemplo.com.'); ok = false; }
-        if (!r.consent) { erro('consent', 'Para calcular, precisamos que você marque que concorda.'); ok = false; }
-        if (ok) ir(1);
-      });
-      return;
-    }
     if (t === 'renda') {
       var g = r.gastosR || {};
-      $t.innerHTML = '<section class="tela"><h1>O que entra e o que sai</h1><p class="lead">Valores de um mês normal. Um chute bom já serve.</p><div class="campos">' +
+      $t.innerHTML = '<section class="tela">' + (E.convite ? '<p class="convite">Link de teste: você recebe a sua data e o plano completo sem pagar nada.</p>' : '') + '<p class="acolhe">Leva uns 5 minutos. Pode responder de cabeça.</p><h1>O que entra e o que sai</h1><p class="lead">Valores de um mês normal. Um chute bom já serve. Você vê a sua data antes de deixar qualquer contato.</p><div class="campos">' +
         campoDinheiro('renda', 'Quanto cai na sua conta por mês?', 'O salário que entra de fato, já sem os descontos.', r.renda) +
         '<p class="bloco-titulo">Gastos do mês, sem contar as dívidas</p>' +
         campoDinheiro('moradia', 'Aluguel ou condomínio', 'Se não paga, coloque 0.', g.moradia) +
@@ -251,7 +237,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
         var ok = true;
         if (!r.renda) { erro('renda', 'Coloque quanto entra por mês.'); ok = false; }
         ['moradia', 'casa', 'transporte', 'resto'].forEach(function (k) { if (r.gastosR[k] == null) { erro(k, 'Coloque um valor. Se não tiver, coloque 0.'); ok = false; } });
-        if (ok) ir(2);
+        if (ok) ir(1);
       });
       return;
     }
@@ -286,7 +272,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       $t.querySelectorAll('[data-tirar]').forEach(function (b) { b.addEventListener('click', function () { r.dividas.splice(Number(b.getAttribute('data-tirar')), 1); salvar(); render(); }); });
       document.getElementById('btn-seguir').addEventListener('click', function () {
         if (!r.dividas.length) { limparErros(); erro('tipo', 'Adicione pelo menos uma dívida.'); return; }
-        ir(3);
+        ir(2);
       });
       return;
     }
@@ -294,21 +280,56 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       $t.innerHTML = '<section class="tela"><p class="acolhe">Última pergunta.</p><h1>Para fechar</h1><div class="campos">' +
         campoDinheiro('guardado', 'Você tem algum dinheiro guardado hoje? Quanto, mais ou menos?', 'Se não tem, coloque 0.', r.guardado) +
         '<div class="campo" data-campo="objetivo"><label for="q-objetivo">E quando acabar, o que você quer fazer com esse dinheiro?</label><p class="ajuda">Opcional. Por exemplo: a entrada da casa, uma viagem com a família, voltar a estudar.</p><input type="text" id="q-objetivo" maxlength="120" value="' + esc(r.objetivo || '') + '"></div>' + '</div>' +
-        '<div class="acoes"><div id="erro-envio" class="erro-envio oculto" role="alert"></div><button type="button" class="btn btn-principal" id="btn-seguir">Ver a minha data</button><p class="nota">A data é calculada com valores aproximados e é grátis.</p></div></section>';
+        '<div class="acoes"><button type="button" class="btn btn-principal" id="btn-seguir">Ver a minha data</button><p class="nota">A data é calculada com valores aproximados e é grátis.</p></div></section>';
       ligarDinheiro();
       document.getElementById('btn-seguir').addEventListener('click', function () {
         limparErros();
         r.guardado = num(document.getElementById('q-guardado').value);
         r.objetivo = document.getElementById('q-objetivo').value.trim().slice(0, 120);
         if (r.guardado == null) { erro('guardado', 'Coloque um valor. Se não tiver, coloque 0.'); return; }
-        salvar(); enviar();
+        salvar(); ir(3);
       });
       return;
     }
+    if (t === 'data') { telaData(r); return; }
     if (t === 'enviando') {
       $t.innerHTML = '<section class="tela"><h1>Calculando...</h1><div class="acoes"><div id="erro-envio" class="erro-envio oculto" role="alert"></div></div></section>';
       enviar();
     }
+  }
+
+  // ---------- a data na tela, antes de pedir o e-mail ----------
+  function telaData(r) {
+    var est = estimativa(r), topo;
+    if (est.tipo === 'data') {
+      var m = est.saida_max, quando = !m ? 'em ' + mesLongo(est.saida)
+        : (m[0] === est.saida[0] ? 'entre ' + MESES[est.saida[1] - 1] + ' e ' + mesLongo(m) : 'entre ' + mesLongo(est.saida) + ' e ' + mesLongo(m));
+      topo = '<p class="acolhe">Pelas suas respostas</p><h1>Você sai das dívidas <span class="verde">' + esc(quando) + '.</span></h1>' +
+        '<div class="resultado">' +
+        (est.primeira ? '<p>A primeira dívida pode acabar já em <b>' + esc(mesLongo(est.primeira)) + '</b>.</p>' : '') +
+        (est.juros_mes ? '<p>Hoje os juros te custam cerca de <b>' + reais(est.juros_mes) + ' por mês</b>. É isso que a ordem certa corta primeiro.</p>' : '') +
+        '</div>';
+    } else {
+      topo = '<p class="acolhe">Pelas suas respostas</p><h1>Do jeito que está, a conta não fecha.</h1><div class="resultado">' +
+        (est.diferenca ? '<p>Depois das contas da casa e das parcelas, faltam cerca de <b>' + reais(est.diferenca) + ' por mês</b>.</p>' : '<p>As parcelas e os juros crescem mais rápido do que dá para pagar.</p>') +
+        '<p>Isso tem saída: existe uma lei para renegociar todas as dívidas juntas, preservando o dinheiro para viver. O plano mostra como.</p></div>';
+    }
+    $t.innerHTML = '<section class="tela">' + topo +
+      '<p class="nota">Data aproximada, feita com valores de cabeça. O plano completo confere cada valor e mostra o caminho mês a mês.</p>' +
+      '<div class="bloco" id="guardar"><p class="bloco-titulo">Quer guardar a sua data e ver o próximo passo?</p><div class="campos">' +
+      '<div class="campo" data-campo="nome"><label for="q-nome">Seu primeiro nome</label><input type="text" id="q-nome" autocomplete="given-name" value="' + esc(r.nome || '') + '"></div>' +
+      '<div class="campo" data-campo="email"><label for="q-email">Seu e-mail</label><p class="ajuda">A gente manda a sua data para você não perder.</p><input type="email" id="q-email" autocomplete="email" value="' + esc(r.email || '') + '"></div>' +
+      '<div class="campo" data-campo="consent"><label class="check"><input type="checkbox" id="q-consent"' + (r.consent ? ' checked' : '') + '><span>Concordo que minhas respostas sejam usadas só para calcular a minha data e montar o meu plano, e apagadas em até 90 dias. Li os <a href="/termos" target="_blank" rel="noopener">termos de uso</a> e a <a href="/privacidade" target="_blank" rel="noopener">política de privacidade</a>.</span></label></div>' +
+      '</div><div class="acoes"><div id="erro-envio" class="erro-envio oculto" role="alert"></div><button type="button" class="btn btn-principal" id="btn-seguir">Guardar minha data</button><p class="nota">Não pedimos CPF, senha nem extrato.</p></div></div></section>';
+    document.getElementById('btn-seguir').addEventListener('click', function () {
+      limparErros();
+      r.nome = document.getElementById('q-nome').value.trim(); r.email = document.getElementById('q-email').value.trim(); r.consent = document.getElementById('q-consent').checked; salvar();
+      var ok = true;
+      if (!r.nome) { erro('nome', 'Preencha o seu nome.'); ok = false; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(r.email)) { erro('email', 'Confira o e-mail. Ele precisa ter o formato nome@exemplo.com.'); ok = false; }
+      if (!r.consent) { erro('consent', 'Para guardar a sua data, precisamos que você marque que concorda.'); ok = false; }
+      if (ok) enviar();
+    });
   }
 
   // ---------- a estimativa ----------
@@ -359,7 +380,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
 
   function enviar() {
     var r = E.r, est = estimativa(r), caixa = document.getElementById('erro-envio'), btn = document.getElementById('btn-seguir');
-    if (btn) { btn.disabled = true; btn.textContent = 'Calculando...'; }
+    if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
     var g = r.gastosR || {};
     var respostas = { rapido: true, consent: true, nome: r.nome, email: r.email, renda: r.renda, guardado: r.guardado || 0, objetivo: r.objetivo || '',
       gastosR: g, dividasR: r.dividas, dividas: r.dividas.map(function (d) { return { tipo: (TIPOS.filter(function (x) { return x[1] === d.tipo; })[0] || ['Outra'])[0] }; }) };
@@ -367,7 +388,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       .then(function (resp) { return resp.json().then(function (j) { if (!resp.ok || !j.ok) throw new Error(j.erro || 'Não conseguimos enviar agora.'); return j; }); })
       .then(function (j) { E.envio = { id: j.id, pagar: j.pagar }; salvar(); location.href = j.pagar; })
       .catch(function (e) {
-        if (btn) { btn.disabled = false; btn.textContent = 'Ver a minha data'; }
+        if (btn) { btn.disabled = false; btn.textContent = 'Guardar minha data'; }
         if (caixa) { caixa.textContent = e.message + ' Suas respostas continuam salvas neste aparelho. Confira a internet e tente de novo.'; caixa.classList.remove('oculto'); }
       });
   }

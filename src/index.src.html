@@ -325,11 +325,11 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
         <div class="cta-linha">
           <a class="btn btn-principal" href="rapido.html">Descobrir minha data grátis <span class="seta" aria-hidden="true">→</span></a>
         </div>
-        <p class="preco-hero">A data é grátis. O plano completo custa <b>R$ 34,90</b>, uma vez só.</p>
+        <p class="preco-hero">Grátis. Você vê a sua data antes de deixar qualquer contato.</p>
         <ul class="garantias" aria-label="Como funciona">
           <li>A data sai em 5 minutos, de cabeça</li>
           <li>Não pede CPF, senha nem extrato</li>
-          <li>Garantia de 7 dias</li>
+          <li>Sem cadastro para ver a data</li>
         </ul>
       </div>
 
@@ -687,6 +687,20 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
     try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: e })); } catch (er) {}
   }
   contar('v_inicio');
+  // quanto tempo a pessoa fica e até onde rola (para saber se sai na hora ou se lê e desiste)
+  setTimeout(function () { contar('tempo_10s'); }, 10000);
+  setTimeout(function () { contar('tempo_30s'); }, 30000);
+  setTimeout(function () { contar('tempo_60s'); }, 60000);
+  (function () {
+    var marcos = [25, 50, 75, 90];
+    function rolou() {
+      var h = document.documentElement.scrollHeight - window.innerHeight; if (h <= 0) return;
+      var pct = (window.scrollY / h) * 100;
+      while (marcos.length && pct >= marcos[0]) contar('rolou_' + marcos.shift());
+      if (!marcos.length) window.removeEventListener('scroll', rolou);
+    }
+    window.addEventListener('scroll', rolou, { passive: true });
+  })();
   (function () {
     var u = new URLSearchParams(location.search), o = (u.get('utm_source') || '').toLowerCase(), r = document.referrer;
     var mapa = ['instagram', 'tiktok', 'whatsapp', 'google', 'facebook', 'youtube', 'email'];
