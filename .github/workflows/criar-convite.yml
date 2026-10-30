@@ -1,0 +1,30 @@
+# Cria um link de teste grátis (o mesmo que o painel cria) e guarda o link em metricas/convite-ultimo.json.
+# Roda quando .github/pedir-convite.json muda: {"para": "...", "usos": N}
+name: Criar link de teste
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/pedir-convite.json']
+
+permissions:
+  contents: write
+
+jobs:
+  criar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pedir ao site
+        env:
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+        run: |
+          mkdir -p metricas
+          code=$(curl -sS -o metricas/convite-ultimo.json -w "%{http_code}" -X POST -H "authorization: Bearer $ADMIN_TOKEN" -H "content-type: application/json" --data-binary @.github/pedir-convite.json https://desaperto.com/api/admin/convites)
+          cat metricas/convite-ultimo.json; echo
+          test "$code" = "201" || { echo "::error::O site respondeu $code."; exit 1; }
+      - name: Guardar
+        run: |
+          git config user.name "desaperto-metricas"; git config user.email "metricas@desaperto.com"
+          git add metricas/convite-ultimo.json; git commit -m "Link de teste criado" || exit 0; git push
