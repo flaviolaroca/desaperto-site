@@ -157,6 +157,10 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
 .resultado { display: flex; flex-direction: column; gap: 10px; font-size: 18px; line-height: 1.5; }
 .resultado p { margin: 0; }
 #guardar { margin-top: 8px; }
+.passo-gratis { background: #DCEBE1; border-radius: 18px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+.passo-gratis h2 { margin: 0; font-size: 1.1875rem; line-height: 1.25; }
+.passo-gratis p { margin: 0; line-height: 1.5; }
+.passo-gratis .pg-rot { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--verde); }
 </style>
 
 </head>
@@ -203,12 +207,15 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
   var TAXA = { cheque: 0.0792, pessoal: 0.0402, app: 0.0727, consignado: 0.032, veiculo: 0.0212, imovel: 0.011, crediario: 0.0544, conta: 0.01, imposto: 0.01, parente: 0, outra: 0.04 };
   function taxa(d) { return d.tipo === 'cartao' ? (d.parcela ? 0.0727 : 0.1522) : (TAXA[d.tipo] == null ? 0.04 : TAXA[d.tipo]); }
 
+  var FAIXAS = { ate5: 'até R$ 5 mil', '5a15': 'de R$ 5 a 15 mil', '15a30': 'de R$ 15 a 30 mil', mais30: 'mais de R$ 30 mil', naosei: '' };
   var E = { passo: 0, r: { dividas: [] } };
   try { var s0 = JSON.parse(localStorage.getItem(CHAVE) || 'null'); if (s0 && s0.r) E = s0; } catch (e) {}
   function salvar() { try { localStorage.setItem(CHAVE, JSON.stringify(E)); } catch (e) {} }
   (function () {  // link de teste grátis: desaperto.com/teste/CODIGO
     var c = (new URLSearchParams(location.search).get('convite') || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20);
     if (c && c !== E.convite) { E.convite = c; salvar(); }
+    var f = (new URLSearchParams(location.search).get('faixa') || '').replace(/[^a-z0-9]/g, '');
+    if (FAIXAS[f] != null) { E.faixa = f; salvar(); window.__veioFaixa = f; }
   })();
   var $t = document.getElementById('tela');
   var TELAS = ['dividas', 'mes', 'data', 'enviando'];
@@ -248,7 +255,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
         return '<div class="cartao"><div class="cartao-topo"><div><h2>' + esc(nome) + '</h2><p class="quem">' + (d.atrasada ? '<span class="chip atraso">Atrasada</span> ' : '') + (d.parcela ? 'parcela de ' + reais(d.parcela) : 'sem parcela fixa') + '</p></div><span class="valor">' + reais(d.valor) + '</span></div>' +
           '<div class="cartao-acoes"><button type="button" class="link" data-tirar="' + i + '">Tirar</button></div></div>';
       }).join('');
-      $t.innerHTML = '<section class="tela">' + (E.convite ? '<p class="convite">Link de teste: você recebe a sua data e o plano completo sem pagar nada.</p>' : '') + '<p class="acolhe">Leva uns 3 minutos. Pode responder de cabeça.</p><h1>O que você deve</h1><p class="lead">Coloque cada dívida com o valor aproximado. Não precisa abrir o app. Você vê a sua data antes de deixar qualquer contato.</p>' +
+      $t.innerHTML = '<section class="tela">' + (E.convite ? '<p class="convite">Link de teste: você recebe a sua data e o plano completo sem pagar nada.</p>' : '') + '<p class="acolhe">Leva uns 3 minutos. Pode responder de cabeça.</p><h1>O que você deve</h1><p class="lead">' + (E.faixa && FAIXAS[E.faixa] ? 'Você disse que deve ' + FAIXAS[E.faixa] + '. Agora coloque cada dívida' : 'Coloque cada dívida') + ' com o valor aproximado. Não precisa abrir o app. Você vê a sua data antes de deixar qualquer contato.</p>' +
         '<div class="cartoes">' + (lista || '<div class="vazio">Nenhuma dívida ainda. Adicione a primeira abaixo.</div>') + '</div>' +
         '<div class="bloco" id="nova"><p class="bloco-titulo">Adicionar dívida</p>' +
         '<div class="campo" data-campo="tipo"><label for="q-tipo">Tipo</label><select id="q-tipo"><option value="">Escolha</option>' + TIPOS.map(function (x) { return '<option value="' + x[1] + '">' + esc(x[0]) + '</option>'; }).join('') + '</select></div>' +
@@ -305,7 +312,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
 
   // ---------- a data na tela, antes de pedir o e-mail ----------
   function telaData(r) {
-    var est = estimativa(r), topo;
+    var est = estimativa(r), topo, pp = est.passo;
     if (est.tipo === 'data') {
       var m = est.saida_max, quando = !m ? 'em ' + mesLongo(est.saida)
         : (m[0] === est.saida[0] ? 'entre ' + MESES[est.saida[1] - 1] + ' e ' + mesLongo(m) : 'entre ' + mesLongo(est.saida) + ' e ' + mesLongo(m));
@@ -320,7 +327,8 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
         '<p>Isso tem saída: existe uma lei para renegociar todas as dívidas juntas, preservando o dinheiro para viver. O plano mostra como.</p></div>';
     }
     $t.innerHTML = '<section class="tela">' + topo +
-      '<p class="nota">Data aproximada, feita com valores de cabeça. O plano completo confere cada valor e mostra o caminho mês a mês.</p>' +
+      (pp ? '<div class="passo-gratis"><p class="pg-rot">Seu primeiro passo, de graça</p><h2>' + esc(pp.titulo) + '</h2><p>' + esc(pp.texto) + '</p></div>' : '') +
+      '<p class="nota">Data aproximada, feita com valores de cabeça. O plano completo confere cada valor e mostra o caminho mês a mês, até a última dívida.</p>' +
       '<div class="bloco" id="guardar"><p class="bloco-titulo">Quer guardar a sua data e ver o próximo passo?</p><div class="campos">' +
       '<div class="campo" data-campo="nome"><label for="q-nome">Seu primeiro nome</label><input type="text" id="q-nome" autocomplete="given-name" value="' + esc(r.nome || '') + '"></div>' +
       '<div class="campo" data-campo="email"><label for="q-email">Seu e-mail</label><p class="ajuda">A gente manda a sua data para você não perder.</p><input type="email" id="q-email" autocomplete="email" value="' + esc(r.email || '') + '"></div>' +
@@ -374,7 +382,26 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     }
     return { fecha: true, saida: null, jurosMes: jurosMes, gastos: gastos };
   }
+  // O primeiro passo que a pessoa leva de graça, com as dívidas dela.
+  function nomeTipo(d) { return (TIPOS.filter(function (x) { return x[1] === d.tipo; })[0] || ['Outra dívida'])[0]; }
+  function primeiroPasso(r) {
+    var ds = r.dividas.slice(), maior = function (a, b) { return b.valor - a.valor; };
+    var rot = ds.filter(function (d) { return d.tipo === 'cartao' && !d.parcela && !d.atrasada; }).sort(maior)[0];
+    if (rot) {
+      var econ = Math.round(rot.valor * (0.1522 - 0.0727));
+      return { titulo: 'Parcele a fatura do cartão em vez de deixar no rotativo', texto: 'No app do banco, procure "parcelar fatura". No rotativo, o juro passa de 15% ao mês; parcelado, costuma ficar perto de 7%. Só isso pode deixar cerca de ' + reais(econ) + ' por mês com você. Antes de aceitar, confira o valor total e o número de parcelas.' };
+    }
+    var atr = ds.filter(function (d) { return d.atrasada; }).sort(maior)[0];
+    if (atr) return { titulo: 'Pergunte quanto fica para quitar à vista: ' + nomeTipo(atr), texto: 'Dívida atrasada costuma ter desconto grande. Entre no app ou ligue para quem cobra e pergunte só o valor para pagar à vista. Não feche nada agora: anote o valor. O plano completo diz até quanto vale aceitar.' };
+    var top = ds.filter(function (d) { return taxa(d) > 0; }).sort(function (a, b) { return taxa(b) - taxa(a) || b.valor - a.valor; })[0];
+    if (top) return { titulo: 'Comece por: ' + nomeTipo(top), texto: 'É a que cobra o juro mais alto: cerca de ' + reais(top.valor * taxa(top)) + ' por mês só de juros. Todo dinheiro que sobrar vai primeiro para ela; nas outras, pague só a parcela. Quando ela acabar, a parcela dela ajuda a próxima.' };
+    return null;
+  }
   function estimativa(r) {
+    var pp = primeiroPasso(r);
+    var e = estimativaBase(r); if (pp) e.passo = pp; return e;
+  }
+  function estimativaBase(r) {
     var a = simular(r, false), b = simular(r, true);
     var total = r.dividas.reduce(function (s, d) { return s + d.valor; }, 0);
     if (!a.fecha) return { tipo: 'lei', aprox: true, diferenca: Math.round(a.diferenca), juros_mes: Math.round(a.jurosMes), dividas: r.dividas.length, total: total };
@@ -387,7 +414,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     var r = E.r, est = estimativa(r), caixa = document.getElementById('erro-envio'), btn = document.getElementById('btn-seguir');
     if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
     var g = r.gastosR || {};
-    var respostas = { rapido: true, consent: true, nome: r.nome, email: r.email, renda: r.renda, guardado: r.guardado || 0, objetivo: r.objetivo || '',
+    var respostas = { rapido: true, consent: true, faixa: E.faixa || '', nome: r.nome, email: r.email, renda: r.renda, guardado: r.guardado || 0, objetivo: r.objetivo || '',
       gastosR: g, dividasR: r.dividas, dividas: r.dividas.map(function (d) { return { tipo: (TIPOS.filter(function (x) { return x[1] === d.tipo; })[0] || ['Outra'])[0] }; }) };
     fetch('/api/respostas', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ respostas: respostas, rapido: true, estimativa: est, teste: TESTE, convite: E.convite || undefined, origem: (function () { try { return localStorage.getItem('desaperto-origem') || ''; } catch (e) { return ''; } })() }) })
       .then(function (resp) { return resp.json().then(function (j) { if (!resp.ok || !j.ok) throw new Error(j.erro || 'Não conseguimos enviar agora.'); return j; }); })
@@ -400,6 +427,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
 
   if (E.passo > 2) E.passo = 2;
   contar('v_rapido');
+  if (window.__veioFaixa) contar('faixa_' + window.__veioFaixa);
   (function () {  // de onde veio, só se não passou pela página inicial nesta visita
     try { if (sessionStorage.getItem('desaperto-ev-v_inicio')) return; } catch (e) {}
     var u = new URLSearchParams(location.search), o = (u.get('utm_source') || '').toLowerCase(), rf = document.referrer;

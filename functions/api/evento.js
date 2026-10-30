@@ -1,7 +1,7 @@
 // POST /api/evento { e } -> soma 1 na contagem do dia daquele passo. Sem cookie, sem nome, sem IP guardado.
 import { json, garantirTabelas, evento } from '../../lib/api.js';
 
-const PERMITIDOS = /^(v_inicio|v_rapido|v_comecar|v_progresso|gerou_cartao|compartilhou|indicou|v_pagar_data|clicou_pix|copiou_pix|etapa_[a-z0-9]{2,20}|origem_(instagram|tiktok|whatsapp|google|facebook|youtube|email|anuncio|outro|direto)|anuncio_[a-z0-9]{1,12}|tempo_(10|30|60)s|rolou_(25|50|75|90))$/;
+const PERMITIDOS = /^(v_inicio|v_rapido|v_comecar|v_progresso|gerou_cartao|compartilhou|indicou|v_pagar_data|clicou_pix|copiou_pix|etapa_[a-z0-9]{2,20}|origem_(instagram|tiktok|whatsapp|google|facebook|youtube|email|anuncio|outro|direto)|anuncio_[a-z0-9]{1,12}|faixa_(ate5|5a15|15a30|mais30|naosei|nenhuma)|tempo_(10|30|60)s|rolou_(25|50|75|90))$/;
 
 export async function onRequestPost({ request, env }) {
   if (!env.DB) return json({ ok: true });

@@ -46,6 +46,8 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
 .quem-recebe { border-left: 4px solid var(--verde); }
 .aprox { font-size: .875rem; color: var(--cinza); background: var(--areia); border-radius: 12px; padding: 10px 14px; }
 @media (prefers-reduced-motion: reduce) { .ponto { animation: none; } .barra-c i { transition: none; } }
+.passo-g { background: #DCEBE1; }
+.passo-g h2 { margin: 0; }
 </style>
 
 <div id="logo-cartao" hidden>{{LOGO}}</div>
@@ -110,6 +112,9 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
       if (d.economia > 50) h += '<div><small>Seguindo a ordem certa, você pode deixar de pagar de juros nos próximos 12 meses</small><b>' + reais(d.economia) + '</b></div>';
     }
     return h ? '<div class="numeros">' + h + '</div>' : '';
+  }
+  function passoGratis(d) {
+    return d.passo ? '<div class="cartao passo-g"><p class="rotulo">Seu primeiro passo, de graça</p><h2>' + esc(d.passo.titulo) + '</h2><p>' + esc(d.passo.texto) + '</p><p class="pequeno">O plano completo continua daí: o que fazer em cada mês, até a última dívida.</p></div>' : '';
   }
   function inclui(d) {
     var itens = d.tipo === 'lei'
@@ -182,7 +187,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     }
     if (s.estado === 'oferta') {
       contar('v_pagar_data');
-      $t.innerHTML = '<p class="rotulo">' + (d.aprox ? 'Sua data aproximada' : 'Seu resultado') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) + notaAprox(d) + inclui(d) +
+      $t.innerHTML = '<p class="rotulo">' + (d.aprox ? 'Sua data aproximada' : 'Seu resultado') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) + notaAprox(d) + passoGratis(d) + inclui(d) +
         '<div class="oferta"><div><span class="preco">' + esc(s.preco_txt) + '</span></div><p class="sub">' + (d.aprox ? 'Uma vez só, por Pix. Sem assinatura. Depois de pagar, você completa as respostas e o plano exato chega no seu e-mail em minutos.' : 'Uma vez só, por Pix. Sem assinatura. O plano chega no seu e-mail em poucos minutos.') + '</p>' + ancora(d) +
         '<button type="button" class="btn" id="btn-pix">Pagar ' + esc(s.preco_txt) + ' com Pix</button><div id="erro" class="erro-box" hidden></div>' +
         '<p class="pequeno">Pagamento pelo Mercado Pago. No seu banco, o recebedor aparece ' + (s.recebedor ? 'como ' + esc(s.recebedor) : 'com o nome do responsável pelo Desaperto') + '. O Desaperto não vê nem guarda dados do seu banco.</p></div>' +

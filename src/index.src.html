@@ -306,6 +306,14 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
   .solta { animation: none; }
   .marca-grande span { transition: none; }
 }
+.pergunta { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+.p-titulo { font-weight: 700; font-size: 1.125rem; margin: 0; }
+.chips-faixa { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 34rem; }
+.chip-faixa { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 56px; padding: 10px 12px; border-radius: 16px; background: var(--branco); color: var(--tinta); border: 2px solid var(--verde); font-weight: 700; font-size: 1rem; text-decoration: none; line-height: 1.2; }
+.chip-faixa:hover, .chip-faixa:focus-visible { background: var(--verde); color: var(--branco); outline: none; }
+.chip-faixa.chip-largo { grid-column: 1 / -1; border-style: dashed; font-weight: 600; }
+.nao-devo { align-self: flex-start; background: none; border: 0; padding: 4px 0; font: inherit; font-size: .9375rem; color: var(--cinza, #5C625E); text-decoration: underline; cursor: pointer; }
+.nao-msg { margin: 0; font-size: .9375rem; max-width: 34rem; }
 </style>
 
 <header class="topo faixa" id="topo">
@@ -322,8 +330,17 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
       <div class="promessa">
         <h1 class="solta">Descubra o mês em que você <em>sai das dívidas.</em></h1>
         <p class="lead">Você conta quanto ganha, quanto gasta e quanto deve. O <b>Desaperto</b> faz as contas e te entrega um plano: <b>qual dívida pagar primeiro, quanto pagar em cada mês e o que falar com o banco.</b></p>
-        <div class="cta-linha">
-          <a class="btn btn-principal" href="rapido.html">Descobrir minha data grátis <span class="seta" aria-hidden="true">→</span></a>
+        <div class="pergunta" id="pergunta">
+          <p class="p-titulo" id="p-titulo">Para começar: quanto você deve, somando tudo?</p>
+          <div class="chips-faixa" role="group" aria-labelledby="p-titulo">
+            <a class="chip-faixa" href="rapido.html?faixa=ate5" data-faixa="ate5">Até R$ 5 mil</a>
+            <a class="chip-faixa" href="rapido.html?faixa=5a15" data-faixa="5a15">De R$ 5 a 15 mil</a>
+            <a class="chip-faixa" href="rapido.html?faixa=15a30" data-faixa="15a30">De R$ 15 a 30 mil</a>
+            <a class="chip-faixa" href="rapido.html?faixa=mais30" data-faixa="mais30">Mais de R$ 30 mil</a>
+            <a class="chip-faixa chip-largo" href="rapido.html?faixa=naosei" data-faixa="naosei">Não sei bem quanto</a>
+          </div>
+          <button type="button" class="nao-devo" id="nao-devo">Não tenho dívida agora</button>
+          <p class="nao-msg" id="nao-msg" hidden>Que bom! O Desaperto é para quem está apertado com dívida. Se você conhece alguém assim, <a id="nao-indicar" href="https://wa.me/?text=Achei%20isso%20e%20lembrei%20de%20voc%C3%AA%3A%20em%205%20minutos%20mostra%20em%20que%20m%C3%AAs%20d%C3%A1%20para%20sair%20do%20aperto.%20%C3%89%20gr%C3%A1tis%3A%20https%3A%2F%2Fdesaperto.com%2F%3Futm_source%3Dwhatsapp" target="_blank" rel="noopener">mande o link pelo WhatsApp</a>.</p>
         </div>
         <p class="preco-hero">Grátis. Você vê a sua data antes de deixar qualquer contato.</p>
         <ul class="garantias" aria-label="Como funciona">
@@ -687,6 +704,15 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
     try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: e })); } catch (er) {}
   }
   contar('v_inicio');
+  // primeira tela: quanto a pessoa deve (mede se o público é o certo e quem começa)
+  document.querySelectorAll('.chip-faixa').forEach(function (a) {
+    a.addEventListener('click', function () { contar('faixa_' + a.getAttribute('data-faixa')); });
+  });
+  (function () {
+    var b = document.getElementById('nao-devo'); if (!b) return;
+    b.addEventListener('click', function () { contar('faixa_nenhuma'); document.getElementById('nao-msg').hidden = false; b.hidden = true; });
+    var ni = document.getElementById('nao-indicar'); if (ni) ni.addEventListener('click', function () { contar('indicou'); });
+  })();
   // quanto tempo a pessoa fica e até onde rola (para saber se sai na hora ou se lê e desiste)
   setTimeout(function () { contar('tempo_10s'); }, 10000);
   setTimeout(function () { contar('tempo_30s'); }, 30000);
