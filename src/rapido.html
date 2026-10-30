@@ -416,6 +416,8 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     // anúncio pago: ?utm_medium=anuncio&utm_content=a1 -> conta o anúncio e guarda para ligar à venda
     var med = (u.get('utm_medium') || '').toLowerCase(), cont = (u.get('utm_content') || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
     if (/anuncio|paid|cpc|ads/.test(med)) { contar('origem_anuncio'); if (cont) contar('anuncio_' + cont); try { localStorage.setItem('desaperto-origem', 'anuncio' + (cont ? ':' + cont : '')); } catch (e) {} }
+    // post orgânico: ?utm_medium=post&utm_content=p1 -> conta o post e guarda para ligar à data e à venda
+    else if (med === 'post' && cont) { contar('post_' + cont); try { localStorage.setItem('desaperto-origem', 'post:' + cont); } catch (e) {} }
     else if (o) { try { if (!localStorage.getItem('desaperto-origem')) localStorage.setItem('desaperto-origem', o.replace(/[^a-z0-9]/g, '').slice(0, 20)); } catch (e) {} }
   })();
   render();
