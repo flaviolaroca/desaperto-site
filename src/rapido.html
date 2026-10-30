@@ -173,6 +173,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     if (TESTE) return;
     try { var k = 'desaperto-ev-' + e; if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); } catch (er) {}
     try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: e })); } catch (er) {}
+    try { var ab = sessionStorage.getItem('desaperto-ab'); if ((ab === 'a' || ab === 'b') && /^(v_inicio|v_rapido|etapa_r|v_pagar_data|clicou_pix|tempo_10s|faixa_)/.test(e)) navigator.sendBeacon('/api/evento', JSON.stringify({ e: 'ab' + ab + '_' + e })); } catch (er) {}
   }
 
   // Juros médios de mercado por tipo (os mesmos de referência do motor). Só para a estimativa.
@@ -393,7 +394,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     var g = r.gastosR || {};
     var respostas = { rapido: true, consent: true, faixa: E.faixa || '', nome: r.nome, email: r.email, renda: r.renda, guardado: r.guardado || 0, objetivo: r.objetivo || '',
       gastosR: g, dividasR: r.dividas, dividas: r.dividas.map(function (d) { return { tipo: (TIPOS.filter(function (x) { return x[1] === d.tipo; })[0] || ['Outra'])[0] }; }) };
-    fetch('/api/respostas', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ respostas: respostas, rapido: true, estimativa: est, teste: TESTE, convite: E.convite || undefined, origem: (function () { try { return localStorage.getItem('desaperto-origem') || ''; } catch (e) { return ''; } })() }) })
+    fetch('/api/respostas', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ respostas: respostas, rapido: true, estimativa: est, teste: TESTE, convite: E.convite || undefined, origem: (function () { try { var o = localStorage.getItem('desaperto-origem') || '', ab = sessionStorage.getItem('desaperto-ab'); return o + ((ab === 'a' || ab === 'b') && o.indexOf('anuncio') === 0 ? ':' + ab : ''); } catch (e) { return ''; } })() }) })
       .then(function (resp) { return resp.json().then(function (j) { if (!resp.ok || !j.ok) throw new Error(j.erro || 'Não conseguimos enviar agora.'); return j; }); })
       .then(function (j) { E.envio = { id: j.id, pagar: j.pagar }; salvar(); location.href = j.pagar; })
       .catch(function (e) {

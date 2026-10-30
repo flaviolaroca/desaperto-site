@@ -22,6 +22,24 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<script>
+/* Teste A/B (30/10/2026): metade de quem chega pelo anúncio vai direto para a primeira pergunta.
+   A = página inicial (com a pergunta de quanto deve) · B = /rapido direto. O sorteio vale para a visita inteira. */
+(function () {
+  try {
+    var u = new URLSearchParams(location.search), med = (u.get('utm_medium') || '').toLowerCase();
+    if (!/anuncio|paid|cpc|ads/.test(med)) return;
+    var v = sessionStorage.getItem('desaperto-ab');
+    if (v !== 'a' && v !== 'b') { v = Math.random() < 0.5 ? 'a' : 'b'; sessionStorage.setItem('desaperto-ab', v); }
+    var conta = true; try { if (localStorage.getItem('desaperto-nao-contar')) conta = false; } catch (e) {}
+    if (conta && !sessionStorage.getItem('desaperto-ev-ab_entrou')) {
+      sessionStorage.setItem('desaperto-ev-ab_entrou', '1');
+      try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: 'ab' + v + '_entrou' })); } catch (e) {}
+    }
+    if (v === 'b') location.replace('/rapido' + location.search);
+  } catch (e) {}
+})();
+</script>
 <style>
 /* Layout: coluna editorial no celular; no computador, abertura em duas colunas (promessa + capa do plano) e faixas largas de papel e verde. Uma só aparência, a da marca (papel claro), por decisão de identidade. */
 :root {
@@ -726,6 +744,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
     try { if (localStorage.getItem('desaperto-nao-contar')) return; } catch (er) {}
     try { var k = 'desaperto-ev-' + e; if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); } catch (er) {}
     try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: e })); } catch (er) {}
+    try { var ab = sessionStorage.getItem('desaperto-ab'); if ((ab === 'a' || ab === 'b') && /^(v_inicio|v_rapido|etapa_r|v_pagar_data|clicou_pix|tempo_10s|faixa_)/.test(e)) navigator.sendBeacon('/api/evento', JSON.stringify({ e: 'ab' + ab + '_' + e })); } catch (er) {}
   }
   contar('v_inicio');
   // primeira tela: quanto a pessoa deve (mede se o público é o certo e quem começa)
