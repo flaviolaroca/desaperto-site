@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<script>window.dpx=function(){};</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Descubra a sua data · Desaperto</title>
 <meta name="description" content="Em 5 minutos, de cabeça: o mês aproximado em que você sai das dívidas. Grátis.">
@@ -250,6 +251,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     cab();
     var t = TELAS[E.passo], r = E.r;
     contar('etapa_r' + t);
+    if (t === 'data' && !E.convite && !TESTE) { try { window.dpx && window.dpx('ViewContent'); } catch (er) {} }
     if (t === 'dividas') {
       var lista = r.dividas.map(function (d, i) {
         var nome = (TIPOS.filter(function (x) { return x[1] === d.tipo; })[0] || ['Dívida'])[0];

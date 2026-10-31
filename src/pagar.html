@@ -69,6 +69,14 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     try { navigator.sendBeacon('/api/evento', JSON.stringify({ e: e })); } catch (er) {}
     try { var ab = sessionStorage.getItem('desaperto-ab'); if ((ab === 'a' || ab === 'b') && /^(v_inicio|v_rapido|etapa_r|v_pagar_data|clicou_pix|tempo_10s|faixa_)/.test(e)) navigator.sendBeacon('/api/evento', JSON.stringify({ e: 'ab' + ab + '_' + e })); } catch (er) {}
   }
+  // Pixel da Meta: cada evento uma vez por pedido neste aparelho (sem dados da pessoa)
+  function VALOR() { try { var v = s && s.preco_txt ? Number(String(s.preco_txt).replace(/[^0-9,]/g, '').replace(',', '.')) : 0; return v > 0 ? v : 34.9; } catch (e) { return 34.9; } }
+  function umaVez(nome, fn) {
+    if (!window.dpx) return;
+    var id = (new URLSearchParams(location.search).get('id') || '').slice(0, 40);
+    try { var k = 'desaperto-px-' + nome + '-' + id; if (localStorage.getItem(k)) return; localStorage.setItem(k, '1'); } catch (e) {}
+    try { fn(); } catch (e) {}
+  }
   var ESCUDO = '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5l-8-3Z" fill="#DCEBE1"/><path d="m8.5 12 2.5 2.5 4.5-5" fill="none" stroke="#16704A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   function buscar() {
@@ -177,6 +185,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
       return;
     }
     if (s.estado === 'pago') {
+      if (!s.gratis) umaVez('compra', function () { window.dpx('Purchase', { value: VALOR(), currency: 'BRL' }); });
       var txt = s.gratis ? 'O seu plano completo está a caminho do e-mail <b>' + esc(s.email) + '</b>. Chega em poucos minutos.'
         : s.revisao ? 'Como a sua conta tem um detalhe que pede atenção, a gente confere o plano antes de enviar. Ele chega no e-mail <b>' + esc(s.email) + '</b> em até 24 horas.'
         : 'O seu plano está a caminho do e-mail <b>' + esc(s.email) + '</b>. Chega em poucos minutos.';
@@ -188,11 +197,13 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     }
     if (s.estado === 'oferta') {
       contar('v_pagar_data');
+      umaVez('lead', function () { window.dpx('Lead'); });
       $t.innerHTML = '<p class="rotulo">' + (d.aprox ? 'Sua data aproximada' : 'Seu resultado') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) + notaAprox(d) + passoGratis(d) + inclui(d) +
         '<div class="oferta"><div><span class="preco">' + esc(s.preco_txt) + '</span></div><p class="sub">' + (d.aprox ? 'Uma vez só, por Pix. Sem assinatura. Depois de pagar, você completa as respostas e o plano exato chega no seu e-mail em minutos.' : 'Uma vez só, por Pix. Sem assinatura. O plano chega no seu e-mail em poucos minutos.') + '</p>' + ancora(d) +
         '<button type="button" class="btn" id="btn-pix">Pagar ' + esc(s.preco_txt) + ' com Pix</button><div id="erro" class="erro-box" hidden></div>' +
         '<p class="pequeno">Pagamento pelo Mercado Pago. No seu banco, o recebedor aparece ' + (s.recebedor ? 'como ' + esc(s.recebedor) : 'com o nome do responsável pelo Desaperto') + '. O Desaperto não vê nem guarda dados do seu banco.</p></div>' +
         '<div class="garantia">' + ESCUDO + '<p><b>Garantia de 7 dias.</b> Se o plano não te ajudar, responda o e-mail do plano e devolvemos o valor inteiro. Sem perguntas difíceis.</p></div>' +
+        '<p class="pequeno">Criado por <b>Flávio Laroca</b>, especialista em finanças, com mais de 6 anos em custos, controladoria e orçamento.</p>' +
         '<p class="pequeno">Protocolo ' + esc(s.protocolo) + '. A data acima é sua, de graça, pague ou não.</p>' + areaCartao(d);
       document.getElementById('btn-pix').addEventListener('click', gerarPix);
       return;
@@ -217,6 +228,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
   function gerarPix() {
     var b = document.getElementById('btn-pix'), e = document.getElementById('erro');
     contar('clicou_pix');
+    umaVez('pix', function () { window.dpx('InitiateCheckout', { value: VALOR(), currency: 'BRL' }); });
     b.disabled = true; b.textContent = 'Gerando o Pix...'; e.hidden = true;
     fetch('/api/pagamento', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: id, a: a }) })
       .then(function (r) { return r.json(); })

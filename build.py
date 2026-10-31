@@ -14,6 +14,10 @@ SITE = os.path.join(AQUI, 'src')
 LOGO_SVG = os.path.join(AQUI, 'src', 'logo.svg')
 PUB = os.path.join(AQUI, 'public')
 URL = 'https://desaperto.com'
+# Pixel da Meta: deixe vazio para desligar. Com o número, o site passa a avisar a Meta
+# quando alguém vê a data (ViewContent), deixa o contato (Lead), clica no Pix
+# (InitiateCheckout) e paga (Purchase). Nunca vai junto: respostas, valores, nome ou e-mail.
+META_PIXEL_ID = ''
 
 FONTES = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@500;600&display=swap">'
 
@@ -24,11 +28,34 @@ def logo():
     return s.replace('fill="#16211C"', 'fill="currentColor"').replace('role="img" aria-label="desaperto"', 'aria-hidden="true" focusable="false"')
 
 
+PRIV_PIXEL = ("<h2>Anúncios (Meta)</h2>"
+    "<p>Para saber quais anúncios trazem pessoas que realmente usam o Desaperto, usamos o Pixel da Meta (empresa do Facebook e do Instagram). "
+    "Ele avisa a Meta quando alguém abre o site, vê a data, deixa o contato, vai para o Pix ou paga, e pode usar cookies da Meta no seu navegador.</p>"
+    "<p><b>Não enviamos à Meta as suas respostas, valores de dívida ou de renda, nome nem e-mail.</b> "
+    "Você pode bloquear isso nas configurações de privacidade do navegador ou em Configurações de anúncios, na sua conta da Meta.</p>")
+
+
+def pixel():
+    """Código do Pixel da Meta para o <head>. Vazio se META_PIXEL_ID não estiver definido.
+    window.dpx(evento, dados) é o único jeito de o site falar com a Meta; não conta os
+    aparelhos marcados como "não contar" (os do dono, ao entrar no painel)."""
+    if not META_PIXEL_ID:
+        return '<script>window.dpx=function(){};</script>'
+    pid = re.sub(r'\D', '', META_PIXEL_ID)
+    return ('<script>(function(){var nao=false;try{nao=!!localStorage.getItem("desaperto-nao-contar")}catch(e){}'
+            'window.dpx=function(ev,d){try{if(!nao&&window.fbq)window.fbq("track",ev,d||{})}catch(e){}};'
+            'if(nao)return;!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};'
+            'if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}'
+            '(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");'
+            f'fbq("init","{pid}");fbq("track","PageView");}})();</script>')
+
+
 def cabeca(titulo, descricao, caminho, extra='', indexar=True):
     return f'''<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+{pixel() if caminho != '/admin' else '<script>window.dpx=function(){};</script>'}
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{titulo}</title>
 <meta name="description" content="{descricao}">
@@ -104,7 +131,12 @@ def main():
     open(os.path.join(PUB, 'rapido.html'), 'w').write(cabeca('Descubra a sua data · Desaperto', 'Em 5 minutos, de cabeça: o mês aproximado em que você sai das dívidas. Grátis.', '/rapido', topo) + '<body>\n' + corpo + '\n</body>\n</html>\n')
 
     open(os.path.join(PUB, 'termos.html'), 'w').write(pagina_simples('termos.html', 'Termos de uso · Desaperto', 'O combinado entre você e o Desaperto.', '/termos'))
-    open(os.path.join(PUB, 'privacidade.html'), 'w').write(pagina_simples('privacidade.html', 'Privacidade · Desaperto', 'Como o Desaperto cuida das suas respostas.', '/privacidade'))
+    priv = pagina_simples('privacidade.html', 'Privacidade · Desaperto', 'Como o Desaperto cuida das suas respostas.', '/privacidade')
+    if META_PIXEL_ID:
+        priv = priv.replace('<!--PIXEL-->', PRIV_PIXEL).replace('Não usamos cookies de propaganda nem de rastreamento.', 'Fora o Pixel da Meta (veja "Anúncios" acima), não usamos cookies de propaganda.').replace('Atualizada em 25 de outubro de 2026.', 'Atualizada em 31 de outubro de 2026.')
+    else:
+        priv = priv.replace('<!--PIXEL-->', '')
+    open(os.path.join(PUB, 'privacidade.html'), 'w').write(priv)
     open(os.path.join(PUB, 'pagar.html'), 'w').write(pagina_simples('pagar.html', 'Seu resultado · Desaperto', 'A sua data para sair das dívidas.', '/pagar', indexar=False, cta=False))
     open(os.path.join(PUB, 'avaliar.html'), 'w').write(pagina_simples('avaliar.html', 'Sua avaliação · Desaperto', 'Conte como foi o seu plano.', '/avaliar', indexar=False, cta=False))
     open(os.path.join(PUB, 'admin.html'), 'w').write(pagina_simples('admin.html', 'Área interna · Desaperto', 'Área interna.', '/admin', indexar=False))
@@ -118,6 +150,8 @@ def main():
     open(os.path.join(PUB, 'sitemap.xml'), 'w').write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + ''.join(f'  <url><loc>{URL}{u}</loc></url>\n' for u in urls) + '</urlset>\n')
     csp = ("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
            "font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
+    if META_PIXEL_ID:
+        csp = csp.replace("script-src 'self' 'unsafe-inline'", "script-src 'self' 'unsafe-inline' https://connect.facebook.net").replace("img-src 'self' data:", "img-src 'self' data: https://www.facebook.com").replace("connect-src 'self'", "connect-src 'self' https://www.facebook.com https://connect.facebook.net")
     open(os.path.join(PUB, '_redirects'), 'w').write('/teste/:codigo /rapido?convite=:codigo 302\n')
     open(os.path.join(PUB, '_headers'), 'w').write(f'''/*
   X-Content-Type-Options: nosniff
