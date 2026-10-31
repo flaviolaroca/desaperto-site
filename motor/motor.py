@@ -111,7 +111,16 @@ def limpar(r, inicio=(2026, 11)):
     abate_deliv = min(va - abate_mercado, g['delivery'])
     renda = (r.get('renda') or 0) + ((r.get('contrib') or 0) if r.get('divide') == 'Sim' else 0)
 
+    # Casa financiada: muita gente põe a prestação também em Moradia. Conta uma vez só (na dívida).
+    imovel = [d for d in (r.get('dividas') or []) if d.get('tipo') == 'Financiamento de imóvel' and d.get('s_status') == 'Em dia' and d.get('e_parcela')]
+    if imovel and g['moradia']:
+        P = sum(d['e_parcela'] for d in imovel)
+        if g['moradia'] >= P * 0.95:
+            g['moradia'] = max(0, round(g['moradia'] - P))
+            premissas.append(f'A prestação da casa ({brl(P)}) também estava em Moradia. Ela entra só uma vez, na parte das dívidas.')
     for k in ['moradia', 'mercado', 'contas']:
+        if k == 'moradia' and imovel:
+            continue
         if g[k] == 0:
             alertas.append(('C4', f'{NOME_GASTO[k]} ficou em R$ 0. Se você tem esse gasto, a reserva para imprevistos e a data de saída mudam.'))
 

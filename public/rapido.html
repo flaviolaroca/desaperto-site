@@ -300,6 +300,15 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
         var ok = true;
         if (!r.renda) { erro('renda', 'Coloque quanto entra por mês.'); ok = false; }
         if (r.gastosR.total == null) { erro('gastos', 'Coloque um valor, mesmo que aproximado.'); ok = false; }
+        // Contas levando tudo o que entra: quase sempre a pessoa somou junto o que paga nas dívidas. Pergunta uma vez antes de dar "não fecha".
+        var pagaDivida = r.dividas.some(function (d) { return d.parcela > 0 || (d.tipo === 'cartao' && !d.atrasada); });
+        if (ok && r.gastosR.total >= r.renda * 0.95 && E.confGastos !== r.gastosR.total) {
+          E.confGastos = r.gastosR.total; salvar(); contar('r_aviso_gastos');
+          erro('gastos', pagaDivida
+            ? 'As contas estão levando todo o salário. Esse valor inclui o que você paga nas dívidas (parcelas, fatura do cartão)? Se incluir, tire essa parte: as dívidas já entram na conta. Se estiver certo, toque de novo em "Ver a minha data".'
+            : 'As contas estão levando todo o salário. Confira se o valor está certo. Se estiver, toque de novo em "Ver a minha data".');
+          return;
+        }
         if (ok) ir(2);
       });
       return;
@@ -324,7 +333,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
         '</div>';
     } else {
       topo = '<p class="acolhe">Pelas suas respostas</p><h1>Do jeito que está, a conta não fecha.</h1><div class="resultado">' +
-        (est.diferenca ? '<p>Depois das contas da casa e das parcelas, faltam cerca de <b>' + reais(est.diferenca) + ' por mês</b>.</p>' : '<p>As parcelas e os juros crescem mais rápido do que dá para pagar.</p>') +
+        (est.diferenca ? '<p>Depois das contas da casa e das parcelas, faltam cerca de <b>' + reais(est.diferenca) + ' por mês</b>.</p>' : (est.semSobra ? '<p>Hoje as contas da casa levam tudo o que entra, e não sobra nada para as dívidas.</p>' : '<p>As parcelas e os juros crescem mais rápido do que dá para pagar.</p>')) +
         '<p>Isso tem saída: existe uma lei para renegociar todas as dívidas juntas, preservando o dinheiro para viver. O plano mostra como.</p></div>';
     }
     $t.innerHTML = '<section class="tela">' + topo +
@@ -357,7 +366,11 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     var ds = r.dividas.map(function (d) {
       if (d.atrasada) return { saldo: Math.round(d.valor * 0.6), parcela: 0, taxa: 0, atrasada: true, fim: null };
       if ((d.tipo === 'cartao' || d.tipo === 'cheque') && !d.parcela) { var i = 0.0727 * (aperto ? 1.15 : 1); return { saldo: d.valor, parcela: Math.round(pmt(d.valor, i, 12)), taxa: i, atrasada: false, fim: null }; }
-      return { saldo: d.valor, parcela: d.parcela || 0, taxa: taxa(d) * (aperto ? 1.15 : 1), atrasada: false, fim: null };
+      var tx = taxa(d) * (aperto ? 1.15 : 1), saldo = d.valor;
+      // Muita gente responde "quanto deve" somando as parcelas que faltam (ex.: 58 × R$ 1.026 = R$ 60 mil).
+      // Se a parcela nem cobre os juros desse valor, ou daria mais de 10 anos, o valor é a soma das parcelas: o contrato acaba em valor ÷ parcela meses.
+      if (d.parcela && (d.valor * tx >= d.parcela * 0.95 || d.valor / d.parcela > 120)) { var n = Math.ceil(d.valor / d.parcela); saldo = tx ? d.parcela * (1 - Math.pow(1 + tx, -n)) / tx : d.valor; }
+      return { saldo: saldo, parcela: d.parcela || 0, taxa: tx, atrasada: false, fim: null };
     });
     var caixa = Math.max(0, (r.guardado || 0) - 500) * 0.8;
     var jurosMes = r.dividas.reduce(function (s, d) { return s + (d.atrasada ? 0 : d.valor * taxa(d)); }, 0);  // o que os juros custam hoje, antes do plano
@@ -405,7 +418,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
   function estimativaBase(r) {
     var a = simular(r, false), b = simular(r, true);
     var total = r.dividas.reduce(function (s, d) { return s + d.valor; }, 0);
-    if (!a.fecha) return { tipo: 'lei', aprox: true, diferenca: Math.round(a.diferenca), juros_mes: Math.round(a.jurosMes), dividas: r.dividas.length, total: total };
+    if (!a.fecha) return { tipo: 'lei', aprox: true, diferenca: Math.round(a.diferenca), semSobra: Math.round(a.diferenca) === 0, juros_mes: Math.round(a.jurosMes), dividas: r.dividas.length, total: total };
     if (!a.saida) return { tipo: 'lei', aprox: true, diferenca: 0, juros_mes: Math.round(a.jurosMes), dividas: r.dividas.length, total: total };
     return { tipo: 'data', aprox: true, saida: a.saida, saida_max: (b.fecha && b.saida && (b.saida[0] * 12 + b.saida[1] > a.saida[0] * 12 + a.saida[1])) ? b.saida : null,
       primeira: a.primeira && (a.primeira[0] !== a.saida[0] || a.primeira[1] !== a.saida[1]) ? a.primeira : null, juros_mes: Math.round(a.jurosMes), dividas: r.dividas.length, total: total };
