@@ -88,7 +88,7 @@ def textos(c):
             cands.append((f'Confira a taxa de juros: {rotulo(d)}', 'Hoje · 10 minutos',
                           'No app ou no contrato, procure "taxa de juros" ao mês. Ela decide se vale adiantar essa dívida ou se ela fica por último.', False))
             break
-    if r.get('margem_naoSei') and r.get('trabalho') in ('Carteira assinada (CLT)', 'Servidor público', 'Aposentado ou pensionista do INSS'):
+    if (r.get('margem_naoSei') or not r.get('margem')) and r.get('trabalho') in ('Carteira assinada (CLT)', 'Servidor público', 'Aposentado ou pensionista do INSS'):
         cands.append(('Confira quanto do salário pode ter desconto em folha', 'Hoje · 10 minutos',
                       'No app Carteira de Trabalho Digital (ou Meu INSS), veja a "margem consignável". Se houver margem, trocar a dívida mais cara por consignado pode baixar muito os juros.', False))
     rep = c.get('rep')

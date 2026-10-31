@@ -175,7 +175,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     var itens = d.tipo === 'lei'
       ? ['O que proteger primeiro: casa, comida e contas.', 'A proposta para os credores, com o valor de cada um.', 'O passo a passo para pedir a renegociação, de graça, no Procon ou na Defensoria Pública.', 'O dossiê pronto para levar: dívidas, orçamento e a proposta.']
       : ['A ordem: qual dívida pagar primeiro e por quê.', 'O mês a mês: quanto pagar, em qual dívida e onde, até a última.', 'O que falar com o banco e quanto oferecer nas dívidas atrasadas.', 'Os seus direitos e o que fazer se um mês apertar.', 'Se você escolheu: um e-mail no começo de cada mês com o que fazer naquele mês.'];
-    if (d.aprox) itens.unshift('A data exata: depois de pagar, você completa as respostas com os valores do app do banco, em uns 15 minutos.');
+    if (d.aprox) itens.unshift('A data exata: depois de pagar, você completa as respostas com os valores do app do banco, em uns 10 minutos.');
     return '<div class="cartao"><h2>O que vem no plano completo</h2><ul class="inclui">' + itens.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
   }
   function ancora(d) {
@@ -215,7 +215,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     }
     if (s.estado === 'completar') {
       $t.innerHTML = '<p class="rotulo">' + (s.gratis ? 'Seu resultado' : 'Pagamento confirmado') + '</p><h1>' + (nome ? esc(nome) + ', agora' : 'Agora') + ', o plano exato.</h1>' +
-        '<div class="cartao"><h2>Falta um passo: as respostas completas</h2><p>Separe uns 15 minutos e abra o app do banco. Você confirma o que entra, o que sai e o valor de cada dívida. Assim que terminar, o plano chega no e-mail <b>' + esc(s.email) + '</b> em poucos minutos.</p>' +
+        '<div class="cartao"><h2>Falta um passo: as respostas completas</h2><p>Separe uns 10 minutos e abra o app do banco. Você confirma o que entra, o que sai e o valor de cada dívida. Assim que terminar, o plano chega no e-mail <b>' + esc(s.email) + '</b> em poucos minutos.</p>' +
         '<a class="btn" href="' + esc(s.continuar) + '">Completar minhas respostas</a><p class="pequeno">Se não der agora, o link também está no seu e-mail.</p></div>' +
         (d.saida ? '<div class="numeros"><div><small>Sua data aproximada</small><b>' + esc(d.faixa_txt || d.saida_txt) + '</b></div></div>' : '') + areaCartao(d);
       return;

@@ -236,6 +236,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
   function recente(d) { return atrasada(d) && (d.s_tempo === 'Menos de 30 dias' || d.s_tempo === '1 a 3 meses'); }
   function antiga(d) { return atrasada(d) && !!d.s_tempo && !recente(d); }
   function rotativoAberto(d) { return ['Paguei uma parte', 'Paguei o mínimo', 'Não paguei'].indexOf(d.c_acao) >= 0; }
+  function mais(d) { return (d.c_mais || []).length > 0; }
   function financiamento(d) { return d.tipo === 'Financiamento de veículo' || d.tipo === 'Financiamento de imóvel'; }
   var fDivida = [
     F({ id: 'tipo', tipo: 'unica', rotulo: 'Que tipo de dívida é?', ajuda: 'Consignado é o empréstimo descontado direto do salário ou do benefício. Antecipação do FGTS é o empréstimo pago com o saque-aniversário.', ops: TIPOS }),
@@ -246,18 +247,21 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     F({ id: 'c_fatura', tipo: 'dinheiro', rotulo: 'Qual foi o valor total da última fatura que fechou?', g: 'cartao', bloco: 'A última fatura', mostrar: function (d) { return !!d.s_status; } }),
     F({ id: 'c_acao', tipo: 'unica', rotulo: 'O que você fez com essa fatura?', ops: ['Paguei tudo', 'Paguei uma parte', 'Paguei o mínimo', 'Parcelei a fatura', 'Não paguei'], g: 'cartao', mostrar: function (d) { return !!d.s_status; } }),
     F({ id: 'c_pago', tipo: 'dinheiro', rotulo: 'Quanto você pagou?', g: 'cartao', mostrar: function (d) { return d.c_acao === 'Paguei uma parte' || d.c_acao === 'Paguei o mínimo'; } }),
-    F({ id: 'c_taxaRot', tipo: 'texto', rotulo: 'Quanto é o juro desse cartão quando a fatura não é paga inteira?', ajuda: 'Está escrito na própria fatura, perto do pagamento mínimo, como "juros do rotativo" ou "encargos do rotativo". Exemplo: 14,9% ao mês. Se não achar, deixe em branco.', g: 'cartao', obrig: false, mostrar: rotativoAberto }),
-    F({ id: 'c_ofertaParc', tipo: 'dinheiro', rotulo: 'Se você parcelar essa fatura em 12 vezes, de quanto fica cada parcela?', ajuda: 'No app, a opção "parcelar fatura" mostra a simulação antes de você confirmar. Só consulte, não contrate nada agora.', g: 'cartao', obrig: false, naoSei: 'O app não mostra', mostrar: rotativoAberto }),
     F({ id: 'c_temParc', tipo: 'simnao', rotulo: 'Você está pagando um parcelamento de fatura antiga?', g: 'cartao', bloco: 'Parcelas que já existem', mostrar: function (d) { return !!d.c_acao; } }),
     F({ id: 'c_parcValor', tipo: 'dinheiro', rotulo: 'Valor da parcela desse parcelamento', g: 'cartao', mostrar: function (d) { return d.c_temParc === 'Sim'; } }),
     F({ id: 'c_parcRestam', tipo: 'inteiro', rotulo: 'Quantas parcelas faltam?', g: 'cartao', mostrar: function (d) { return d.c_temParc === 'Sim'; } }),
     F({ id: 'c_parcReneg', tipo: 'simnao', rotulo: 'Esse parcelamento é uma renegociação ou acordo?', g: 'cartao', mostrar: function (d) { return d.c_temParc === 'Sim'; } }),
     F({ id: 'c_parcTaxa', tipo: 'texto', rotulo: 'Qual é a taxa de juros ao mês desse parcelamento?', ajuda: 'Aparece nos detalhes do parcelamento no app. Se for sem juros, coloque 0.', g: 'cartao', naoSei: 'Não encontrei', mostrar: function (d) { return d.c_temParc === 'Sim'; } }),
-    F({ id: 'c_parcQuitar', tipo: 'dinheiro', rotulo: 'Quanto custa pagar tudo desse parcelamento hoje?', ajuda: 'No app, procure "antecipar parcelas"; se não aparecer, peça no chat.', g: 'cartao', obrig: false, naoSei: 'O app não mostra', mostrar: function (d) { return d.c_temParc === 'Sim'; } }),
-    F({ id: 'c_temFuturo', tipo: 'simnao', rotulo: 'O app já mostra algum valor lançado nas próximas faturas desse cartão?', g: 'cartao', mostrar: function (d) { return !!d.c_acao; } }),
-    F({ id: 'c_futuroLista', tipo: 'linhas', semOque: true, rotulo: 'Quanto já está lançado em cada uma das próximas faturas?', ajuda: 'No app, em "próximas faturas" ou "lançamentos futuros". Coloque o valor de cada mês do jeito que aparece, até a última fatura com valor. Se tiver parcelamento de fatura, ele já está incluído aí.', g: 'cartao', mostrar: function (d) { return d.c_temFuturo === 'Sim'; } }),
-    F({ id: 'c_limite', tipo: 'dinheiro', rotulo: 'Qual é o limite total desse cartão?', g: 'cartao', mostrar: function (d) { return !!d.c_acao; } }),
-    F({ id: 'c_venc', tipo: 'dia', rotulo: 'Em que dia a fatura vence?', g: 'cartao', mostrar: function (d) { return !!d.c_acao; } }),
+    F({ id: 'c_temFuturo', tipo: 'simnao', rotulo: 'O app já mostra algum valor lançado nas próximas faturas desse cartão?', ajuda: 'São as compras parceladas que ainda vão cair, em "próximas faturas" ou "lançamentos futuros".', g: 'cartao', mostrar: function (d) { return !!d.c_acao; } }),
+    F({ id: 'c_proxFatura', tipo: 'dinheiro', rotulo: 'Quanto já está lançado na próxima fatura?', ajuda: 'Do jeito que aparece no app. Se tiver parcelamento de fatura, ele já está incluído aí.', g: 'cartao', mostrar: function (d) { return d.c_temFuturo === 'Sim'; } }),
+    F({ id: 'c_mesesFuturo', tipo: 'inteiro', rotulo: 'Por quantos meses ainda aparece algum valor lançado?', ajuda: 'Conte a próxima fatura. Exemplo: se a última com valor é daqui a 6 meses, coloque 6.', g: 'cartao', mostrar: function (d) { return d.c_temFuturo === 'Sim'; } }),
+    F({ id: 'c_totalFuturo', tipo: 'dinheiro', rotulo: 'Somando todas as próximas faturas, quanto dá?', ajuda: 'Opcional. Alguns apps mostram esse total. Se não achar, deixe em branco: o plano estima que o valor vai caindo mês a mês.', g: 'cartao', obrig: false, mostrar: function (d) { return d.c_temFuturo === 'Sim' && (d.c_mesesFuturo || 0) > 1; } }),
+    F({ id: 'c_limite', tipo: 'dinheiro', rotulo: 'Qual é o limite total desse cartão?', ajuda: 'Opcional.', g: 'cartao', obrig: false, mostrar: function (d) { return !!d.c_acao; } }),
+    F({ id: 'c_venc', tipo: 'dia', rotulo: 'Em que dia a fatura vence?', ajuda: 'Opcional. Se vencer antes do salário cair, o plano mostra como mudar.', g: 'cartao', obrig: false, mostrar: function (d) { return !!d.c_acao; } }),
+    F({ id: 'c_mais', tipo: 'multipla', rotulo: 'Quer deixar o plano mais exato?', ajuda: 'Opcional. Sem isso, o plano usa a média do mercado e avisa onde conferir.', ops: ['Tenho os juros e a simulação do app à mão'], semRotulo: false, bloco: 'Se quiser, mais exato', g: 'cartao', obrig: false, mostrar: function (d) { return rotativoAberto(d) || d.c_temParc === 'Sim'; } }),
+    F({ id: 'c_taxaRot', tipo: 'texto', rotulo: 'Quanto é o juro desse cartão quando a fatura não é paga inteira?', ajuda: 'Está escrito na própria fatura, perto do pagamento mínimo, como "juros do rotativo" ou "encargos do rotativo". Exemplo: 14,9% ao mês. Se não achar, deixe em branco.', g: 'cartao', obrig: false, mostrar: function (d) { return rotativoAberto(d) && mais(d); } }),
+    F({ id: 'c_ofertaParc', tipo: 'dinheiro', rotulo: 'Se você parcelar essa fatura em 12 vezes, de quanto fica cada parcela?', ajuda: 'No app, a opção "parcelar fatura" mostra a simulação antes de você confirmar. Só consulte, não contrate nada agora.', g: 'cartao', obrig: false, naoSei: 'O app não mostra', mostrar: function (d) { return rotativoAberto(d) && mais(d); } }),
+    F({ id: 'c_parcQuitar', tipo: 'dinheiro', rotulo: 'Quanto custa pagar tudo desse parcelamento hoje?', ajuda: 'No app, procure "antecipar parcelas"; se não aparecer, peça no chat.', g: 'cartao', obrig: false, naoSei: 'O app não mostra', mostrar: function (d) { return d.c_temParc === 'Sim' && mais(d); } }),
     // cheque especial
     F({ id: 'ce_usado', tipo: 'dinheiro', rotulo: 'Quanto do cheque especial você está usando hoje?', ajuda: 'É o saldo negativo da conta. Aparece no app como saldo ou "limite utilizado".', g: 'cheque', mostrar: function (d) { return !!d.s_status; } }),
     F({ id: 'ce_tempo', tipo: 'unica', rotulo: 'Há quanto tempo sua conta está no negativo sem sair?', ops: ['Menos de 1 mês', '1 a 3 meses', 'Mais de 3 meses'], g: 'cheque', mostrar: function (d) { return !!d.s_status; } }),
@@ -276,21 +280,17 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     F({ id: 'e_quitar', tipo: 'dinheiro', rotulo: 'Quanto custa pagar tudo hoje?', ajuda: 'No app, procure "quitar contrato" ou "antecipar parcelas"; se não aparecer, peça no chat ou ao gerente. Com esse valor o plano sabe exatamente quanto você economiza adiantando.', g: 'parcelada', obrig: false, naoSei: 'Não consegui ver', mostrar: emDia }),
     F({ id: 'e_total', tipo: 'inteiro', rotulo: 'Em quantas parcelas foi o contrato, no total?', g: 'parcelada', obrig: false, mostrar: function (d) { return emDia(d) && !!d.e_taxa_naoSei && !!d.e_quitar_naoSei; } }),
     F({ id: 'e_recebido', tipo: 'dinheiro', rotulo: function (d) { return financiamento(d) ? 'Qual foi o valor financiado, sem contar a entrada?' : 'Quanto caiu na sua conta quando você pegou esse empréstimo?'; }, ajuda: 'Sem a taxa e sem o valor para quitar, isso ajuda a estimar. A dívida fica marcada para você confirmar antes de adiantar.', g: 'parcelada', obrig: false, naoSei: 'Não lembro', mostrar: function (d) { return emDia(d) && !!d.e_taxa_naoSei && !!d.e_quitar_naoSei; } }),
-    F({ id: 'e_venc', tipo: 'dia', rotulo: 'Em que dia a parcela vence?', g: 'parcelada', mostrar: function (d) { return emDia(d) && d.tipo !== 'Consignado'; } }),
+    F({ id: 'e_venc', tipo: 'dia', rotulo: 'Em que dia a parcela vence?', ajuda: 'Opcional.', obrig: false, g: 'parcelada', mostrar: function (d) { return emDia(d) && d.tipo !== 'Consignado'; } }),
     F({ id: 'e_debito', tipo: 'simnao', rotulo: 'A parcela sai sozinha da sua conta (débito automático)?', g: 'parcelada', mostrar: function (d) { return emDia(d) && d.tipo !== 'Consignado'; } }),
     F({ id: 'e_descontado', tipo: 'simnao', rotulo: 'Essa parcela é descontada do salário antes de ele cair na sua conta?', ajuda: 'Se sim, o plano não cobra ela de novo, porque a renda que você informou já vem sem ela.', g: 'parcelada', mostrar: function (d) { return emDia(d) && d.tipo === 'Consignado'; } }),
-    F({ id: 'e_veicTrab', tipo: 'simnao', rotulo: 'Esse veículo é usado para trabalhar?', g: 'parcelada', mostrar: function (d) { return !!d.s_status && d.tipo === 'Financiamento de veículo'; } }),
     // outras
     F({ id: 'o_total', tipo: 'dinheiro', rotulo: 'Quanto é devido hoje, já com multas e juros?', g: 'outros', mostrar: function (d) { return !!d.s_status; } }),
     F({ id: 'o_juros', tipo: 'unica', rotulo: 'Essa pessoa cobra juros?', ops: ['Não cobra', 'Cobra'], g: 'outros', mostrar: function (d) { return d.tipo === 'Dívida com parente ou conhecido'; } }),
     F({ id: 'o_jurosQuanto', tipo: 'texto', rotulo: 'Quanto de juros ela cobra?', ajuda: 'Exemplo: 5% ao mês, ou R$ 100 por mês.', g: 'outros', mostrar: function (d) { return d.tipo === 'Dívida com parente ou conhecido' && d.o_juros === 'Cobra'; } }),
     F({ id: 'o_pressao', tipo: 'unica', rotulo: 'Essa pessoa está pressionando para receber?', ops: ['Não', 'Sim, está cobrando', 'Sim, com ameaças'], g: 'outros', mostrar: function (d) { return d.tipo === 'Dívida com parente ou conhecido'; } }),
     // atraso
-    F({ id: 's_quem', tipo: 'unica', bloco: 'O atraso', rotulo: 'Quem está cobrando essa dívida hoje?', ops: ['O próprio banco ou loja', 'Uma empresa de cobrança', 'Ninguém está cobrando', 'Não sei'], mostrar: atrasada }),
-    F({ id: 's_proposta', tipo: 'unica', rotulo: 'Você já recebeu alguma proposta de acordo?', ops: ['Não', 'Sim'], lado: true, mostrar: atrasada }),
-    F({ id: 's_propostaTexto', tipo: 'texto', rotulo: 'Qual foi a proposta?', ajuda: 'Valor e condições. Exemplo: R$ 900 à vista, ou 10 de R$ 120.', mostrar: function (d) { return atrasada(d) && d.s_proposta === 'Sim'; } }),
-    F({ id: 's_serasa', tipo: 'unica', rotulo: 'Essa dívida deixou seu nome sujo no Serasa?', ops: ['Sim', 'Não', 'Não consultei'], lado: true, mostrar: function (d) { return !!d.s_status; } }),
-    F({ id: 's_justica', tipo: 'unica', rotulo: 'Existe processo na Justiça ou bloqueio de conta por essa dívida?', ops: ['Sim', 'Não', 'Não sei'], lado: true, mostrar: function (d) { return (atrasada(d) && ATRASOS.indexOf(d.s_tempo) >= 2) || d.s_serasa === 'Sim'; } })
+    F({ id: 's_propostaTexto', tipo: 'texto', bloco: 'O atraso', rotulo: 'Já te ofereceram algum acordo? Qual?', ajuda: 'Opcional. Valor e condições. Exemplo: R$ 900 à vista, ou 10 de R$ 120.', obrig: false, mostrar: atrasada }),
+    F({ id: 's_serasa', tipo: 'unica', bloco: 'Serasa', rotulo: 'Essa dívida deixou seu nome sujo no Serasa?', ops: ['Sim', 'Não', 'Não consultei'], lado: true, mostrar: function (d) { return !!d.s_status; } })
   ];
   fDivida.forEach(function (f) { if (f.g) { var g = f.g, m = f.mostrar; f.mostrar = function (d) { return grupo(d.tipo) === g && (!m || m(d)); }; } });
 
@@ -300,12 +300,11 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     { id: 'acolhimento', etapa: 0, especial: 'acolhimento' },
     { id: 'compromisso', etapa: 0, especial: 'compromisso' },
     { id: 'contato', etapa: 1, acolhe: 'Vamos começar por você.', titulo: 'Como podemos te chamar?', campos: [
-      F({ id: 'nome', tipo: 'texto', rotulo: 'Seu primeiro nome', auto: 'given-name' }),
-      F({ id: 'email', tipo: 'email', rotulo: 'Seu e-mail', ajuda: 'É para onde vamos enviar o seu plano.', auto: 'email' })
+      F({ id: 'nome', tipo: 'texto', rotulo: 'Seu primeiro nome', auto: 'given-name', doRapido: true }),
+      F({ id: 'email', tipo: 'email', rotulo: 'Seu e-mail', ajuda: 'É para onde vamos enviar o seu plano.', auto: 'email', doRapido: true })
     ] },
     { id: 'causas', etapa: 1, titulo: 'O que aconteceu para as dívidas crescerem?', lead: 'Pode marcar mais de uma.', campos: [
-      F({ id: 'causas', tipo: 'multipla', rotulo: 'O que aconteceu', ops: CAUSAS, semRotulo: true }),
-      F({ id: 'causaOutro', tipo: 'texto', rotulo: 'Conte em poucas palavras', mostrar: function (r) { return (r.causas || []).indexOf('Outro motivo') >= 0; } })
+      F({ id: 'causas', tipo: 'multipla', rotulo: 'O que aconteceu', ops: CAUSAS, semRotulo: true })
     ] },
     { id: 'ainda', etapa: 1, titulo: 'Dessas situações, qual ainda acontece hoje?', lead: 'Pode marcar mais de uma.', campos: [
       F({ id: 'ainda', tipo: 'multipla', rotulo: 'O que ainda acontece', semRotulo: true, ops: function (r) { return (r.causas || []).concat(['Nenhuma, já passou']); }, unicoFinal: true })
@@ -313,33 +312,28 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     { id: 'fimMes', etapa: 1, titulo: 'No fim do mês, o que normalmente acontece?', campos: [
       F({ id: 'fimMes', tipo: 'unica', rotulo: 'No fim do mês', semRotulo: true, ops: ['Sobra dinheiro', 'Fica zerado', 'Falta dinheiro'] }),
       F({ id: 'sobra', tipo: 'dinheiro', rotulo: 'Quanto sobra, em média?', mostrar: function (r) { return r.fimMes === 'Sobra dinheiro'; } }),
-      F({ id: 'falta', tipo: 'dinheiro', rotulo: 'Quanto falta, em média?', ajuda: 'Se não souber o valor exato, chute o mais próximo.', mostrar: function (r) { return r.fimMes === 'Falta dinheiro'; } }),
-      F({ id: 'cobre', tipo: 'multipla', rotulo: 'Como você cobre o que falta?', ops: ['Cartão de crédito', 'Cheque especial', 'Empréstimo', 'Ajuda de alguém', 'Atrasando contas', 'Outro'], mostrar: function (r) { return r.fimMes === 'Falta dinheiro'; } })
+      F({ id: 'falta', tipo: 'dinheiro', rotulo: 'Quanto falta, em média?', ajuda: 'Se não souber o valor exato, chute o mais próximo.', mostrar: function (r) { return r.fimMes === 'Falta dinheiro'; } })
     ] },
     { id: 'renda', etapa: 2, acolhe: 'Agora, o que entra.', titulo: 'Quanto você recebe?', campos: [
       F({ id: 'renda', tipo: 'dinheiro', rotulo: 'Quanto cai de fato na sua conta por mês?', ajuda: 'É o valor depositado, depois do INSS, do imposto de renda e das parcelas de empréstimo consignado descontadas do salário. Confira no extrato quanto entrou. Se sua renda varia, informe o menor valor dos últimos 3 meses.' }),
       F({ id: 'rendaTipo', tipo: 'unica', rotulo: 'Sua renda é:', ops: ['Fixa, quase igual todo mês', 'Varia de um mês para outro'] }),
-      F({ id: 'va', tipo: 'dinheiro', rotulo: 'Quanto você recebe por mês de vale-alimentação ou vale-refeição?', ajuda: 'Se não recebe, coloque 0.' })
+      F({ id: 'va', tipo: 'dinheiro', rotulo: 'Quanto você recebe por mês de vale-alimentação ou vale-refeição?', ajuda: 'Se não recebe, coloque 0.' }),
+      F({ id: 'trabalho', tipo: 'unica', rotulo: 'Como você trabalha hoje?', ops: ['Carteira assinada (CLT)', 'Servidor público', 'Aposentado ou pensionista do INSS', 'Autônomo ou MEI', 'Sem renda fixa no momento', 'Outro'] })
     ] },
     { id: 'quando', etapa: 2, titulo: 'Quando e onde o dinheiro cai?', campos: [
       F({ id: 'diaPag', tipo: 'dia', rotulo: 'Em que dia do mês cai o pagamento principal?' }),
-      F({ id: 'temAdiant', tipo: 'simnao', rotulo: 'Você recebe uma segunda parte em outro dia, como um adiantamento?' }),
-      F({ id: 'diaAdiant', tipo: 'dia', rotulo: 'Em que dia cai essa segunda parte?', mostrar: function (r) { return r.temAdiant === 'Sim'; } }),
       F({ id: 'banco', tipo: 'texto', rotulo: 'Em qual banco cai o seu salário ou a sua renda?' })
-    ] },
-    { id: 'trabalho', etapa: 2, titulo: 'Como você trabalha hoje?', campos: [
-      F({ id: 'trabalho', tipo: 'unica', rotulo: 'Como você trabalha', semRotulo: true, ops: ['Carteira assinada (CLT)', 'Servidor público', 'Aposentado ou pensionista do INSS', 'Autônomo ou MEI', 'Sem renda fixa no momento', 'Outro'] }),
-      F({ id: 'margem', tipo: 'dinheiro', rotulo: 'Quanto do seu salário ainda pode ter desconto de empréstimo em folha?', ajuda: 'Esse valor se chama margem consignável. CLT: app Carteira de Trabalho Digital, em Crédito do Trabalhador. INSS: app Meu INSS. Servidor: portal do seu órgão.', obrig: false, naoSei: 'Não sei', mostrar: function (r) { return ['Carteira assinada (CLT)', 'Servidor público', 'Aposentado ou pensionista do INSS'].indexOf(r.trabalho) >= 0; } })
     ] },
     { id: 'extras', etapa: 2, titulo: 'Vai entrar algum dinheiro extra nos próximos 6 meses?', lead: 'Por exemplo: 13º salário, férias, rescisão, restituição do Imposto de Renda.', campos: [
       F({ id: 'extras', tipo: 'simnao', rotulo: 'Dinheiro extra', semRotulo: true }),
       F({ id: 'extrasLista', tipo: 'linhas', rotulo: 'O que vai receber, quanto e em que mês?', item: 'Ex.: 13º salário', mostrar: function (r) { return r.extras === 'Sim'; } })
     ] },
-    { id: 'casa', etapa: 2, titulo: 'Alguém divide as contas da casa com você?', campos: [
-      F({ id: 'divide', tipo: 'simnao', rotulo: 'Divide as contas', semRotulo: true }),
+    { id: 'casa', etapa: 2, titulo: 'Casa e carro', campos: [
+      F({ id: 'divide', tipo: 'simnao', rotulo: 'Alguém divide as contas da casa com você?' }),
       F({ id: 'contrib', tipo: 'dinheiro', rotulo: 'Com quanto essa pessoa contribui por mês?', mostrar: function (r) { return r.divide === 'Sim'; } }),
-      F({ id: 'parcDividas', tipo: 'unica', rotulo: 'Essa pessoa tem dívidas pagas com o dinheiro da casa?', ops: ['Sim', 'Não', 'Não sei'], lado: true, mostrar: function (r) { return r.divide === 'Sim'; } }),
-      F({ id: 'parcDividasValor', tipo: 'dinheiro', rotulo: 'Quanto sai por mês do dinheiro da casa para essas dívidas?', mostrar: function (r) { return r.divide === 'Sim' && r.parcDividas === 'Sim'; } })
+      F({ id: 'veiculo', tipo: 'simnao', rotulo: 'Você tem carro ou moto?', ajuda: 'Se for financiado, a parcela entra na parte das dívidas.' }),
+      F({ id: 'fipe', tipo: 'dinheiro', rotulo: 'Qual é o valor aproximado dele pela tabela FIPE?', ajuda: 'Pesquise "tabela FIPE" com o modelo e o ano.', mostrar: function (r) { return r.veiculo === 'Sim'; } }),
+      F({ id: 'veiculoTrab', tipo: 'simnao', rotulo: 'Ele é usado para trabalhar?', mostrar: function (r) { return r.veiculo === 'Sim'; } })
     ] },
     { id: 'gastos1', etapa: 3, acolhe: 'Você já passou da metade. Agora, os gastos.', titulo: 'Quanto saiu no último mês?', lead: 'Abra o app do banco e a fatura do cartão. Vale qualquer forma de pagamento: Pix, débito, boleto ou cartão. Se não tem esse gasto, coloque 0. Não conte as parcelas de compras antigas do cartão (as que aparecem na fatura como 3/10 ou 5/12) nem parcelas de empréstimos: elas entram na parte das dívidas.', gastos: [0, 6] },
     { id: 'gastos2', etapa: 3, titulo: 'E o restante dos gastos', gastos: [6, 12] },
@@ -347,15 +341,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       F({ id: 'protegidos', tipo: 'multipla', rotulo: 'Quais você não pode reduzir de jeito nenhum?', ops: function () { return GASTOS.map(function (g) { return g[1]; }).concat(['Nenhum']); }, unicoFinal: true }),
       F({ id: 'noCartao', tipo: 'multipla', rotulo: 'Quais você costuma pagar no cartão de crédito?', ops: function () { return GASTOS.map(function (g) { return g[1]; }).concat(['Nenhum']); }, unicoFinal: true })
     ] },
-    { id: 'anuais', etapa: 3, titulo: 'Gastos que não são de todo mês', campos: [
-      F({ id: 'anuais', tipo: 'simnao', rotulo: 'Você tem gastos que vêm uma vez por ano ou poucas vezes?', ajuda: 'IPVA, IPTU, seguro, matrícula, material escolar.' }),
-      F({ id: 'anuaisLista', tipo: 'linhas', rotulo: 'Quais são, quanto custam e em que mês vencem?', item: 'Ex.: IPVA', mostrar: function (r) { return r.anuais === 'Sim'; } }),
-      F({ id: 'veiculo', tipo: 'simnao', rotulo: 'Você tem carro ou moto?', ajuda: 'Se for financiado, a parcela entra na parte das dívidas.' }),
-      F({ id: 'fipe', tipo: 'dinheiro', rotulo: 'Qual é o valor aproximado dele pela tabela FIPE?', ajuda: 'Pesquise "tabela FIPE" com o modelo e o ano.', mostrar: function (r) { return r.veiculo === 'Sim'; } }),
-      F({ id: 'veiculoTrab', tipo: 'simnao', rotulo: 'Ele é usado para trabalhar?', mostrar: function (r) { return r.veiculo === 'Sim'; } })
-    ] },
-    { id: 'serasa', etapa: 4, acolhe: 'Agora, as dívidas. Respira: é daqui que sai o caminho.', titulo: 'Antes, uma consulta rápida', lead: 'Abra o app do Serasa (é gratuito) e veja se há dívidas no seu CPF. Ele mostra até as que a gente esquece. Se quiser ir além, o Registrato, um site gratuito do Banco Central que você acessa com a conta gov.br, lista todos os seus empréstimos e quanto falta pagar em cada um. Você não precisa enviar nada.', campos: [
-      F({ id: 'serasa', tipo: 'unica', rotulo: 'Você consultou o Serasa?', ops: ['Sim, consultei', 'Não consegui agora'] }),
+    { id: 'serasa', etapa: 4, acolhe: 'Agora, as dívidas. Respira: é daqui que sai o caminho.', titulo: 'Antes, uma olhada rápida', lead: 'Abra o app do Serasa (é gratuito) e veja se há dívidas no seu CPF. Ele mostra até as que a gente esquece. Se quiser ir além, o Registrato, um site gratuito do Banco Central que você acessa com a conta gov.br, lista todos os seus empréstimos e quanto falta pagar em cada um. Você não precisa enviar nada.', campos: [
       F({ id: 'nomeLimpo', tipo: 'unica', rotulo: 'Você precisa do nome limpo para algo nos próximos meses?', ops: ['Não', 'Sim, para alugar um imóvel', 'Sim, para um financiamento', 'Sim, para uma vaga de emprego', 'Sim, para outra coisa'] })
     ] },
     { id: 'dividas', etapa: 4, especial: 'dividas' },
@@ -364,7 +350,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       F({ id: 'emprestPagar', tipo: 'simnao', rotulo: 'Nos últimos 12 meses, você pegou algum empréstimo para pagar outra dívida?' })
     ] },
     { id: 'depois', etapa: 5, acolhe: 'Última pergunta antes de conferir.', titulo: 'E quando as dívidas acabarem?', campos: [
-      F({ id: 'objetivo', tipo: 'texto', rotulo: 'O que você quer fazer com o dinheiro que hoje vai para as dívidas?', ajuda: 'Opcional. Por exemplo: guardar para a entrada da casa, viajar com a família, voltar a estudar. Ele aparece no seu plano.', obrig: false }),
+      F({ id: 'objetivo', tipo: 'texto', rotulo: 'O que você quer fazer com o dinheiro que hoje vai para as dívidas?', ajuda: 'Opcional. Por exemplo: guardar para a entrada da casa, viajar com a família, voltar a estudar. Ele aparece no seu plano.', obrig: false, doRapido: true }),
       F({ id: 'acompanhar', tipo: 'unica', rotulo: 'Quer receber, no começo de cada mês, um e-mail dizendo o que fazer naquele mês?', ajuda: 'Só enquanto o plano durar. Dá para parar quando quiser, com um clique.', ops: ['Sim, quero', 'Não, obrigado'] })
     ] },
     { id: 'revisao', etapa: 5, especial: 'revisao' },
@@ -375,13 +361,15 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
   /* ---------- render de campos ---------- */
   function rotuloDe(f, obj) { return typeof f.rotulo === 'function' ? f.rotulo(obj) : f.rotulo; }
   function opsDe(f, obj) { return typeof f.ops === 'function' ? f.ops(obj) : f.ops; }
-  function visivel(f, obj) { return !f.mostrar || f.mostrar(obj); }
+  function doRapido(f, obj) { return f.doRapido && obj === E.r && E.envio && E.envio.a && !vazio(obj[f.id]); }
+  function visivel(f, obj) { return !doRapido(f, obj) && (!f.mostrar || f.mostrar(obj)); }
+  function telaVazia(t) { return !!t.campos && !t.campos.some(function (f) { return visivel(f, R()); }); }
 
   function htmlCampo(f, obj, pref) {
     var id = pref + f.id, v = obj[f.id], h = '', aj = f.ajuda ? '<p class="ajuda" id="' + id + '-aj">' + esc(f.ajuda) + '</p>' : '';
     var desc = f.ajuda ? ' aria-describedby="' + id + '-aj"' : '';
     var oc = visivel(f, obj) ? '' : ' oculto';
-    var blocoAbre = f.bloco ? '<div class="bloco" data-bloco-de="' + f.id + '"><p class="bloco-titulo">' + esc(f.bloco) + '</p>' : '';
+    var blocoAbre = f.bloco ? '<div class="bloco' + oc + '" data-bloco-de="' + f.id + '"><p class="bloco-titulo">' + esc(f.bloco) + '</p>' : '';
     if (f.tipo === 'unica' || f.tipo === 'multipla' || f.tipo === 'simnao') {
       var ops = f.tipo === 'simnao' ? ['Sim', 'Não'] : opsDe(f, obj);
       var multi = f.tipo === 'multipla';
@@ -512,8 +500,21 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     for (var k = 0; k < 200; k++) { var m = (lo + hi) / 2; if (pvAnuidade(P, m, n) > S) lo = m; else hi = m; }
     return (lo + hi) / 2;
   }
+  // Próxima fatura + quantos meses (+ total, se souber) viram a lista mês a mês que o motor lê.
+  // Com o total: a próxima como está e o resto dividido igual. Sem o total: cai em linha reta até zero, sem ficar abaixo da parcela do parcelamento de fatura.
+  function sincFuturo(d) {
+    if (grupo(d.tipo) !== 'cartao') return;
+    if (d.c_temFuturo !== 'Sim' || !d.c_proxFatura || !d.c_mesesFuturo) { if (d.c_proxFatura != null || d.c_temFuturo !== 'Sim') delete d.c_futuroLista; return; }
+    var P = d.c_proxFatura, n = Math.min(36, d.c_mesesFuturo), tot = d.c_totalFuturo, vals = [];
+    var Pp = d.c_temParc === 'Sim' ? (d.c_parcValor || 0) : 0, np = d.c_parcRestam || 0;
+    if (tot && tot > P && n > 1) { var resto = Math.round((tot - P) / (n - 1)); vals.push(P); for (var k = 1; k < n; k++) vals.push(resto); }
+    else for (var k2 = 0; k2 < n; k2++) vals.push(Math.round(Math.max(P * (n - k2) / n, k2 < np ? Pp : 0)));
+    var m0 = new Date().getMonth() + 1;
+    d.c_futuroLista = vals.map(function (v, k) { return { valor: v, mes: MESES[(m0 + k) % 12] }; });
+  }
   // Próximas faturas, em ordem a partir do mês atual: [valor lançado, distância em meses].
   function proximas(d) {
+    sincFuturo(d);
     var hoje = new Date().getMonth(), por = {};
     (d.c_futuroLista || []).forEach(function (x) { if (x && x.valor && x.mes) { var k = (MESES.indexOf(x.mes) - hoje + 12) % 12; por[k] = (por[k] || 0) + x.valor; } });
     return Object.keys(por).map(Number).sort(function (a, b) { return a - b; }).map(function (k) { return por[k]; });
@@ -592,10 +593,8 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
         if (d.c_acao === 'Paguei tudo') cartoes.push({ nome: d.credor || 'de crédito', fatura: d.c_fatura || 0, esperado: noCartao / nCartoes + prox });
       }
     });
-    var casa = r.divide === 'Sim' && r.parcDividas === 'Sim' ? (r.parcDividasValor || 0) : 0;
     var partes = [['gastos', gastos], ['parcelas de empréstimos', parcelas], ['cartão (parcelas e juros da fatura em aberto)', cartao]];
     if (cheque) partes.push(['juros do cheque especial', cheque]);
-    if (casa) partes.push(['dívidas de quem divide a casa', casa]);
     var sai = partes.reduce(function (s, x) { return s + x[1]; }, 0);
     return { entra: entra, sai: sai, partes: partes, cartoes: cartoes };
   }
@@ -605,6 +604,8 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
   /* ---------- navegação ---------- */
   var $tela = document.getElementById('tela');
   function ir(n) {
+    var dir = n < E.passo ? -1 : 1;
+    while (n > 0 && n < TELAS.length - 1 && telaVazia(TELAS[n])) n += dir;
     E.passo = Math.max(0, Math.min(TELAS.length - 1, n));
     salvar(); render(); window.scrollTo(0, 0);
     var h = $tela.querySelector('h1'); if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
@@ -694,7 +695,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       '<p>Nas próximas telas, vamos te pedir os números da sua vida real: quanto entra, quanto sai e o que você deve. Pode ser desconfortável ver o valor total. Tudo bem sentir isso. Respira e continua: é a partir desse número que o caminho aparece.</p>' +
       '<p>Os detalhes fazem toda a diferença. Um valor esquecido pode mudar a ordem certa de pagar. Uma data de vencimento pode te fazer economizar todo mês. Quanto mais real e completa for a sua resposta, mais o seu plano vai ser feito para você, e não para qualquer pessoa.</p>' +
       (E.envio && E.envio.a ? '<p><strong>Esta é a parte que deixa o plano exato.</strong> Na versão rápida você respondeu de cabeça; agora são os valores de verdade, do app do banco.</p>' : '<p>No fim, você vê na hora, de graça, o mês em que sai das dívidas.</p>') +
-      '<p>Separe uns 15 minutos tranquilos. Deixe aberto o app do seu banco e o do Serasa. Se bater o cansaço no meio, respira e segue no seu tempo. Seu progresso fica salvo neste aparelho.</p></div>' +
+      '<p>Separe uns 10 minutos tranquilos. Deixe aberto o app do seu banco e o do Serasa. Se bater o cansaço no meio, respira e segue no seu tempo. Seu progresso fica salvo neste aparelho.</p></div>' +
       '<div class="campo" data-campo="consent"><label class="check"><input type="checkbox" id="q-consent"' + (r.consent ? ' checked' : '') + '><span>Concordo que minhas respostas sejam usadas apenas para montar o meu plano, com análise apoiada por inteligência artificial, e apagadas em até 90 dias. Entendo que o Desaperto é uma ferramenta educacional e não substitui consultoria profissional. Li os <a href="/termos" target="_blank" rel="noopener">termos de uso</a> e a <a href="/privacidade" target="_blank" rel="noopener">política de privacidade</a>.</span></label></div>' +
       botoes('Começar', '').replace('</div>', '<p class="nota">Não pedimos CPF, senha nem extrato. Só os números.</p></div>') + '</section>';
     var c = document.getElementById('q-consent'), campo = $tela.querySelector('[data-campo="consent"]');
@@ -771,6 +772,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
         return;
       }
       fDivida.forEach(function (f) { if (!visivel(f, d)) { delete d[f.id]; delete d[f.id + '_naoSei']; } });
+      sincFuturo(d);
       if (ui.idx >= 0) R().dividas[ui.idx] = d; else R().dividas.push(d);
       ui.divida = null; salvar(); render(); window.scrollTo(0, 0);
     });
@@ -801,8 +803,8 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
         linhas.filter(Boolean).map(function (l) { return '<dt>' + esc(l[0]) + '</dt><dd>' + esc(l[1]) + '</dd>'; }).join('') + '</dl></section>';
     }
     var h = '<section class="tela"><h1>Confira antes de enviar</h1><p class="lead">Se algo estiver errado, toque em Editar. Você volta direto para cá.</p>' + aviso + '<div class="revisao">' +
-      sec('Você', 'contato', [['Nome', r.nome], ['E-mail', r.email], ['Fim do mês', r.fimMes]]) +
-      sec('Renda', 'renda', [['Cai na conta', reais(r.renda)], ['Vale-alimentação', reais(r.va)], ['Dia do pagamento', r.diaPag ? 'dia ' + r.diaPag + (r.temAdiant === 'Sim' && r.diaAdiant ? ' e dia ' + r.diaAdiant : '') : '—'], r.divide === 'Sim' ? ['Contribuição da casa', reais(r.contrib)] : null]) +
+      sec('Você', 'fimMes', [['Nome', r.nome], ['E-mail', r.email], ['Fim do mês', r.fimMes]]) +
+      sec('Renda', 'renda', [['Cai na conta', reais(r.renda)], ['Vale-alimentação', reais(r.va)], ['Dia do pagamento', r.diaPag ? 'dia ' + r.diaPag : '—'], r.divide === 'Sim' ? ['Contribuição da casa', reais(r.contrib)] : null]) +
       sec('Gastos', 'gastos1', [['Total no mês', reais(totalGastos())], ['Maior gasto', (function () { var g = r.gastos || {}, m = GASTOS.slice().sort(function (a, b) { return (g[b[0]] || 0) - (g[a[0]] || 0); })[0]; return m[1] + ' · ' + reais(g[m[0]]); })()]]) +
       sec('Dívidas', 'dividas', [['Quantidade', String((r.dividas || []).length)], ['Soma aproximada', reais(totalDividas())], totalParceladas() ? ['Compras parceladas, sem juros', reais(totalParceladas())] : null, ['Atrasadas', String((r.dividas || []).filter(function (d) { return d.s_status === 'Atrasada'; }).length)]]) +
       sec('Para fechar', 'recursos', [['Dinheiro guardado', reais(r.guardado)], ['Empréstimo para pagar dívida', r.emprestPagar || '—']]) +
@@ -869,14 +871,14 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     E.r = {
       consent: true, nome: 'Carla', email: 'carla.exemplo@email.com', causas: ['Separação ou mudança na família', 'Problema de saúde (meu ou da família)'], ainda: ['Nenhuma, já passou'],
       fimMes: 'Fica zerado', renda: 3800, rendaTipo: 'Fixa, quase igual todo mês', va: 600,
-      diaPag: 5, temAdiant: 'Não', banco: 'Banco A', trabalho: 'Carteira assinada (CLT)', margem: null, margem_naoSei: true, extras: 'Sim', extrasLista: [{ oque: '13º salário', valor: 1700, mes: 'novembro' }],
+      diaPag: 5, banco: 'Banco A', trabalho: 'Carteira assinada (CLT)', extras: 'Sim', extrasLista: [{ oque: '13º salário', valor: 1700, mes: 'novembro' }],
       divide: 'Não', gastos: { moradia: 1100, contas: 320, mercado: 750, delivery: 180, transporte: 260, educacao: 150, saude: 120, pessoal: 90, assinaturas: 55, familia: 0, apostas: 0, outros: 80 },
-      protegidos: ['Moradia', 'Mercado'], noCartao: ['Mercado', 'Delivery, lanches e restaurante'], anuais: 'Não', veiculo: 'Não', serasa: 'Sim, consultei', nomeLimpo: 'Não',
+      protegidos: ['Moradia', 'Mercado'], noCartao: ['Mercado', 'Delivery, lanches e restaurante'], veiculo: 'Não', nomeLimpo: 'Não',
       dividas: [
-        { tipo: 'Cartão de crédito', credor: 'Banco A', s_status: 'Em dia', c_fatura: 2900, c_acao: 'Paguei o mínimo', c_pago: 435, c_taxaRot: '14,9', c_ofertaParc: 309, c_temParc: 'Sim', c_parcValor: 289, c_parcRestam: 10, c_parcReneg: 'Não', c_parcTaxa: '7,3', c_parcQuitar: null, c_parcQuitar_naoSei: true, c_temFuturo: 'Sim', c_futuroLista: [{ valor: 489, mes: 'novembro' }, { valor: 409, mes: 'dezembro' }, { valor: 369, mes: 'janeiro' }, { valor: 289, mes: 'fevereiro' }, { valor: 289, mes: 'março' }, { valor: 289, mes: 'abril' }, { valor: 289, mes: 'maio' }, { valor: 289, mes: 'junho' }, { valor: 289, mes: 'julho' }, { valor: 289, mes: 'agosto' }], c_limite: 3000, c_venc: 2, s_serasa: 'Não' },
+        { tipo: 'Cartão de crédito', credor: 'Banco A', s_status: 'Em dia', c_fatura: 2900, c_acao: 'Paguei o mínimo', c_pago: 435, c_temParc: 'Sim', c_parcValor: 289, c_parcRestam: 10, c_parcReneg: 'Não', c_parcTaxa: '7,3', c_temFuturo: 'Sim', c_proxFatura: 489, c_mesesFuturo: 10, c_totalFuturo: 3290, c_mais: ['Tenho os juros e a simulação do app à mão'], c_taxaRot: '14,9', c_ofertaParc: 309, c_parcQuitar: null, c_parcQuitar_naoSei: true, c_limite: 3000, c_venc: 2, s_serasa: 'Não' },
         { tipo: 'Cheque especial', credor: 'Banco A', s_status: 'Em dia', ce_usado: 700, ce_tempo: 'Mais de 3 meses', s_serasa: 'Não' },
         { tipo: 'Empréstimo pessoal no banco', credor: 'Banco A', s_status: 'Em dia', e_parcela: 480, e_restam: 20, e_reneg: 'Não', e_taxa: '2,9', e_quitar: null, e_quitar_naoSei: true, e_venc: 15, e_debito: 'Sim', s_serasa: 'Não' },
-        { tipo: 'Empréstimo em app ou financeira', credor: 'App de crédito', s_status: 'Atrasada', a_cobrado: 1800, s_tempo: '3 a 12 meses', s_quem: 'Uma empresa de cobrança', s_proposta: 'Não', s_serasa: 'Sim', s_justica: 'Não' }
+        { tipo: 'Empréstimo em app ou financeira', credor: 'App de crédito', s_status: 'Atrasada', a_cobrado: 1800, s_tempo: '3 a 12 meses', s_serasa: 'Sim' }
       ],
       guardado: 0, emprestPagar: 'Não', objetivo: 'Viajar com a família', acompanhar: 'Sim, quero'
     };
