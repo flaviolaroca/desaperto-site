@@ -61,6 +61,7 @@ a { color: inherit; }
 .abertura h1 em { font-style: normal; color: var(--verde); }
 .solta { animation: soltar 1.6s cubic-bezier(.2, .7, .1, 1) .15s both; }
 @keyframes soltar { from { font-stretch: 66%; letter-spacing: -0.05em; } to { font-stretch: 100%; letter-spacing: -0.03em; } }
+.dor { margin: 0 0 -10px; font-family: var(--f-num); font-weight: 600; font-size: .8125rem; letter-spacing: .04em; line-height: 1.45; color: var(--ambar); }
 .lead { font-size: 1.1875rem; line-height: 1.5; max-width: 34rem; color: #2B3530; }
 .lead b { font-weight: 700; color: var(--tinta); }
 .cta-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
@@ -143,7 +144,7 @@ a { color: inherit; }
 .juros-ano .com { background: var(--respiro); }
 .juros-ano span { font-size: .8125rem; color: var(--cinza); line-height: 1.3; }
 .juros-ano b { font-size: 1.375rem; }
-.juros-ano > div:first-child b { color: var(--cinza); }
+.juros-ano > div:first-child b { color: var(--ambar); }
 .trajeto .nota { font-size: .8125rem; color: var(--cinza); }
 
 /* ---------- como funciona ---------- */
@@ -330,8 +331,9 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
   <section class="abertura faixa">
     <div class="miolo">
       <div class="promessa">
+        <p class="dor">Fatura vencendo. Saldo no vermelho. Número desconhecido ligando.</p>
         <h1 class="solta">Descubra o mês em que você <em>sai das dívidas.</em></h1>
-        <p class="lead">Você conta quanto ganha, quanto gasta e quanto deve. O <b>Desaperto</b> faz as contas e te entrega um plano: <b>qual dívida pagar primeiro, quanto pagar em cada mês e o que falar com o banco.</b></p>
+        <p class="lead"><b>Grátis, em 5 minutos e sem CPF.</b> Você vê a data antes de deixar contato.</p>
         <div class="pergunta" id="pergunta">
           <p class="p-titulo" id="p-titulo">Para começar: quanto você deve, somando tudo?</p>
           <div class="chips-faixa" role="group" aria-labelledby="p-titulo">
@@ -344,7 +346,6 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
           <button type="button" class="nao-devo" id="nao-devo">Não tenho dívida agora</button>
           <p class="nao-msg" id="nao-msg" hidden>Que bom! O Desaperto é para quem está apertado com dívida. Se você conhece alguém assim, <a id="nao-indicar" href="https://wa.me/?text=Achei%20isso%20e%20lembrei%20de%20voc%C3%AA%3A%20em%205%20minutos%20mostra%20em%20que%20m%C3%AAs%20d%C3%A1%20para%20sair%20do%20aperto.%20%C3%89%20gr%C3%A1tis%3A%20https%3A%2F%2Fdesaperto.com%2F%3Futm_source%3Dwhatsapp" target="_blank" rel="noopener">mande o link pelo WhatsApp</a>.</p>
         </div>
-        <p class="preco-hero">Grátis. Você vê a sua data antes de deixar qualquer contato.</p>
         <ul class="garantias" aria-label="Como funciona">
           <li>A data sai em 5 minutos, de cabeça</li>
           <li>Não pede CPF, senha nem extrato</li>
@@ -359,7 +360,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
           <p class="olho">Ana, este é o seu caminho.</p>
           <p class="data">Você sai das dívidas em <em>julho de 2027.</em></p>
           <p class="sub">Se algum mês apertar, no máximo em novembro de 2027.</p>
-          <div class="bloco-n"><span>Depois de pagar as contas e as parcelas, sobram</span><b>R$ 57</b></div>
+          <div class="bloco-n"><span>Juros que ela deixa de pagar em 1 ano</span><b>R$ 4.591</b></div>
           <ol class="passos-ex">
             <li>Ponha em dia o empréstimo do app<small>Esta semana · 15 minutos</small></li>
             <li>Baixe o limite do cartão para R$ 1.000<small>Hoje · 5 minutos</small></li>
@@ -376,8 +377,8 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
     <div class="miolo">
       <p class="rotulo" id="t-reconhece">Toque nas que são suas</p>
       <ul class="frases">
-        <li><button type="button" class="frase" aria-pressed="false">Você recebe o salário e em três dias ele já foi.</button></li>
         <li><button type="button" class="frase" aria-pressed="false">Paga a fatura do cartão e a do mês seguinte já vem maior.</button></li>
+        <li><button type="button" class="frase" aria-pressed="false">Você recebe o salário e em três dias ele já foi.</button></li>
         <li><button type="button" class="frase" aria-pressed="false">Acorda para trabalhar e sente que vive só para pagar dívida.</button></li>
         <li><button type="button" class="frase" aria-pressed="false">Pegou um empréstimo para pagar outro.</button></li>
         <li><button type="button" class="frase" aria-pressed="false">O celular toca e vem a angústia: é mais uma cobrança?</button></li>
@@ -589,7 +590,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
           <li>Os seus direitos e o que fazer se um mês apertar</li>
           <li>Se quiser, um e-mail no começo de cada mês com o que fazer naquele mês</li>
         </ul>
-        <p class="cp-ancora">É menos do que um mês de juros de R$ 500 no cheque especial.</p>
+        <p class="cp-ancora">Custa menos que um mês de juros de uma fatura de R$ 250 no rotativo.</p>
         <a class="btn btn-principal" href="rapido.html">Descobrir minha data <span class="seta" aria-hidden="true">→</span></a>
         <p class="cp-garantia"><b>Garantia de 7 dias.</b> Se o plano não te ajudar, responda o e-mail dele e devolvemos o valor inteiro.</p>
       </div>
