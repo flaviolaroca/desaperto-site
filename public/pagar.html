@@ -258,7 +258,6 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
         '<button type="button" class="btn" id="btn-pix">Pagar ' + esc(s.preco_txt) + ' com Pix</button><div id="erro" class="erro-box" hidden></div>' +
         '<p class="pequeno">Pagamento pelo Mercado Pago. No seu banco, o recebedor aparece ' + (s.recebedor ? 'como ' + esc(s.recebedor) : 'com o nome do responsável pelo Desaperto') + '. O Desaperto não vê nem guarda dados do seu banco.</p></div>' +
         '<div class="garantia">' + ESCUDO + '<p><b>Garantia de 7 dias.</b> Se o plano não te ajudar, responda o e-mail do plano e devolvemos o valor inteiro. Sem perguntas difíceis.</p></div>' +
-        '<p class="pequeno">Criado por <b>Flávio Laroca</b>, especialista em finanças, com mais de 6 anos em custos, controladoria e orçamento.</p>' +
         '<p class="pequeno">Protocolo ' + esc(s.protocolo) + '. A data acima é sua, de graça, pague ou não.</p>' + areaCartao(d);
       document.getElementById('btn-pix').addEventListener('click', gerarPix);
       return;
