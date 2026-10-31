@@ -366,13 +366,13 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     // Como o plano faz: fatura do cartão em aberto e cheque especial viram parcelamento em 12 vezes (juro bem menor).
     var pmt = function (S, i, n) { return i ? S * i / (1 - Math.pow(1 + i, -n)) : S / n; };
     var ds = r.dividas.map(function (d) {
-      if (d.atrasada) return { saldo: Math.round(d.valor * 0.6), parcela: 0, taxa: 0, atrasada: true, fim: null };
-      if ((d.tipo === 'cartao' || d.tipo === 'cheque') && !d.parcela) { var i = 0.0727 * (aperto ? 1.15 : 1); return { saldo: d.valor, parcela: Math.round(pmt(d.valor, i, 12)), taxa: i, atrasada: false, fim: null }; }
+      if (d.atrasada) return { tipo: d.tipo, saldo: Math.round(d.valor * 0.6), parcela: 0, taxa: 0, atrasada: true, fim: null };
+      if ((d.tipo === 'cartao' || d.tipo === 'cheque') && !d.parcela) { var i = 0.0727 * (aperto ? 1.15 : 1); return { tipo: d.tipo, saldo: d.valor, parcela: Math.round(pmt(d.valor, i, 12)), taxa: i, atrasada: false, fim: null }; }
       var tx = taxa(d) * (aperto ? 1.15 : 1), saldo = d.valor;
       // Muita gente responde "quanto deve" somando as parcelas que faltam (ex.: 58 × R$ 1.026 = R$ 60 mil).
       // Se a parcela nem cobre os juros desse valor, ou daria mais de 10 anos, o valor é a soma das parcelas: o contrato acaba em valor ÷ parcela meses.
       if (d.parcela && (d.valor * tx >= d.parcela * 0.95 || d.valor / d.parcela > 120)) { var n = Math.ceil(d.valor / d.parcela); saldo = tx ? d.parcela * (1 - Math.pow(1 + tx, -n)) / tx : d.valor; }
-      return { saldo: saldo, parcela: d.parcela || 0, taxa: tx, atrasada: false, fim: null };
+      return { tipo: d.tipo, saldo: saldo, parcela: d.parcela || 0, taxa: tx, atrasada: false, fim: null };
     });
     var caixa = Math.max(0, (r.guardado || 0) - 500) * 0.8;
     var jurosMes = r.dividas.reduce(function (s, d) { return s + (d.atrasada ? 0 : d.valor * taxa(d)); }, 0);  // o que os juros custam hoje, antes do plano
@@ -394,7 +394,11 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       abertas.forEach(function (d) { var v = Math.min(extra, d.saldo); d.saldo -= v; extra -= v; });
       caixa = extra;
       ds.forEach(function (d) { if (!d.fim && d.saldo <= 0.5) { d.fim = t; if (!primeira) primeira = t; } });
-      if (ds.every(function (d) { return d.fim; })) return { fecha: true, saida: t, primeira: primeira, jurosMes: jurosMes, gastos: gastos };
+      if (ds.every(function (d) { return d.fim; })) {
+        // A ordem em que cada dívida acaba (só o tipo e o mês): a oferta mostra a primeira e guarda o resto para o plano.
+        var ordem = ds.map(function (d, i) { return { t: d.tipo, fim: d.fim, i: i }; }).sort(function (a, b) { return (a.fim[0] * 12 + a.fim[1]) - (b.fim[0] * 12 + b.fim[1]) || a.i - b.i; }).map(function (x) { return { t: x.t, fim: x.fim }; });
+        return { fecha: true, saida: t, primeira: primeira, ordem: ordem, jurosMes: jurosMes, gastos: gastos };
+      }
     }
     return { fecha: true, saida: null, jurosMes: jurosMes, gastos: gastos };
   }
@@ -423,7 +427,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     if (!a.fecha) return { tipo: 'lei', aprox: true, diferenca: Math.round(a.diferenca), semSobra: Math.round(a.diferenca) === 0, juros_mes: Math.round(a.jurosMes), dividas: r.dividas.length, total: total };
     if (!a.saida) return { tipo: 'lei', aprox: true, diferenca: 0, juros_mes: Math.round(a.jurosMes), dividas: r.dividas.length, total: total };
     return { tipo: 'data', aprox: true, saida: a.saida, saida_max: (b.fecha && b.saida && (b.saida[0] * 12 + b.saida[1] > a.saida[0] * 12 + a.saida[1])) ? b.saida : null,
-      primeira: a.primeira && (a.primeira[0] !== a.saida[0] || a.primeira[1] !== a.saida[1]) ? a.primeira : null, juros_mes: Math.round(a.jurosMes), dividas: r.dividas.length, total: total };
+      primeira: a.primeira && (a.primeira[0] !== a.saida[0] || a.primeira[1] !== a.saida[1]) ? a.primeira : null, ordem: (a.ordem || []).slice(0, 12), juros_mes: Math.round(a.jurosMes), dividas: r.dividas.length, total: total };
   }
 
   function enviar() {

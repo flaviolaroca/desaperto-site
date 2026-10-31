@@ -20,6 +20,13 @@ h1 em { font-style: normal; color: var(--verde); }
 .oferta .btn { background: #DCEBE1; color: var(--tinta); width: 100%; }
 .btn[disabled] { opacity: .6; cursor: default; }
 .btn.sec { background: var(--areia); color: var(--tinta); }
+.ordem { list-style: none; margin: 4px 0 12px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.ordem li { display: flex; gap: 12px; align-items: center; }
+.ordem .pos { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--respiro, #DCEBE1); color: var(--verde, #16704A); font-weight: 800; font-size: .875rem; display: flex; align-items: center; justify-content: center; }
+.ordem li div { display: flex; flex-direction: column; }
+.ordem small { color: #5C625E; font-size: .8125rem; }
+.ordem .trava .pos { background: #E7DFD0; color: #8A8F8B; }
+.ordem .borrado { filter: blur(5px); user-select: none; color: #8A8F8B; }
 .garantia { display: flex; gap: 12px; align-items: flex-start; font-size: .9375rem; }
 .garantia svg { flex: none; margin-top: 2px; }
 .pequeno { color: var(--cinza); font-size: .875rem; }
@@ -125,12 +132,22 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
   function passoGratis(d) {
     return d.passo ? '<div class="cartao passo-g"><p class="rotulo">Seu primeiro passo, de graça</p><h2>' + esc(d.passo.titulo) + '</h2><p>' + esc(d.passo.texto) + '</p><p class="pequeno">O plano completo continua daí: o que fazer em cada mês, até a última dívida.</p></div>' : '';
   }
+  // A ordem das dívidas: a primeira aparece, as outras ficam para o plano completo.
+  function ordemTravada(d) {
+    if (d.tipo === 'lei' || !d.ordem || d.ordem.length < 2) return '';
+    var li = d.ordem.map(function (x, i) {
+      if (i === 0) return '<li><span class="pos">1º</span><div><b>' + esc(x.nome) + '</b><small>acaba ' + (d.aprox ? 'por volta de ' : 'em ') + esc(x.fim_txt) + '</small></div></li>';
+      return '<li class="trava"><span class="pos">' + (i + 1) + 'º</span><div><b class="borrado" aria-hidden="true">Dívida da sua lista</b><small>no plano completo</small></div></li>';
+    }).join('');
+    return '<div class="cartao"><h2>A ordem das suas ' + d.ordem.length + ' dívidas</h2><ol class="ordem">' + li + '</ol><p class="pequeno">Pagar na ordem errada é o que faz a dívida durar anos a mais. O plano mostra qual vem depois, quanto pagar em cada uma e em que mês.</p></div>';
+  }
   function inclui(d) {
     var itens = d.tipo === 'lei'
       ? ['O que proteger primeiro: casa, comida e contas.', 'A proposta para os credores, com o valor de cada um.', 'O passo a passo para pedir a renegociação, de graça, no Procon ou na Defensoria Pública.', 'O dossiê pronto para levar: dívidas, orçamento e a proposta.']
       : ['A ordem: qual dívida pagar primeiro e por quê.', 'O mês a mês: quanto pagar, em qual dívida e onde, até a última.', 'O que falar com o banco e quanto oferecer nas dívidas atrasadas.', 'Os seus direitos e o que fazer se um mês apertar.', 'Se você escolheu: um e-mail no começo de cada mês com o que fazer naquele mês.'];
     if (d.aprox) itens.unshift('A data exata: depois de pagar, você completa as respostas com os valores do app do banco, em uns 10 minutos.');
-    return '<div class="cartao"><h2>O que vem no plano completo</h2><ul class="inclui">' + itens.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
+    return '<div class="cartao"><h2>O que vem no plano completo</h2><ul class="inclui">' + itens.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
+      '<p class="pequeno"><a href="/exemplo/plano-exemplo.pdf" target="_blank" rel="noopener" id="ver-exemplo">Ver um plano de exemplo (PDF)</a>, feito para uma pessoa fictícia. O seu sai com os seus números.</p></div>';
   }
   function ancora(d) {
     if (d.aprox && d.juros_mes > 20 && s.preco) {
@@ -197,8 +214,9 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     }
     if (s.estado === 'oferta') {
       contar('v_pagar_data');
+      var ve = document.getElementById('ver-exemplo'); if (ve) ve.addEventListener('click', function () { contar('viu_exemplo'); });
       umaVez('lead', function () { window.dpx('Lead'); });
-      $t.innerHTML = '<p class="rotulo">' + (d.aprox ? 'Sua data aproximada' : 'Seu resultado') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) + notaAprox(d) + passoGratis(d) + inclui(d) +
+      $t.innerHTML = '<p class="rotulo">' + (d.aprox ? 'Sua data aproximada' : 'Seu resultado') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) + notaAprox(d) + passoGratis(d) + ordemTravada(d) + inclui(d) +
         '<div class="oferta"><div><span class="preco">' + esc(s.preco_txt) + '</span></div><p class="sub">' + (d.aprox ? 'Uma vez só, por Pix. Sem assinatura. Depois de pagar, você completa as respostas e o plano exato chega no seu e-mail em minutos.' : 'Uma vez só, por Pix. Sem assinatura. O plano chega no seu e-mail em poucos minutos.') + '</p>' + ancora(d) +
         '<button type="button" class="btn" id="btn-pix">Pagar ' + esc(s.preco_txt) + ' com Pix</button><div id="erro" class="erro-box" hidden></div>' +
         '<p class="pequeno">Pagamento pelo Mercado Pago. No seu banco, o recebedor aparece ' + (s.recebedor ? 'como ' + esc(s.recebedor) : 'com o nome do responsável pelo Desaperto') + '. O Desaperto não vê nem guarda dados do seu banco.</p></div>' +
