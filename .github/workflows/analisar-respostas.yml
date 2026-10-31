@@ -1,0 +1,38 @@
+# Baixa as respostas do painel, tira nome, e-mail, banco e textos livres, e guarda CRIPTOGRAFADO
+# (só abre com a chave privada que fica fora do repositório). Nada legível de pessoa vai para o GitHub.
+# Roda quando .github/pedir-analise.txt muda.
+name: Analisar respostas
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/pedir-analise.txt']
+
+permissions:
+  contents: write
+
+jobs:
+  analisar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Baixar, anonimizar e criptografar
+        env:
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+        run: |
+          set -e
+          T=$(mktemp -d); mkdir -p $T/uma metricas
+          curl -sSf -H "authorization: Bearer $ADMIN_TOKEN" https://desaperto.com/api/admin/respostas -o $T/lista.json
+          for id in $(python3 -c "import json;print(' '.join(r['id'] for r in json.load(open('$T/lista.json'))['respostas'] if not r.get('teste')))"); do
+            curl -sSf -H "authorization: Bearer $ADMIN_TOKEN" "https://desaperto.com/api/admin/respostas?id=$id" -o $T/uma/$id.json
+          done
+          python3 .github/scripts/anonimizar.py $T/lista.json $T/uma $T/anon.json
+          openssl rand -hex 32 > $T/k
+          openssl enc -aes-256-cbc -pbkdf2 -salt -in $T/anon.json -out metricas/analise.enc -pass file:$T/k
+          openssl pkeyutl -encrypt -pubin -inkey .github/chave-analise.pub.pem -in $T/k -out metricas/analise.key.enc
+          rm -rf $T
+      - name: Guardar
+        run: |
+          git config user.name "desaperto-metricas"; git config user.email "metricas@desaperto.com"
+          git add metricas/analise.enc metricas/analise.key.enc; git commit -m "Análise de respostas (criptografada)" || exit 0; git push
