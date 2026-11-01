@@ -2,7 +2,7 @@
 // GET  /api/pagamento?id=&a=        -> em que pé está: gerando, revisão, oferta, pix, pago, enviado
 // POST /api/pagamento { id, a }     -> gera (ou devolve) o Pix
 import { json, erro, agora, assinaturaPagar, garantirTabelas, cobrancaAtiva, preco, precoDaLinha, promoAtiva, promoAte, diaMesCurto, reaisCentavos, dataGratis, dataDaLinha, mascararEmail,
-  criarPix, confirmarPagamento, evento } from '../../lib/api.js';
+  criarPix, confirmarPagamento, evento, primeiroNome } from '../../lib/api.js';
 
 async function buscar(env, id, a) {
   if (!env.DB || !env.ADMIN_TOKEN || !id || !a || a !== (await assinaturaPagar(env, id))) return null;
@@ -11,7 +11,7 @@ async function buscar(env, id, a) {
 }
 
 function situacao(env, l, a) {
-  const base = { primeiro_nome: (l.nome || '').trim().split(/\s+/)[0] || '', email: mascararEmail(l.email), protocolo: l.protocolo,
+  const base = { primeiro_nome: primeiroNome(l.nome), email: mascararEmail(l.email), protocolo: l.protocolo,
     preco: precoDaLinha(env, l), preco_txt: reaisCentavos(precoDaLinha(env, l)), cobrar: cobrancaAtiva(env), pago: !!l.pago_em && l.pag_status !== 'convite', convite: l.pag_status === 'convite',
     recebedor: String(env.PIX_RECEBEDOR || '').trim().slice(0, 80), objetivo: String(l.objetivo || '').trim().slice(0, 140) };
   if (promoAtiva(env, l)) { base.promo = true; base.preco_cheio_txt = reaisCentavos(preco(env)); const ex = Date.parse(l.promo_ate || ''); base.promo_ate_txt = diaMesCurto(!isNaN(ex) && ex > Date.now() ? ex : promoAte(l)); }

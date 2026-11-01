@@ -171,6 +171,22 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
 .comp .c-res { margin: 0; font-size: 1.0625rem; line-height: 1.45; font-weight: 700; }
 .comp .c-res em { font-style: normal; color: #9FD1B6; }
 .comp .c-nota { margin: 0; font-size: .75rem; opacity: .65; line-height: 1.4; }
+.simples { background: #DCEBE1; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.simples .s-rot { margin: 0; font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: #16704A; }
+.simples h2 { margin: 0; font-size: 1.25rem; line-height: 1.25; }
+.simples p { margin: 0; }
+.simples ol { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 8px; line-height: 1.5; }
+.indicar-box { background: #fff; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.indicar-box h2 { margin: 0; font-size: 1.125rem; line-height: 1.3; }
+.indicar-box p { margin: 0; color: #2B3530; }
+.btn-wpp { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; background: #16704A; color: #fff; text-decoration: none; font-weight: 700; padding: 13px 20px; border-radius: 999px; }
+.interesse { border: 1.5px dashed #9A5B12; border-radius: 20px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+.interesse h2 { margin: 0; font-size: 1.0625rem; }
+.interesse p { margin: 0; color: #2B3530; }
+.interesse button { align-self: flex-start; font: inherit; font-weight: 700; background: transparent; color: #9A5B12; border: 1.5px solid #9A5B12; border-radius: 999px; padding: 10px 18px; cursor: pointer; }
+.interesse .ok { color: #16704A; font-weight: 700; }
+details.mesmo-assim summary { cursor: pointer; font-weight: 700; color: #16704A; padding: 6px 0; }
+details.mesmo-assim[open] summary { margin-bottom: 12px; }
 .passo-gratis { background: #DCEBE1; border-radius: 18px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
 .passo-gratis h2 { margin: 0; font-size: 1.1875rem; line-height: 1.25; }
 .passo-gratis p { margin: 0; line-height: 1.5; }
@@ -289,6 +305,11 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
         var ok = true;
         if (!d.tipo) { erro('tipo', 'Escolha o tipo.'); ok = false; }
         if (!d.valor) { erro('valor', 'Coloque quanto deve, mais ou menos.'); ok = false; }
+        if (ok && d.parcela && d.parcela >= d.valor && E.confParcela !== d.parcela + '/' + d.valor) {
+          E.confParcela = d.parcela + '/' + d.valor; salvar(); contar('r_aviso_parcela');
+          erro('parcela', 'A parcela é o valor que você paga por mês, não o total. Se não tem parcela fixa, coloque 0. Se o valor estiver certo, toque de novo em "Adicionar".');
+          return;
+        }
         if (!ok) return;
         r.dividas.push(d); salvar(); render();
         var n = document.getElementById('nova'); if (n) n.scrollIntoView({ block: 'start' });
@@ -317,6 +338,11 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
         if (r.gastosR.total == null) { erro('gastos', 'Coloque um valor, mesmo que aproximado.'); ok = false; }
         // Contas levando tudo o que entra: quase sempre a pessoa somou junto o que paga nas dívidas. Pergunta uma vez antes de dar "não fecha".
         var pagaDivida = r.dividas.some(function (d) { return d.parcela > 0 || (d.tipo === 'cartao' && !d.atrasada); });
+        if (ok && r.renda >= 800 && r.gastosR.total < r.renda * 0.3 && E.confGastos !== r.gastosR.total) {
+          E.confGastos = r.gastosR.total; salvar(); contar('r_aviso_gastos');
+          erro('gastos', 'Só ' + reais(r.gastosR.total) + ' de contas no mês? Some aluguel, mercado, luz, água, internet, transporte e farmácia. Se o valor estiver certo, toque de novo em "Ver a minha data".');
+          return;
+        }
         if (ok && r.gastosR.total >= r.renda * 0.95 && E.confGastos !== r.gastosR.total) {
           E.confGastos = r.gastosR.total; salvar(); contar('r_aviso_gastos');
           erro('gastos', pagaDivida
@@ -352,6 +378,22 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       '<p class="c-res">' + res.join(' ') + '.</p>' + (extra || '') +
       '<p class="c-nota">"Como hoje": cartão e cheque especial no rotativo, atrasadas sem acordo e um pouco para cada dívida. Estimativa com os seus valores aproximados.</p></div>';
   }
+  // Caso simples (uma dívida que acaba em até 3 meses): honestidade em vez de venda, dicas de negociação e pedido de indicação.
+  var LINK_INDICAR = 'https://wa.me/?text=' + encodeURIComponent('Achei um site que mostra em que mês você sai das dívidas e qual pagar primeiro. É grátis e não pede CPF: https://desaperto.com/?utm_source=whatsapp&utm_medium=indicacao');
+  function htmlSimples() {
+    return '<div class="simples"><p class="s-rot">Boa notícia</p><h2>O seu caso é simples: você não precisa do plano completo.</h2>' +
+      '<p>Com uma dívida só, o caminho é negociar bem. Quatro cuidados que valem dinheiro:</p><ol>' +
+      '<li><b>Não aceite a primeira proposta.</b> Pergunte o valor à vista e o parcelado, anote e peça um desconto maior. Em dívida atrasada, descontos grandes são comuns.</li>' +
+      '<li><b>Pague só por canal oficial:</b> app ou site do banco, da loja ou o Serasa Limpa Nome. Nunca por link de mensagem nem para a conta de uma pessoa.</li>' +
+      '<li><b>Só feche o que cabe no mês.</b> Uma parcela que aperta vira outro atraso.</li>' +
+      '<li><b>Guarde o comprovante.</b> Depois que você paga, o credor tem 5 dias úteis para tirar o seu nome do cadastro de inadimplentes.</li></ol></div>' +
+      '<div class="indicar-box"><h2>Conhece alguém com várias dívidas ao mesmo tempo?</h2><p>Cartão, empréstimo e cheque especial juntos. Para essa pessoa, pagar na ordem certa vale meses. Mande o Desaperto, sem expor ninguém.</p>' +
+      '<a class="btn-wpp" id="btn-indicar-s" href="' + LINK_INDICAR + '" target="_blank" rel="noopener">Mandar pelo WhatsApp</a></div>';
+  }
+  function ligarSimples() {
+    var b = document.getElementById('btn-indicar-s'); if (b) b.addEventListener('click', function () { contar('indicou'); });
+    var i = document.getElementById('btn-interesse'); if (i) i.addEventListener('click', function () { contar('interesse_depois'); i.outerHTML = '<p class="ok">Anotado. Avisamos no seu e-mail quando estiver pronto.</p>'; });
+  }
   function telaData(r) {
     var est = estimativa(r), topo, pp = est.passo;
     if (est.tipo === 'data') {
@@ -361,7 +403,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
         '<div class="resultado">' +
         (est.primeira ? '<p>A primeira dívida pode acabar já em <b>' + esc(mesLongo(est.primeira)) + '</b>.</p>' : '') +
         (est.juros_mes && !est.comp ? '<p>Hoje os juros custam cerca de <b>' + reais(est.juros_mes) + ' por mês</b>. É isso que a ordem certa corta primeiro.</p>' : '') +
-        '</div>' + htmlComp(est.comp, est.saida, reais, '');
+        '</div>' + (est.simples ? htmlSimples() : htmlComp(est.comp, est.saida, reais, ''));
     } else {
       topo = '<p class="acolhe">Pelas suas respostas</p><h1>Do jeito que está, a conta não fecha.</h1><div class="resultado">' +
         (est.diferenca ? '<p>Depois das contas da casa e das parcelas, faltam cerca de <b>' + reais(est.diferenca) + ' por mês</b>.</p>' : (est.semSobra ? '<p>Hoje as contas da casa levam tudo o que entra, e não sobra nada para as dívidas.</p>' : '<p>As parcelas e os juros crescem mais rápido do que dá para pagar.</p>')) +
@@ -375,6 +417,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       '<div class="campo" data-campo="email"><label for="q-email">Seu e-mail</label><p class="ajuda">Enviamos a sua data para você não perder.</p><input type="email" id="q-email" autocomplete="email" value="' + esc(r.email || '') + '"></div>' +
       '<div class="campo" data-campo="consent"><label class="check"><input type="checkbox" id="q-consent"' + (r.consent ? ' checked' : '') + '><span>Concordo que minhas respostas sejam usadas só para calcular a minha data e montar o meu plano, e apagadas em até 90 dias. Li os <a href="/termos" target="_blank" rel="noopener">termos de uso</a> e a <a href="/privacidade" target="_blank" rel="noopener">política de privacidade</a>.</span></label></div>' +
       '</div><div class="acoes"><div id="erro-envio" class="erro-envio oculto" role="alert"></div><button type="button" class="btn btn-principal" id="btn-seguir">Guardar minha data</button><p class="nota">Não pedimos CPF, senha nem extrato.</p></div></div></section>';
+    ligarSimples();
     document.getElementById('btn-seguir').addEventListener('click', function () {
       limparErros();
       r.nome = document.getElementById('q-nome').value.trim(); r.email = document.getElementById('q-email').value.trim(); r.consent = document.getElementById('q-consent').checked; salvar();
@@ -460,7 +503,12 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
   }
   function estimativa(r) {
     var pp = primeiroPasso(r);
-    var e = estimativaBase(r); if (pp) e.passo = pp; return e;
+    var e = estimativaBase(r); if (pp) e.passo = pp;
+    if (e.tipo === 'data' && e.saida && r.dividas.length === 1) {
+      var h = new Date(), agora = h.getFullYear() * 12 + h.getMonth() + 1;
+      if (e.saida[0] * 12 + e.saida[1] - agora <= 3) { e.simples = true; if (e.passo) e.passo = { titulo: e.passo.titulo, texto: e.passo.texto.replace(/ ?O plano completo[^.]*\./g, '') }; }
+    }
+    return e;
   }
   function estimativaBase(r) {
     var a = simular(r, false), b = simular(r, true);

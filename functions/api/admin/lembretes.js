@@ -4,7 +4,7 @@
 //   3. os pedidos de avaliação de 2 e de 30 dias
 // ?simular=1 só conta, sem mandar. Há um limite por dia para não estourar o plano grátis do Resend
 // (100 e-mails por dia, contando os planos e as datas grátis do dia).
-import { json, erro, agora, autorizado, negado, garantirTabelas, enviarPedidoAvaliacao, cobrancaAtiva, enviarDataGratis, enviarMes, diaBrasil, enviarCompletar, precoVolta, promoAtiva } from '../../../lib/api.js';
+import { json, erro, agora, autorizado, negado, garantirTabelas, enviarPedidoAvaliacao, cobrancaAtiva, enviarDataGratis, enviarMes, diaBrasil, enviarCompletar, precoVolta, promoAtiva, dataDaLinha } from '../../../lib/api.js';
 
 const POR_DIA = 25;        // avaliações
 const MENSAL_POR_DIA = 40;
@@ -72,6 +72,7 @@ export async function onRequestPost({ request, env }) {
     if (await enviarCompletar(env, l, origem, true)) { completares++; await env.DB.prepare('UPDATE respostas SET completar_lembrete_em = ? WHERE id = ?').bind(agora(), l.id).run(); }
   }
   for (const l of pagto) {
+    if (dataDaLinha(l).simples) continue;  // caso simples: não insistir na venda
     if (await enviarDataGratis(env, l, origem, true)) {
       pagtos++;
       await env.DB.prepare('UPDATE respostas SET lembrete_pagto_em = COALESCE(lembrete_pagto_em, ?), promo_email_em = ? WHERE id = ?').bind(agora(), promoAtiva(env, l) ? agora() : null, l.id).run();

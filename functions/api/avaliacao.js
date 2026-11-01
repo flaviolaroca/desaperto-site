@@ -2,7 +2,7 @@
 // GET  /api/avaliacao?id=&a=&m=   -> primeiro nome e o que a pessoa já respondeu neste momento
 // POST /api/avaliacao             -> { id, a, m, nota, acao, texto, autoriza, cidade } grava (ou atualiza)
 // POST /api/avaliacao             -> { id, a, parar: true } para de mandar os e-mails de avaliação
-import { json, erro, agora, aleatorio, assinaturaAval, garantirTabelas, contextoDepoimento, enviarEmail, escapar } from '../../lib/api.js';
+import { json, erro, agora, aleatorio, assinaturaAval, garantirTabelas, contextoDepoimento, enviarEmail, escapar, primeiroNome } from '../../lib/api.js';
 
 const MOMENTOS = ['plano', '2d', '30d'];
 const ACOES = ['sim', 'ainda_nao', 'nao_vou'];
@@ -22,7 +22,7 @@ export async function onRequestGet({ request, env }) {
   const l = await conferir(env, id, a);
   if (!l) return erro('Este link não é válido ou o plano já foi apagado (as respostas ficam guardadas por 90 dias).', 404);
   const ja = await env.DB.prepare('SELECT nota, acao, texto, autoriza, cidade FROM avaliacoes WHERE resposta_id = ? AND momento = ?').bind(id, m).first();
-  return json({ ok: true, primeiro_nome: (l.nome || '').trim().split(/\s+/)[0] || '', momento: m, ja: ja || null });
+  return json({ ok: true, primeiro_nome: primeiroNome(l.nome), momento: m, ja: ja || null });
 }
 
 export async function onRequestPost({ request, env }) {
@@ -44,7 +44,7 @@ export async function onRequestPost({ request, env }) {
   const autoriza = AUTORIZA.includes(c.autoriza) ? c.autoriza : 'nao';
   const cidade = typeof c.cidade === 'string' ? c.cidade.trim().slice(0, 60) : '';
   if (nota === null && !texto) return erro('Escolha uma nota ou escreva alguma coisa.');
-  const primeiro = (l.nome || '').trim().split(/\s+/)[0].slice(0, 40) || '';
+  const primeiro = primeiroNome(l.nome).slice(0, 40);
   const t = agora();
   // Se a pessoa mudar a resposta, volta para "nova": você aprova de novo o que vai para o site.
   await env.DB.prepare(`INSERT INTO avaliacoes (id, resposta_id, protocolo, momento, criado_em, atualizado_em, nota, acao, texto, autoriza, primeiro_nome, cidade, contexto, status)
