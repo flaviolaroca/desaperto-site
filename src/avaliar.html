@@ -28,7 +28,7 @@ button.enviar[disabled] { opacity: .6; cursor: default; }
 
 <form id="form" hidden novalidate>
   <div class="cartao">
-    <h2>O plano te ajudou a saber o que fazer?</h2>
+    <h2>O plano ajudou você a saber o que fazer?</h2>
     <div class="notas" role="radiogroup" aria-label="Nota de 1 a 5">
       <label><input type="radio" name="nota" value="1"><span>1</span></label>
       <label><input type="radio" name="nota" value="2"><span>2</span></label>
@@ -147,7 +147,7 @@ button.enviar[disabled] { opacity: .6; cursor: default; }
         $('titulo').textContent = 'Obrigado.';
         if (nota && Number(nota) <= 2) {
           $('pronto-titulo').textContent = 'Sentimos que o plano não ajudou.';
-          $('pronto-texto').textContent = 'Responda o e-mail do plano contando o que travou. A gente olha o seu caso e ajusta.';
+          $('pronto-texto').textContent = 'Responda o e-mail do plano contando o que travou. Vamos olhar o seu caso e ajustar.';
         } else if (valor('acao') === 'ainda_nao' || valor('acao') === 'nao_vou') {
           $('pronto-texto').textContent = 'Se alguma ação travou, responda o e-mail do plano contando qual. Às vezes falta só um detalhe para destravar.';
         }

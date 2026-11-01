@@ -528,7 +528,7 @@ def montar(r, textos, inicio=(2026, 11), link_avaliar=None):
             elif d['sub'] == 'em_atraso':
                 t0 = nome_exibicao({**d, 'sub': 'parcelada'})[0].lower()
                 if fecha and v >= d['saldo'] - 0.5:
-                    acoes_m.append((f'Ponha em dia o {e(t0)} {e(c_)}: pague as {d["qtd_atr"]} parcelas atrasadas, <b>{brl(v)}</b>, além da parcela do mês', None))
+                    acoes_m.append((f'Regularize o {e(t0)} {e(c_)}: pague as {d["qtd_atr"]} parcelas atrasadas, <b>{brl(v)}</b>, além da parcela do mês', None))
                 elif fecha:
                     acoes_m.append((f'Pague o resto das parcelas atrasadas do {e(t0)} {e(c_)}, <b>{brl(v)}</b>. Ele fica em dia', None))
                 else:
@@ -712,7 +712,7 @@ def montar(r, textos, inicio=(2026, 11), link_avaliar=None):
     for d in fila + [x for x in plano if x['banda'] == 'fora']:
         t, cred = nome_exibicao(d)
         if d['sub'] == 'em_atraso':
-            linhas = [('Situação', f'{d["qtd_atr"]} atrasadas'), ('Para pôr em dia', brl(d['saldo']) + ('' if d.get('informado') else '*'))]
+            linhas = [('Situação', f'{d["qtd_atr"]} atrasadas'), ('Para regularizar', brl(d['saldo']) + ('' if d.get('informado') else '*'))]
         elif d['sub'] == 'atrasada':
             linhas = [('Situação', 'Atrasada'), ('Cobrado hoje', brl(d['saldo']))] + ([('Você oferece', brl(d['acordo_oferta']))] if d.get('acordo_oferta') else [])
         elif d['sub'] == 'outros':
@@ -756,7 +756,7 @@ def montar(r, textos, inicio=(2026, 11), link_avaliar=None):
   <p class="secao">Antes de fechar</p>
   <h2>Você não precisa fazer isso sem apoio.</h2>
   <div class="caixa cvv">Se o peso estiver grande demais, você não precisa carregar isso sem ajuda: <b>CVV, ligue 188</b>, 24 horas, gratuito.</div>
-  {f'<div class="caixa avaliar"><b>O plano ficou claro?</b> Conte para a gente em 1 minuto: <a href="{e(link_avaliar)}">avaliar o meu plano</a>. A sua resposta ajuda a melhorar o plano de quem vem depois.</div>' if link_avaliar else ''}
+  {f'<div class="caixa avaliar"><b>O plano ficou claro?</b> Conte para nós em 1 minuto: <a href="{e(link_avaliar)}">avaliar o meu plano</a>. A sua resposta ajuda a melhorar o plano de quem vem depois.</div>' if link_avaliar else ''}
   <h3 class="peq">Cuidado com golpes</h3>
   <ul class="golpes">
     <li>Ninguém precisa de taxa antecipada para "limpar seu nome".</li>

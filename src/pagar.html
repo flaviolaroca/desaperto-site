@@ -128,7 +128,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     return n + (d.carro ? 'vendendo o carro, você sai' : 'você sai') + ' das dívidas em <em>' + esc(d.saida_txt) + '</em>.';
   }
   function notaAprox(d) {
-    return d.aprox ? '<p class="aprox">Data aproximada, feita com valores de cabeça. O plano exato usa os valores do app do banco e pode mudar essa data.</p>' : '';
+    return d.aprox ? '<p class="aprox">Data aproximada, feita com valores aproximados. O plano exato usa os valores do app do banco e pode mudar essa data.</p>' : '';
   }
   // cartão do story: meses do próximo mês até a saída
   function areaCartao(d) {
@@ -182,7 +182,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
       '<div class="c-hoje"><small>Pagando como hoje</small><b>' + (c.hoje_saida ? MCURTO(c.hoje_saida) : 'mais de 10 anos') + '</b><span>' + rs(c.juros12_hoje) + ' de juros em 12 meses</span></div>' +
       '<div class="c-plano"><small>Na ordem certa</small><b>' + MCURTO(saida) + '</b><span>' + rs(c.juros12_plano) + ' de juros em 12 meses</span></div></div>' +
       '<p class="c-res">' + res.join(' ') + '.</p>' + (extra || '') +
-      '<p class="c-nota">"Como hoje": cartão e cheque especial no rotativo, atrasadas sem acordo e um pouco para cada dívida. Estimativa com os seus valores de cabeça.</p></div>';
+      '<p class="c-nota">"Como hoje": cartão e cheque especial no rotativo, atrasadas sem acordo e um pouco para cada dívida. Estimativa com os seus valores aproximados.</p></div>';
   }
   // Barra fixa embaixo com o preço e o botão, enquanto a caixa de pagamento não está na tela.
   function barraCompra(s) {
@@ -232,11 +232,11 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
       repetir(3000); return;
     }
     if (s.estado === 'erro') {
-      $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>Não conseguimos terminar as contas.</h1><p>Já fomos avisados. A gente confere as suas respostas e te escreve no e-mail <b>' + esc(s.email) + '</b> em até 24 horas.</p><p class="pequeno">Protocolo ' + esc(s.protocolo) + '</p>';
+      $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>Não conseguimos terminar as contas.</h1><p>Já fomos avisados. Vamos conferir as suas respostas e escrever para você no e-mail <b>' + esc(s.email) + '</b> em até 24 horas.</p><p class="pequeno">Protocolo ' + esc(s.protocolo) + '</p>';
       return;
     }
     if (s.estado === 'revisao') {
-      $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>Algumas respostas não batem.</h1><p>Antes de mostrar a sua data, a gente confere com cuidado para não te dar um número errado. Você recebe um e-mail em <b>' + esc(s.email) + '</b> em até 24 horas.</p><p class="pequeno">Nada foi cobrado. Protocolo ' + esc(s.protocolo) + '.</p>';
+      $t.innerHTML = '<p class="rotulo">Seu resultado</p><h1>Algumas respostas não batem.</h1><p>Antes de mostrar a sua data, conferimos com cuidado para não mostrar um número errado. Você recebe um e-mail em <b>' + esc(s.email) + '</b> em até 24 horas.</p><p class="pequeno">Nada foi cobrado. Protocolo ' + esc(s.protocolo) + '.</p>';
       return;
     }
     if (s.estado === 'completar') {
@@ -259,7 +259,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     if (s.estado === 'pago') {
       if (!s.gratis) umaVez('compra', function () { window.dpx('Purchase', { value: VALOR(), currency: 'BRL' }); });
       var txt = s.gratis ? 'O seu plano completo está a caminho do e-mail <b>' + esc(s.email) + '</b>. Chega em poucos minutos.'
-        : s.revisao ? 'Como a sua conta tem um detalhe que pede atenção, a gente confere o plano antes de enviar. Ele chega no e-mail <b>' + esc(s.email) + '</b> em até 24 horas.'
+        : s.revisao ? 'Como a sua conta tem um detalhe que pede atenção, conferimos o plano antes de enviar. Ele chega no e-mail <b>' + esc(s.email) + '</b> em até 24 horas.'
         : 'O seu plano está a caminho do e-mail <b>' + esc(s.email) + '</b>. Chega em poucos minutos.';
       $t.innerHTML = '<p class="rotulo">' + (s.gratis ? 'Seu resultado' : 'Pagamento confirmado') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) +
         '<div class="cartao"><h2>' + (s.gratis ? 'Pronto.' : 'Pagamento confirmado. Obrigado.') + '</h2><p>' + txt + '</p></div>' + avisoSpam() +
@@ -275,7 +275,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
         '<div class="oferta">' + (s.promo ? '<p class="promo-tag">Preço especial · até ' + esc(s.promo_ate_txt) + '</p>' : '') + '<div>' + (s.promo ? '<span class="de">' + esc(s.preco_cheio_txt) + '</span> ' : '') + '<span class="preco">' + esc(s.preco_txt) + '</span></div><p class="sub">' + (d.aprox ? 'Uma vez só, por Pix. Sem assinatura. Depois de pagar, você completa as respostas e o plano exato chega no seu e-mail em minutos.' : 'Uma vez só, por Pix. Sem assinatura. O plano chega no seu e-mail em poucos minutos.') + '</p>' + ancora(d) +
         '<button type="button" class="btn" id="btn-pix">Pagar ' + esc(s.preco_txt) + ' com Pix</button><div id="erro" class="erro-box" hidden></div>' +
         '<p class="pequeno">Pagamento pelo Mercado Pago. No seu banco, o recebedor aparece ' + (s.recebedor ? 'como ' + esc(s.recebedor) : 'com o nome do responsável pelo Desaperto') + '. O Desaperto não vê nem guarda dados do seu banco.</p></div>' +
-        '<div class="garantia">' + ESCUDO + '<p><b>Garantia de 7 dias.</b> Se o plano não te ajudar, responda o e-mail do plano e devolvemos o valor inteiro. Sem perguntas difíceis.</p></div>' +
+        '<div class="garantia">' + ESCUDO + '<p><b>Garantia de 7 dias.</b> Se o plano não ajudar, responda o e-mail do plano e devolvemos o valor inteiro. Sem perguntas difíceis.</p></div>' +
         '<p class="pequeno">Protocolo ' + esc(s.protocolo) + '. A data acima é sua, de graça, pague ou não.</p>' + areaCartao(d);
       document.getElementById('btn-pix').addEventListener('click', gerarPix);
       barraCompra(s);
@@ -288,10 +288,10 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
         '<ol class="passos"><li>Abra o app do seu banco e vá em Pix.</li><li>Escolha "Pix copia e cola" e cole o código' + (img ? ', ou leia o QR code com a câmera' : '') + '.</li><li>Confira o valor, ' + esc(s.preco_txt) + ', e o recebedor' + (s.recebedor ? ', <b>' + esc(s.recebedor) + '</b>' : '') + ', e confirme.</li></ol></div>' +
         '<div class="cartao quem-recebe"><h2>Quem aparece no seu banco</h2><p>' + (s.recebedor
           ? 'Na confirmação do Pix, o recebedor aparece como <b>' + esc(s.recebedor) + '</b>, pelo Mercado Pago. É o Desaperto: esse é o nome do responsável pela conta.'
-          : 'Na confirmação do Pix, o recebedor aparece com o nome do responsável pelo Desaperto, pelo Mercado Pago. Pode confirmar: é a gente.') +
+          : 'Na confirmação do Pix, o recebedor aparece com o nome do responsável pelo Desaperto, pelo Mercado Pago. Pode confirmar: somos nós.') +
         '</p><p class="pequeno">O código vale só para este pedido e só para ' + esc(s.preco_txt) + '. Ninguém do Desaperto vai pedir outro pagamento por mensagem.</p></div>' +
         '<div class="cartao"><p class="esperando"><span class="ponto"></span>Esperando o pagamento...</p><p class="pequeno">Assim que o banco confirmar, esta página muda sozinha e o plano vai para o seu e-mail. O código vale até ' + new Date(p.expira).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + '.</p></div>' +
-        '<div class="garantia">' + ESCUDO.replace('#DCEBE1', '#DCEBE1') + '<p><b>Garantia de 7 dias.</b> Se o plano não te ajudar, devolvemos o valor.</p></div>';
+        '<div class="garantia">' + ESCUDO.replace('#DCEBE1', '#DCEBE1') + '<p><b>Garantia de 7 dias.</b> Se o plano não ajudar, devolvemos o valor.</p></div>';
       document.getElementById('btn-copiar').addEventListener('click', copiar);
       repetir(4000);
       return;

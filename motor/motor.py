@@ -198,7 +198,7 @@ def limpar(r, inicio=(2026, 11)):
                 V = d.get('a_porEmDia')
                 if not V:
                     V = round(P * k * 1.02 + P * k * (tx + 0.01) * (k + 1) / 2)
-                    premissas.append(f'{nome}: sem o valor para pôr em dia, foi estimado {brl(V)}: as {k} parcelas atrasadas, mais multa de 2% e juros de atraso. Confirme no app antes de pagar.')
+                    premissas.append(f'{nome}: sem o valor para regularizar, foi estimado {brl(V)}: as {k} parcelas atrasadas, mais multa de 2% e juros de atraso. Confirme no app antes de pagar.')
                 if nfut > 0:
                     dividas.append({**base, 'atrasada': False, 'sub': 'parcelada', 'nome': nome, 'saldo': pv(P, tx, nfut), 'taxa': tx,
                                     'fonte_taxa': 'taxa do contrato' if exata else 'média de mercado', 'parcela': P, 'restam': nfut, 'caixa': True,

@@ -51,16 +51,31 @@ a { color: inherit; }
 .btn-principal:hover { background: var(--verde-escuro); }
 .btn-principal:active { transform: translateY(1px); }
 .btn-peq { font-size: .9375rem; padding: .6em 1.15em; }
+.btn-contorno { background: transparent; color: var(--verde); border: 1.5px solid var(--verde); }
+.btn-contorno:hover { background: var(--verde); color: #fff; }
+.so-pc { display: none; } .so-cel { display: inline; }
+@media (min-width: 720px) { .so-pc { display: inline; } .so-cel { display: none; } }
 .btn .seta { display: inline-block; transition: transform .2s; }
 .btn:hover .seta { transform: translateX(3px); }
 
 /* ---------- abertura ---------- */
-.abertura .miolo { display: grid; gap: 44px; padding-block: 36px 64px; }
+.abertura .miolo { display: grid; gap: 44px; padding-block: 14px 64px; }
 .promessa { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
 .abertura h1 { font-size: clamp(2.6rem, 9.6vw, 4.6rem); line-height: .98; letter-spacing: -0.03em; font-weight: 800; font-stretch: 100%; }
 .abertura h1 em { font-style: normal; color: var(--verde); }
 .solta { animation: soltar 1.6s cubic-bezier(.2, .7, .1, 1) .15s both; }
 @keyframes soltar { from { font-stretch: 66%; letter-spacing: -0.05em; } to { font-stretch: 100%; letter-spacing: -0.03em; } }
+.notifs { display: flex; flex-direction: column; gap: 6px; margin: 0 0 -6px; max-width: 26rem; }
+.nt { background: #fff; border-radius: 13px; padding: 8px 11px; display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 1px 10px; align-items: center; box-shadow: 0 6px 18px rgba(22,33,28,.08); }
+.nt + .nt { margin-inline: 7px; }
+.nt i { grid-row: span 2; width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 14px; font-weight: 800; color: #fff; }
+.nt-banco { background: var(--tinta); } .nt-cartao { background: #7B4BC4; }
+.nt-a { font-size: .6875rem; letter-spacing: .06em; text-transform: uppercase; color: #8A8F8B; font-weight: 700; }
+.nt-h { font-size: .6875rem; color: #8A8F8B; }
+.nt-t { grid-column: 2 / 4; font-size: .875rem; line-height: 1.3; color: var(--tinta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nt-t .neg { color: #B4321F; font-weight: 700; }
+@media (prefers-reduced-motion: no-preference) { .nt { animation: chega .5s cubic-bezier(.2,.7,.1,1) both; } .nt + .nt { animation-delay: .25s; } }
+@keyframes chega { from { opacity: 0; transform: translateY(-8px) scale(.98); } to { opacity: 1; transform: none; } }
 .dor { margin: 0 0 -10px; font-family: var(--f-num); font-weight: 600; font-size: .8125rem; letter-spacing: .04em; line-height: 1.45; color: var(--ambar); }
 .lead { font-size: 1.1875rem; line-height: 1.5; max-width: 34rem; color: #2B3530; }
 .lead b { font-weight: 700; color: var(--tinta); }
@@ -322,7 +337,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
 <header class="topo faixa" id="topo">
   <div class="miolo">
     <a class="logo" href="#inicio" aria-label="Desaperto, início">{{LOGO}}</a>
-    <a class="btn btn-principal btn-peq" href="rapido.html">Descobrir minha data</a>
+    <a class="btn btn-contorno btn-peq" href="rapido.html"><span class="so-pc">Descobrir minha data</span><span class="so-cel">Minha data</span></a>
   </div>
 </header>
 
@@ -331,7 +346,10 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
   <section class="abertura faixa">
     <div class="miolo">
       <div class="promessa">
-        <p class="dor">Fatura vencendo. Saldo no vermelho. Número desconhecido ligando.</p>
+        <div class="notifs" aria-label="Fatura vencendo e saldo no vermelho">
+          <div class="nt"><i class="nt-banco" aria-hidden="true">$</i><span class="nt-a">Banco</span><span class="nt-h">agora</span><span class="nt-t"><b>Saldo da conta:</b> <span class="neg">-R$ 312,40</span></span></div>
+          <div class="nt"><i class="nt-cartao" aria-hidden="true"><svg viewBox="0 0 16 12" width="14" height="11"><rect x="1" y="1" width="14" height="10" rx="2" fill="none" stroke="#fff" stroke-width="1.6"/><rect x="1" y="3.6" width="14" height="2" fill="#fff"/></svg></i><span class="nt-a">Cartão de crédito</span><span class="nt-h">agora</span><span class="nt-t"><b>Sua fatura vence hoje.</b> Mínimo R$ 427,16</span></div>
+        </div>
         <h1 class="solta">Descubra o mês em que você <em>sai das dívidas.</em></h1>
         <p class="lead"><b>Grátis, em 5 minutos e sem CPF.</b> Você vê a data antes de deixar contato.</p>
         <div class="pergunta" id="pergunta">
@@ -347,7 +365,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
           <p class="nao-msg" id="nao-msg" hidden>Que bom! O Desaperto é para quem está apertado com dívida. Se você conhece alguém assim, <a id="nao-indicar" href="https://wa.me/?text=Achei%20isso%20e%20lembrei%20de%20voc%C3%AA%3A%20em%205%20minutos%20mostra%20em%20que%20m%C3%AAs%20d%C3%A1%20para%20sair%20do%20aperto.%20%C3%89%20gr%C3%A1tis%3A%20https%3A%2F%2Fdesaperto.com%2F%3Futm_source%3Dwhatsapp" target="_blank" rel="noopener">mande o link pelo WhatsApp</a>.</p>
         </div>
         <ul class="garantias" aria-label="Como funciona">
-          <li>A data sai em 5 minutos, de cabeça</li>
+          <li>A data sai em 5 minutos, com valores aproximados</li>
           <li>Não pede CPF, senha nem extrato</li>
           <li>Sem cadastro para ver a data</li>
         </ul>
@@ -362,8 +380,8 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
           <p class="sub">Se algum mês apertar, no máximo em novembro de 2027.</p>
           <div class="bloco-n"><span>Juros que ela deixa de pagar em 1 ano</span><b>R$ 4.591</b></div>
           <ol class="passos-ex">
-            <li>Ponha em dia o empréstimo do app<small>Esta semana · 15 minutos</small></li>
-            <li>Baixe o limite do cartão para R$ 1.000<small>Hoje · 5 minutos</small></li>
+            <li>Regularize o empréstimo do app<small>Esta semana · 15 minutos</small></li>
+            <li>Reduza o limite do cartão para R$ 1.000<small>Hoje · 5 minutos</small></li>
             <li>Parcele o que ficou sem pagar da fatura<small>Hoje · 10 minutos</small></li>
           </ol>
         </div>
@@ -380,7 +398,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
         <li><button type="button" class="frase" aria-pressed="false">Paga a fatura do cartão e a do mês seguinte já vem maior.</button></li>
         <li><button type="button" class="frase" aria-pressed="false">Você recebe o salário e em três dias ele já foi.</button></li>
         <li><button type="button" class="frase" aria-pressed="false">Acorda para trabalhar e sente que vive só para pagar dívida.</button></li>
-        <li><button type="button" class="frase" aria-pressed="false">Pegou um empréstimo para pagar outro.</button></li>
+        <li><button type="button" class="frase" aria-pressed="false">Fez um empréstimo para pagar outro.</button></li>
         <li><button type="button" class="frase" aria-pressed="false">O celular toca e vem a angústia: é mais uma cobrança?</button></li>
         <li><button type="button" class="frase" aria-pressed="false">Tem vergonha de olhar para a própria vida financeira.</button></li>
         <li><button type="button" class="frase" aria-pressed="false">Sente que a vida está parada até as dívidas acabarem.</button></li>
@@ -432,12 +450,12 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
       <ol class="etapas">
         <li>
           <h3>Você responde o básico</h3>
-          <p>Quanto entra, quanto sai e quanto você deve, mais ou menos. Pode ser de cabeça.</p>
+          <p>Quanto entra, quanto sai e quanto você deve, mais ou menos. Pode ser um valor aproximado.</p>
           <span class="tempo">5 minutos</span>
         </li>
         <li>
           <h3>Você vê a sua data, grátis</h3>
-          <p>Na hora, o mês aproximado em que você sai das dívidas e quanto os juros te custam hoje.</p>
+          <p>Na hora, o mês aproximado em que você sai das dívidas e quanto os juros custam para você hoje.</p>
           <span class="tempo">Na hora</span>
         </li>
         <li>
@@ -462,8 +480,8 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
           <div class="pg" aria-hidden="true">
             <p class="sec">Sua primeira semana</p>
             <h4>Três passos para esta semana.</h4>
-            <div class="card"><b>Ponha em dia o empréstimo do app</b><small>Pague as 2 parcelas atrasadas, R$ 610, e a deste mês. Assim seu nome não vai para o Serasa.</small></div>
-            <div class="card"><b>Baixe o limite do cartão</b><small>De R$ 2.500 para R$ 1.000, perto do que você gasta no mês.</small></div>
+            <div class="card"><b>Regularize o empréstimo do app</b><small>Pague as 2 parcelas atrasadas, R$ 610, e a deste mês. Assim seu nome não vai para o Serasa.</small></div>
+            <div class="card"><b>Reduza o limite do cartão</b><small>De R$ 2.500 para R$ 1.000, perto do que você gasta no mês.</small></div>
             <div class="card"><b>Parcele o que ficou da fatura</b><small>Os juros caem e a dívida vira 12 parcelas de R$ 265.</small></div>
           </div>
           <figcaption><b>A primeira semana</b><span>Três coisas simples para fazer já, com o tempo que cada uma leva.</span></figcaption>
@@ -535,7 +553,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
         <h2 id="t-vida">Ele entende a sua realidade.</h2>
       </div>
       <div class="grade">
-        <div><h3>"Tenho medo de falar com o banco."</h3><p>O plano te dá o valor para oferecer e a frase pronta. Você chega na conversa sabendo o que dizer.</p></div>
+        <div><h3>"Tenho medo de falar com o banco."</h3><p>O plano mostra o valor a oferecer e a frase pronta. Você chega na conversa sabendo o que dizer.</p></div>
         <div><h3>"Vou receber 13º ou férias."</h3><p>O plano mostra em qual dívida usar esse dinheiro para ele render mais.</p></div>
         <div><h3>"Recebo vale-alimentação."</h3><p>O mercado já é pago pelo vale. O plano não pede para cortar o que não sai do seu bolso.</p></div>
         <div><h3>"Meu cartão virou uma bola de neve."</h3><p>O plano separa a fatura, o que foi parcelado e as compras em várias vezes, e mostra quanto você deve de verdade.</p></div>
@@ -592,7 +610,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
         </ul>
         <p class="cp-ancora">Custa menos que um mês de juros de uma fatura de R$ 250 no rotativo.</p>
         <a class="btn btn-principal" href="rapido.html">Descobrir minha data <span class="seta" aria-hidden="true">→</span></a>
-        <p class="cp-garantia"><b>Garantia de 7 dias.</b> Se o plano não te ajudar, responda o e-mail dele e devolvemos o valor inteiro.</p>
+        <p class="cp-garantia"><b>Garantia de 7 dias.</b> Se o plano não ajudar, responda o e-mail dele e devolvemos o valor inteiro.</p>
       </div>
     </div>
   </section>
@@ -623,7 +641,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
         </details>
         <details>
           <summary>Preciso saber os valores exatos?</summary>
-          <p>Para a data aproximada, não: valores de cabeça bastam. Para o plano exato, sim: depois de pagar, você confere cada valor no app do banco. Se não achar algum, marque "não encontrei"; o plano faz uma conta aproximada e avisa onde fez isso.</p>
+          <p>Para a data aproximada, não: valores aproximados bastam. Para o plano exato, sim: depois de pagar, você confere cada valor no app do banco. Se não achar algum, marque "não encontrei"; o plano faz uma conta aproximada e avisa onde fez isso.</p>
         </details>
         <details>
           <summary>Meu nome já está sujo. Ainda serve?</summary>
@@ -634,7 +652,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
           <p>O plano mostra isso com clareza. Primeiro garante casa, comida e contas. Depois mostra a saída: vender um bem, quando vale a pena, ou renegociar todas as dívidas juntas por uma lei feita para isso. Ele já monta a proposta e os papéis.</p>
         </details>
         <details>
-          <summary>Vou ter que pegar outro empréstimo?</summary>
+          <summary>Vou precisar fazer outro empréstimo?</summary>
           <p>Não. O plano usa o que você já tem: o que sobra no mês, o 13º, as férias e o que você guardou.</p>
         </details>
         <details>
@@ -653,8 +671,8 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
   <section class="final faixa" aria-labelledby="t-final">
     <div class="miolo">
       <p class="marca-grande" id="marca-grande" aria-label="desaperto"><span>d</span><span>e</span><span>s</span><span>a</span><span>p</span><span>e</span><span>r</span><span>t</span><span>o</span></p>
-      <h2 id="t-final">O primeiro desaperto é olhar para ela.</h2>
-      <p>Em 5 minutos, de cabeça, você vê o mês em que sai das dívidas. De graça.</p>
+      <h2 id="t-final">O primeiro desaperto é olhar para os números.</h2>
+      <p>Em 5 minutos, com valores aproximados, você vê o mês em que sai das dívidas. De graça.</p>
       <a class="btn btn-claro" href="rapido.html">Descobrir minha data grátis <span class="seta" aria-hidden="true">→</span></a>
       <p class="indicar">Conhece alguém no aperto? <a id="link-indicar" href="https://wa.me/?text=Achei%20isso%20e%20lembrei%20de%20voc%C3%AA%3A%20em%205%20minutos%20mostra%20em%20que%20m%C3%AAs%20d%C3%A1%20para%20sair%20do%20aperto.%20%C3%89%20gr%C3%A1tis%3A%20https%3A%2F%2Fdesaperto.com%2F%3Futm_source%3Dwhatsapp" target="_blank" rel="noopener">Mande para essa pessoa pelo WhatsApp</a>. Sem ninguém precisar se expor.</p>
     </div>

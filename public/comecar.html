@@ -280,7 +280,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     F({ id: 'e_taxa', tipo: 'texto', rotulo: 'Qual é a taxa de juros ao mês desse contrato?', ajuda: 'Está no contrato e nos detalhes do empréstimo no app, como "taxa de juros" ao mês. Use a taxa de juros, não o "custo efetivo total". Exemplo: 1,99%. Se for um acordo sem juros, coloque 0.', g: 'parcelada', naoSei: 'Não encontrei', mostrar: function (d) { return emDia(d) || recente(d); } }),
     F({ id: 'e_quitar', tipo: 'dinheiro', rotulo: 'Quanto custa pagar tudo hoje?', ajuda: 'No app, procure "quitar contrato" ou "antecipar parcelas"; se não aparecer, peça no chat ou ao gerente. Com esse valor o plano sabe exatamente quanto você economiza adiantando.', g: 'parcelada', obrig: false, naoSei: 'Não consegui ver', mostrar: emDia }),
     F({ id: 'e_total', tipo: 'inteiro', rotulo: 'Em quantas parcelas foi o contrato, no total?', g: 'parcelada', obrig: false, mostrar: function (d) { return emDia(d) && !!d.e_taxa_naoSei && !!d.e_quitar_naoSei; } }),
-    F({ id: 'e_recebido', tipo: 'dinheiro', rotulo: function (d) { return financiamento(d) ? 'Qual foi o valor financiado, sem contar a entrada?' : 'Quanto caiu na sua conta quando você pegou esse empréstimo?'; }, ajuda: 'Sem a taxa e sem o valor para quitar, isso ajuda a estimar. A dívida fica marcada para você confirmar antes de adiantar.', g: 'parcelada', obrig: false, naoSei: 'Não lembro', mostrar: function (d) { return emDia(d) && !!d.e_taxa_naoSei && !!d.e_quitar_naoSei; } }),
+    F({ id: 'e_recebido', tipo: 'dinheiro', rotulo: function (d) { return financiamento(d) ? 'Qual foi o valor financiado, sem contar a entrada?' : 'Quanto caiu na sua conta quando você contratou esse empréstimo?'; }, ajuda: 'Sem a taxa e sem o valor para quitar, isso ajuda a estimar. A dívida fica marcada para você confirmar antes de adiantar.', g: 'parcelada', obrig: false, naoSei: 'Não lembro', mostrar: function (d) { return emDia(d) && !!d.e_taxa_naoSei && !!d.e_quitar_naoSei; } }),
     F({ id: 'e_venc', tipo: 'dia', rotulo: 'Em que dia a parcela vence?', ajuda: 'Opcional.', obrig: false, g: 'parcelada', mostrar: function (d) { return emDia(d) && d.tipo !== 'Consignado'; } }),
     F({ id: 'e_debito', tipo: 'simnao', rotulo: 'A parcela sai sozinha da sua conta (débito automático)?', g: 'parcelada', mostrar: function (d) { return emDia(d) && d.tipo !== 'Consignado'; } }),
     F({ id: 'e_descontado', tipo: 'simnao', rotulo: 'Essa parcela é descontada do salário antes de ele cair na sua conta?', ajuda: 'Se sim, o plano não cobra ela de novo, porque a renda que você informou já vem sem ela.', g: 'parcelada', mostrar: function (d) { return emDia(d) && d.tipo === 'Consignado'; } }),
@@ -290,7 +290,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     F({ id: 'o_jurosQuanto', tipo: 'texto', rotulo: 'Quanto de juros ela cobra?', ajuda: 'Exemplo: 5% ao mês, ou R$ 100 por mês.', g: 'outros', mostrar: function (d) { return d.tipo === 'Dívida com parente ou conhecido' && d.o_juros === 'Cobra'; } }),
     F({ id: 'o_pressao', tipo: 'unica', rotulo: 'Essa pessoa está pressionando para receber?', ops: ['Não', 'Sim, está cobrando', 'Sim, com ameaças'], g: 'outros', mostrar: function (d) { return d.tipo === 'Dívida com parente ou conhecido'; } }),
     // atraso
-    F({ id: 's_propostaTexto', tipo: 'texto', bloco: 'O atraso', rotulo: 'Já te ofereceram algum acordo? Qual?', ajuda: 'Opcional. Valor e condições. Exemplo: R$ 900 à vista, ou 10 de R$ 120.', obrig: false, mostrar: atrasada }),
+    F({ id: 's_propostaTexto', tipo: 'texto', bloco: 'O atraso', rotulo: 'Você já recebeu alguma proposta de acordo? Qual?', ajuda: 'Opcional. Valor e condições. Exemplo: R$ 900 à vista, ou 10 de R$ 120.', obrig: false, mostrar: atrasada }),
     F({ id: 's_serasa', tipo: 'unica', bloco: 'Serasa', rotulo: 'Essa dívida deixou seu nome sujo no Serasa?', ops: ['Sim', 'Não', 'Não consultei'], lado: true, mostrar: function (d) { return !!d.s_status; } })
   ];
   fDivida.forEach(function (f) { if (f.g) { var g = f.g, m = f.mostrar; f.mostrar = function (d) { return grupo(d.tipo) === g && (!m || m(d)); }; } });
@@ -300,7 +300,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
   var TELAS = [
     { id: 'acolhimento', etapa: 0, especial: 'acolhimento' },
     { id: 'compromisso', etapa: 0, especial: 'compromisso' },
-    { id: 'contato', etapa: 1, acolhe: 'Vamos começar por você.', titulo: 'Como podemos te chamar?', campos: [
+    { id: 'contato', etapa: 1, acolhe: 'Vamos começar por você.', titulo: 'Como podemos chamar você?', campos: [
       F({ id: 'nome', tipo: 'texto', rotulo: 'Seu primeiro nome', auto: 'given-name', doRapido: true }),
       F({ id: 'email', tipo: 'email', rotulo: 'Seu e-mail', ajuda: 'É para onde vamos enviar o seu plano.', auto: 'email', doRapido: true })
     ] },
@@ -313,7 +313,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     { id: 'fimMes', etapa: 1, titulo: 'No fim do mês, o que normalmente acontece?', campos: [
       F({ id: 'fimMes', tipo: 'unica', rotulo: 'No fim do mês', semRotulo: true, ops: ['Sobra dinheiro', 'Fica zerado', 'Falta dinheiro'] }),
       F({ id: 'sobra', tipo: 'dinheiro', rotulo: 'Quanto sobra, em média?', mostrar: function (r) { return r.fimMes === 'Sobra dinheiro'; } }),
-      F({ id: 'falta', tipo: 'dinheiro', rotulo: 'Quanto falta, em média?', ajuda: 'Se não souber o valor exato, chute o mais próximo.', mostrar: function (r) { return r.fimMes === 'Falta dinheiro'; } })
+      F({ id: 'falta', tipo: 'dinheiro', rotulo: 'Quanto falta, em média?', ajuda: 'Se não souber o valor exato, informe um valor aproximado.', mostrar: function (r) { return r.fimMes === 'Falta dinheiro'; } })
     ] },
     { id: 'renda', etapa: 2, acolhe: 'Agora, o que entra.', titulo: 'Quanto você recebe?', campos: [
       F({ id: 'renda', tipo: 'dinheiro', rotulo: 'Quanto cai de fato na sua conta por mês?', ajuda: 'É o valor depositado, depois do INSS, do imposto de renda e das parcelas de empréstimo consignado descontadas do salário. Confira no extrato quanto entrou. Se sua renda varia, informe o menor valor dos últimos 3 meses.' }),
@@ -342,13 +342,13 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       F({ id: 'protegidos', tipo: 'multipla', rotulo: 'Quais você não pode reduzir de jeito nenhum?', ops: function () { return GASTOS.map(function (g) { return g[1]; }).concat(['Nenhum']); }, unicoFinal: true }),
       F({ id: 'noCartao', tipo: 'multipla', rotulo: 'Quais você costuma pagar no cartão de crédito?', ops: function () { return GASTOS.map(function (g) { return g[1]; }).concat(['Nenhum']); }, unicoFinal: true })
     ] },
-    { id: 'serasa', etapa: 4, acolhe: 'Agora, as dívidas. Respira: é daqui que sai o caminho.', titulo: 'Antes, uma olhada rápida', lead: 'Abra o app do Serasa (é gratuito) e veja se há dívidas no seu CPF. Ele mostra até as que a gente esquece. Se quiser ir além, o Registrato, um site gratuito do Banco Central que você acessa com a conta gov.br, lista todos os seus empréstimos e quanto falta pagar em cada um. Você não precisa enviar nada.', campos: [
+    { id: 'serasa', etapa: 4, acolhe: 'Agora, as dívidas. Respira: é daqui que sai o caminho.', titulo: 'Antes, uma olhada rápida', lead: 'Abra o app do Serasa (é gratuito) e veja se há dívidas no seu CPF. Ele mostra até as que ficam esquecidas. Se quiser ir além, o Registrato, um site gratuito do Banco Central que você acessa com a conta gov.br, lista todos os seus empréstimos e quanto falta pagar em cada um. Você não precisa enviar nada.', campos: [
       F({ id: 'nomeLimpo', tipo: 'unica', rotulo: 'Você precisa do nome limpo para algo nos próximos meses?', ops: ['Não', 'Sim, para alugar um imóvel', 'Sim, para um financiamento', 'Sim, para uma vaga de emprego', 'Sim, para outra coisa'] })
     ] },
     { id: 'dividas', etapa: 4, especial: 'dividas' },
     { id: 'recursos', etapa: 5, acolhe: 'Pronto: as dívidas eram a parte que quase todo mundo evita. Você fez.', titulo: 'Agora, duas perguntas rápidas', campos: [
       F({ id: 'guardado', tipo: 'dinheiro', rotulo: 'Você tem algum dinheiro guardado hoje? Quanto?', ajuda: 'Se não tem, coloque 0.' }),
-      F({ id: 'emprestPagar', tipo: 'simnao', rotulo: 'Nos últimos 12 meses, você pegou algum empréstimo para pagar outra dívida?' })
+      F({ id: 'emprestPagar', tipo: 'simnao', rotulo: 'Nos últimos 12 meses, você fez algum empréstimo para pagar outra dívida?' })
     ] },
     { id: 'depois', etapa: 5, acolhe: 'Última pergunta antes de conferir.', titulo: 'E quando as dívidas acabarem?', campos: [
       F({ id: 'objetivo', tipo: 'texto', rotulo: 'O que você quer fazer com o dinheiro que hoje vai para as dívidas?', ajuda: 'Opcional. Por exemplo: guardar para a entrada da casa, viajar com a família, voltar a estudar. Ele aparece no seu plano.', obrig: false, doRapido: true }),
@@ -681,8 +681,8 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
   function renderAcolhimento() {
     $tela.innerHTML = '<section class="tela"><h1>Antes de tudo: respira.</h1><div class="texto">' +
       '<p>Se você chegou até aqui, provavelmente carrega um peso que pouca gente vê. A sensação de que isso nunca vai acabar. De que você errou e atrasou a própria vida. O aperto no peito quando o celular toca ou quando a fatura chega.</p>' +
-      '<p>Queremos te dizer uma coisa com toda a honestidade: <strong>dívida é uma situação, não é quem você é.</strong> Ela tem começo, tem tamanho e pode ter fim.</p>' +
-      '<p>E se até hoje você evitou olhar para ela, não abriu a fatura, não somou, não anotou no caderno, saiba que isso é muito comum. Não é fraqueza. É cansaço. É a forma que a gente encontra de se proteger.</p>' +
+      '<p>Queremos dizer uma coisa com toda a honestidade: <strong>dívida é uma situação, não é quem você é.</strong> Ela tem começo, tem tamanho e pode ter fim.</p>' +
+      '<p>E se até hoje você evitou olhar para ela, não abriu a fatura, não somou, não anotou no caderno, saiba que isso é muito comum. Não é fraqueza. É cansaço. É a forma que encontramos de nos proteger.</p>' +
       '<p>Hoje você fez diferente: veio procurar um caminho. Esse é o passo mais difícil, e ele já foi dado. <strong>É o seu primeiro desaperto.</strong></p></div>' +
       '<div class="acoes"><button type="button" class="btn btn-principal" id="btn-seguir">Continuar</button>' +
       (TESTE ? '<button type="button" class="btn btn-sec" id="btn-exemplo">Preencher com exemplo (teste)</button>' : '') + '</div></section>';
@@ -693,9 +693,9 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
   function renderCompromisso() {
     var r = R();
     $tela.innerHTML = '<section class="tela"><h1>Agora, vamos olhar juntos.</h1><div class="texto">' +
-      '<p>Nas próximas telas, vamos te pedir os números da sua vida real: quanto entra, quanto sai e o que você deve. Pode ser desconfortável ver o valor total. Tudo bem sentir isso. Respira e continua: é a partir desse número que o caminho aparece.</p>' +
-      '<p>Os detalhes fazem toda a diferença. Um valor esquecido pode mudar a ordem certa de pagar. Uma data de vencimento pode te fazer economizar todo mês. Quanto mais real e completa for a sua resposta, mais o seu plano vai ser feito para você, e não para qualquer pessoa.</p>' +
-      (E.envio && E.envio.a ? '<p><strong>Esta é a parte que deixa o plano exato.</strong> Na versão rápida você respondeu de cabeça; agora são os valores de verdade, do app do banco.</p>' : '<p>No fim, você vê na hora, de graça, o mês em que sai das dívidas.</p>') +
+      '<p>Nas próximas telas, vamos pedir os números da sua vida real: quanto entra, quanto sai e o que você deve. Pode ser desconfortável ver o valor total. Tudo bem sentir isso. Respira e continua: é a partir desse número que o caminho aparece.</p>' +
+      '<p>Os detalhes fazem toda a diferença. Um valor esquecido pode mudar a ordem certa de pagar. Uma data de vencimento pode fazer você economizar todo mês. Quanto mais real e completa for a sua resposta, mais o seu plano vai ser feito para você, e não para qualquer pessoa.</p>' +
+      (E.envio && E.envio.a ? '<p><strong>Esta é a parte que deixa o plano exato.</strong> Na versão rápida você usou valores aproximados; agora são os valores de verdade, do app do banco.</p>' : '<p>No fim, você vê na hora, de graça, o mês em que sai das dívidas.</p>') +
       '<p>Separe uns 10 minutos tranquilos. Deixe aberto o app do seu banco e o do Serasa. Se bater o cansaço no meio, respira e segue no seu tempo. Seu progresso fica salvo neste aparelho.</p></div>' +
       '<div class="campo" data-campo="consent"><label class="check"><input type="checkbox" id="q-consent"' + (r.consent ? ' checked' : '') + '><span>Concordo que minhas respostas sejam usadas apenas para montar o meu plano, com análise apoiada por inteligência artificial, e apagadas em até 90 dias. Entendo que o Desaperto é uma ferramenta educacional e não substitui consultoria profissional. Li os <a href="/termos" target="_blank" rel="noopener">termos de uso</a> e a <a href="/privacidade" target="_blank" rel="noopener">política de privacidade</a>.</span></label></div>' +
       botoes('Começar', '').replace('</div>', '<p class="nota">Não pedimos CPF, senha nem extrato. Só os números.</p></div>') + '</section>';
@@ -852,7 +852,7 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       '<p>Você fez a parte que muita gente adia: olhar para os números.</p>' +
       '<p>As suas contas estão sendo feitas. Em cerca de 1 minuto, você vê o mês em que sai das dívidas.</p>' +
       (E.envio && E.envio.pagar ? '<p><a class="btn btn-principal" href="' + esc(E.envio.pagar) + '">Ver minha data</a></p>' : '<p>O resultado também chega no seu e-mail. Se não aparecer na caixa de entrada, olhe em Spam e em Promoções.</p>') +
-      (E.envio && E.envio.protocolo ? '<p>Seu protocolo é <span class="protocolo">' + esc(E.envio.protocolo) + '</span>. Se precisar falar com a gente, escreva para contato@desaperto.com com esse código.</p>' : '') + '</div>' +
+      (E.envio && E.envio.protocolo ? '<p>Seu protocolo é <span class="protocolo">' + esc(E.envio.protocolo) + '</span>. Se precisar falar conosco, escreva para contato@desaperto.com com esse código.</p>' : '') + '</div>' +
       '<div class="cvv">Se o peso estiver grande demais, você não precisa carregar isso sozinho. <strong>CVV: ligue 188</strong>, 24 horas, gratuito.</div>' +
       '<div class="acoes"><button type="button" class="btn btn-sec" id="btn-corrigir">Corrigir minhas respostas</button></div>' +
       (TESTE ? '<div class="acoes"><button type="button" class="btn btn-principal" id="btn-copiar">Copiar respostas (teste)</button><button type="button" class="btn btn-sec" id="btn-ver">' + (ui.verTeste ? 'Esconder respostas' : 'Ver respostas (teste)') + '</button>' + (ui.verTeste ? '<pre class="teste">' + esc(JSON.stringify(r, null, 2)) + '</pre>' : '') + '<button type="button" class="link" id="btn-zerar">Apagar e recomeçar</button></div>' : '') + '</section>';

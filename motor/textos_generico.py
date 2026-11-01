@@ -37,7 +37,7 @@ def textos(c):
                 txt = f'No app ou site do {e(cred)}, pague as {d["qtd_atr"]} parcelas atrasadas ({brl(d["saldo"])}) e a parcela deste mês. Assim seu nome não vai para o Serasa e a multa para de crescer.{confirma}'
             else:
                 txt = f'Pague a parcela deste mês para o atraso não aumentar. As {d["qtd_atr"]} atrasadas ({brl(d["saldo"])}) entram até {ml(d["quitada_em"])}, como mostra a página "Mês a mês". Pague primeiro a mais antiga.{confirma}'
-            cands.append((f'Ponha em dia: {t.lower()} ({cred})', 'Esta semana · 15 minutos', txt, False))
+            cands.append((f'Regularize: {t.lower()} ({cred})', 'Esta semana · 15 minutos', txt, False))
             continue
         if d['banda'] == 'P0':
             t, cred = nome_ex(d)
@@ -58,7 +58,7 @@ def textos(c):
         cart = next((x for x in (r.get('dividas') or []) if x.get('tipo') == 'Cartão de crédito' and x.get('c_limite')), None)
         if cart:
             alvo = max(300, round(sum((r.get('gastos') or {}).get(k, 0) for k in ['mercado', 'delivery', 'pessoal']) / 100) * 100)
-            cands.append((f'Baixe o limite do cartão para {brl(alvo)}', 'Hoje · 5 minutos',
+            cands.append((f'Reduza o limite do cartão para {brl(alvo)}', 'Hoje · 5 minutos',
                           f'No app do {e(cart.get("credor") or "cartão")}, procure "ajustar limite". Hoje ele é de {brl(cart["c_limite"])}. Um limite perto do que você gasta no mês evita que a dívida volte a crescer enquanto você paga.', False))
     acordos = [d for d in fila if d.get('acordo_oferta')]
     if acordos:
@@ -197,7 +197,7 @@ def textos(c):
     motivos = {}
     for d in fila:
         if d['sub'] == 'em_atraso':
-            motivos[d['nome']] = f'{d["qtd_atr"]} parcelas atrasadas há pouco tempo. Pôr em dia agora custa {brl(d["saldo"])}, evita que seu nome vá para o Serasa e para a multa de crescer. Depois, sobra só a parcela de todo mês.'
+            motivos[d['nome']] = f'{d["qtd_atr"]} parcelas atrasadas há pouco tempo. Regularizar agora custa {brl(d["saldo"])}, evita que seu nome vá para o Serasa e para a multa de crescer. Depois, sobra só a parcela de todo mês.'
         elif d['banda'] == 'P0':
             motivos[d['nome']] = 'Conta essencial atrasada: vem antes de tudo, para evitar corte, despejo ou cobrança mais dura.'
         elif d.get('grupo_atraso'):
