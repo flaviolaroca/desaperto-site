@@ -67,6 +67,8 @@ h1 em { font-style: normal; color: var(--verde); }
 .inclui li { padding-left: 28px; position: relative; }
 .inclui li::before { content: ""; position: absolute; left: 2px; top: 6px; width: 14px; height: 8px; border-left: 2.5px solid var(--verde); border-bottom: 2.5px solid var(--verde); transform: rotate(-45deg); }
 .oferta { background: var(--tinta); color: var(--papel); border-radius: 22px; padding: 24px 22px; display: flex; flex-direction: column; gap: 14px; }
+.oferta .de { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 1.25rem; text-decoration: line-through; opacity: .55; margin-right: 6px; }
+.oferta .promo-tag { margin: 0 0 10px; display: inline-block; background: #9A5B12; color: #fff; font-weight: 700; font-size: .8125rem; padding: 5px 12px; border-radius: 999px; }
 .oferta .preco { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; font-size: 2.4rem; line-height: 1; letter-spacing: -.02em; }
 .oferta .sub { color: #C9D0CB; font-size: .9375rem; }
 .oferta .ancora { color: #DCEBE1; font-size: .9375rem; }
@@ -272,7 +274,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
       var ve = document.getElementById('ver-exemplo'); if (ve) ve.addEventListener('click', function () { contar('viu_exemplo'); });
       umaVez('lead', function () { window.dpx('Lead'); });
       $t.innerHTML = '<p class="rotulo">' + (d.aprox ? 'Sua data aproximada' : 'Seu resultado') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) + notaAprox(d) + passoGratis(d) + ordemTravada(d) + inclui(d) +
-        '<div class="oferta"><div><span class="preco">' + esc(s.preco_txt) + '</span></div><p class="sub">' + (d.aprox ? 'Uma vez só, por Pix. Sem assinatura. Depois de pagar, você completa as respostas e o plano exato chega no seu e-mail em minutos.' : 'Uma vez só, por Pix. Sem assinatura. O plano chega no seu e-mail em poucos minutos.') + '</p>' + ancora(d) +
+        '<div class="oferta">' + (s.promo ? '<p class="promo-tag">Preço especial · até ' + esc(s.promo_ate_txt) + '</p>' : '') + '<div>' + (s.promo ? '<span class="de">' + esc(s.preco_cheio_txt) + '</span> ' : '') + '<span class="preco">' + esc(s.preco_txt) + '</span></div><p class="sub">' + (d.aprox ? 'Uma vez só, por Pix. Sem assinatura. Depois de pagar, você completa as respostas e o plano exato chega no seu e-mail em minutos.' : 'Uma vez só, por Pix. Sem assinatura. O plano chega no seu e-mail em poucos minutos.') + '</p>' + ancora(d) +
         '<button type="button" class="btn" id="btn-pix">Pagar ' + esc(s.preco_txt) + ' com Pix</button><div id="erro" class="erro-box" hidden></div>' +
         '<p class="pequeno">Pagamento pelo Mercado Pago. No seu banco, o recebedor aparece ' + (s.recebedor ? 'como ' + esc(s.recebedor) : 'com o nome do responsável pelo Desaperto') + '. O Desaperto não vê nem guarda dados do seu banco.</p></div>' +
         '<div class="garantia">' + ESCUDO + '<p><b>Garantia de 7 dias.</b> Se o plano não te ajudar, responda o e-mail do plano e devolvemos o valor inteiro. Sem perguntas difíceis.</p></div>' +
