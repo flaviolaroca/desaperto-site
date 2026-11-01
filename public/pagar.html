@@ -83,6 +83,8 @@ h1 em { font-style: normal; color: var(--verde); }
 .ordem small { color: #5C625E; font-size: .8125rem; }
 .ordem .trava .pos { background: #E7DFD0; color: #8A8F8B; }
 .ordem .borrado { filter: blur(5px); user-select: none; color: #8A8F8B; }
+.aviso-spam { background: #FBF3E6; border: 1.5px solid #9A5B12; border-radius: 16px; padding: 14px 16px; font-size: .9375rem; line-height: 1.5; margin: 0 0 16px; }
+.aviso-spam b { display: block; margin-bottom: 2px; }
 .garantia { display: flex; gap: 12px; align-items: flex-start; font-size: .9375rem; }
 .garantia svg { flex: none; margin-top: 2px; }
 .pequeno { color: var(--cinza); font-size: .875rem; }
@@ -198,6 +200,10 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     }).join('');
     return '<div class="cartao"><h2>A ordem das suas ' + d.ordem.length + ' dívidas</h2><ol class="ordem">' + li + '</ol><p class="pequeno">Pagar na ordem errada é o que faz a dívida durar anos a mais. O plano mostra qual vem depois, quanto pagar em cada uma e em que mês.</p></div>';
   }
+  // Aviso de spam, bem visível, para quem pagou: muita gente não acha o e-mail do plano.
+  function avisoSpam() {
+    return '<div class="aviso-spam"><b>O e-mail pode cair no Spam.</b> Se não aparecer na caixa de entrada em alguns minutos, procure por "Desaperto" no Spam e em Promoções e marque "Não é spam". Ele vem de contato@desaperto.com.</div>';
+  }
   function inclui(d) {
     var itens = d.tipo === 'lei'
       ? ['O que proteger primeiro: casa, comida e contas.', 'A proposta para os credores, com o valor de cada um.', 'O passo a passo para pedir a renegociação, de graça, no Procon ou na Defensoria Pública.', 'O dossiê pronto para levar: dívidas, orçamento e a proposta.']
@@ -230,7 +236,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
       $t.innerHTML = '<p class="rotulo">' + (s.pago ? 'Seu plano' : 'Seu resultado') + '</p><h1>' + (nome ? esc(nome) + ', estamos' : 'Estamos') + (s.pago ? ' montando o seu plano.' : ' fazendo as suas contas.') + '</h1><p>Leva cerca de 1 minuto. Não precisa fazer nada.</p>' +
         '<div class="cartao"><div class="barra-c"><i style="width:' + Math.min(92, 8 + passou * 1.1) + '%"></i></div><ul class="etapas-c">' +
         ETAPAS.map(function (x, i) { return '<li' + (i < etapaG ? ' class="feito"' : '') + '>' + x + (i === etapaG ? '...' : '') + '</li>'; }).join('') + '</ul></div>' +
-        '<p class="pequeno">Se precisar sair, tudo bem: ' + (s.pago ? 'o plano' : 'a sua data') + ' também chega no e-mail ' + esc(s.email) + '.</p>';
+        '<p class="pequeno">Se precisar sair, tudo bem: ' + (s.pago ? 'o plano' : 'a sua data') + ' também chega no e-mail ' + esc(s.email) + '.</p>' + (s.pago ? avisoSpam() : '');
       repetir(3000); return;
     }
     if (s.estado === 'erro') {
@@ -244,7 +250,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     if (s.estado === 'completar') {
       $t.innerHTML = '<p class="rotulo">' + (s.gratis ? 'Seu resultado' : 'Pagamento confirmado') + '</p><h1>' + (nome ? esc(nome) + ', agora' : 'Agora') + ', o plano exato.</h1>' +
         '<div class="cartao"><h2>Falta um passo: as respostas completas</h2><p>Separe uns 10 minutos e abra o app do banco. Você confirma o que entra, o que sai e o valor de cada dívida. Assim que terminar, o plano chega no e-mail <b>' + esc(s.email) + '</b> em poucos minutos.</p>' +
-        '<a class="btn" href="' + esc(s.continuar) + '">Completar minhas respostas</a><p class="pequeno">Se não der agora, o link também está no seu e-mail.</p></div>' +
+        '<a class="btn" href="' + esc(s.continuar) + '">Completar minhas respostas</a><p class="pequeno">Se não der agora, o link também está no seu e-mail.</p></div>' + (s.gratis ? '' : avisoSpam()) +
         (d.saida ? '<div class="numeros"><div><small>Sua data aproximada</small><b>' + esc(d.faixa_txt || d.saida_txt) + '</b></div></div>' : '') + areaCartao(d);
       return;
     }
@@ -254,7 +260,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     }
     if (s.estado === 'enviado') {
       $t.innerHTML = '<p class="rotulo">' + (s.pago ? 'Pagamento confirmado' : 'Seu plano') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) +
-        '<div class="cartao"><h2>' + (s.pago ? 'Pagamento confirmado. O seu plano foi enviado.' : 'O seu plano já foi enviado.') + '</h2><p>Ele está no e-mail <b>' + esc(s.email) + '</b>, em PDF. Se não achar na caixa de entrada, olhe em Spam e em Promoções, ou escreva para contato@desaperto.com.</p></div>' +
+        '<div class="cartao"><h2>' + (s.pago ? 'Pagamento confirmado. O seu plano foi enviado.' : 'O seu plano já foi enviado.') + '</h2><p>Ele está no e-mail <b>' + esc(s.email) + '</b>, em PDF. Se não achar, escreva para contato@desaperto.com.</p></div>' + avisoSpam() +
         '<div class="cartao"><h2>Por onde começar</h2><p>Abra o PDF na página 3: são três passos para esta semana, com o tempo que cada um leva. Deixe o app do banco à mão.</p></div>' + areaCartao(d);
       return;
     }
@@ -264,7 +270,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
         : s.revisao ? 'Como a sua conta tem um detalhe que pede atenção, a gente confere o plano antes de enviar. Ele chega no e-mail <b>' + esc(s.email) + '</b> em até 24 horas.'
         : 'O seu plano está a caminho do e-mail <b>' + esc(s.email) + '</b>. Chega em poucos minutos.';
       $t.innerHTML = '<p class="rotulo">' + (s.gratis ? 'Seu resultado' : 'Pagamento confirmado') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) +
-        '<div class="cartao"><h2>' + (s.gratis ? 'Pronto.' : 'Pagamento confirmado. Obrigado.') + '</h2><p>' + txt + '</p><p class="pequeno">Se não aparecer na caixa de entrada, olhe em Spam e em Promoções.</p></div>' +
+        '<div class="cartao"><h2>' + (s.gratis ? 'Pronto.' : 'Pagamento confirmado. Obrigado.') + '</h2><p>' + txt + '</p></div>' + avisoSpam() +
         '<div class="cartao"><h2>Enquanto o e-mail chega</h2><p>Abra o app do banco e deixe à mão. O primeiro passo do plano é para esta semana e leva poucos minutos.</p></div>' + areaCartao(d);
       if (!s.gratis) repetir(8000);
       return;
