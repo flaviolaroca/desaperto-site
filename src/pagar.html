@@ -38,6 +38,7 @@ h1 em { font-style: normal; color: var(--verde); }
 .interesse p { margin: 0; color: #2B3530; }
 .interesse button { align-self: flex-start; font: inherit; font-weight: 700; background: transparent; color: #9A5B12; border: 1.5px solid #9A5B12; border-radius: 999px; padding: 10px 18px; cursor: pointer; }
 .interesse .ok { color: #16704A; font-weight: 700; }
+.btn-norte { align-self: flex-start; font-weight: 700; color: #9A5B12; border: 1.5px solid #9A5B12; border-radius: 999px; padding: 10px 18px; text-decoration: none; }
 details.mesmo-assim summary { cursor: pointer; font-weight: 700; color: #16704A; padding: 6px 0; }
 details.mesmo-assim[open] summary { margin-bottom: 12px; }
 .numeros { display: grid; gap: 10px; }
@@ -226,6 +227,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
   function ligarSimples() {
     var b = document.getElementById('btn-indicar-s'); if (b) b.addEventListener('click', function () { contar('indicou'); });
     var i = document.getElementById('btn-interesse'); if (i) i.addEventListener('click', function () { contar('interesse_depois'); i.outerHTML = '<p class="ok">Anotado. Avisamos no seu e-mail quando estiver pronto.</p>'; });
+    var nt = document.getElementById('btn-norte'); if (nt) nt.addEventListener('click', function () { contar('norte_clique'); });
   }
   function inclui(d) {
     var itens = d.tipo === 'lei'
@@ -307,7 +309,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
         var ofertaS = '<div class="oferta">' + (s.promo ? '<p class="promo-tag">Preço especial · até ' + esc(s.promo_ate_txt) + '</p>' : '') + '<div>' + (s.promo ? '<span class="de">' + esc(s.preco_cheio_txt) + '</span> ' : '') + '<span class="preco">' + esc(s.preco_txt) + '</span></div><p class="sub">Uma vez só, por Pix. Depois de pagar, você completa as respostas e o plano chega no seu e-mail.</p>' +
           '<button type="button" class="btn" id="btn-pix">Pagar ' + esc(s.preco_txt) + ' com Pix</button><div id="erro" class="erro-box" hidden></div></div>';
         $t.innerHTML = '<p class="rotulo">Sua data aproximada</p><h1>' + titulo(d, nome) + '</h1>' + passoGratis(d) + htmlSimples() +
-          '<div class="interesse"><h2>Depois que essa dívida acabar</h2><p>Estamos preparando um guia para montar a sua reserva e usar o cartão sem voltar para o vermelho. Quer ser avisado quando sair?</p><button type="button" id="btn-interesse">Quero ser avisado</button></div>' +
+          '<div class="interesse"><h2>Depois que essa dívida acabar</h2><p>O próximo passo é não voltar para o vermelho. O <b>NORTE</b> é um diagnóstico das suas finanças: uma nota de 0 a 10, para onde o dinheiro está escapando e um plano de 3 passos, com valores e prazos. Feito pelo mesmo criador do Desaperto.</p><a class="btn-norte" id="btn-norte" href="https://metodonorte.com.br/?utm_source=desaperto&utm_medium=caso_simples" target="_blank" rel="noopener">Conhecer o NORTE &rarr;</a></div>' +
           '<details class="mesmo-assim"><summary>Mesmo assim, quero o plano completo</summary>' + inclui(d) + ofertaS + '</details>' +
           '<p class="pequeno">Protocolo ' + esc(s.protocolo) + '. A data acima é sua, de graça.</p>';
         ligarSimples();
