@@ -35,7 +35,7 @@ export async function onRequestPost({ request, env }) {
     const comPromo = precoVolta(env) > 0;
     pagto = (await env.DB.prepare(`SELECT id, nome, email, protocolo, status, plano_resumo, estimativa, criado_em, teste, pago_em FROM respostas WHERE status IN ('plano_pronto', 'rapido') AND pago_em IS NULL AND teste = 0 AND sem_emails = 0
       AND aviso_data_em IS NOT NULL AND aviso_data_em <= ? AND aviso_data_em >= ?
-      AND (lembrete_pagto_em IS NULL OR (? = 1 AND promo_email_em IS NULL AND criado_em >= ?)) ORDER BY aviso_data_em LIMIT ?`)
+      AND campanha_em IS NULL AND (lembrete_pagto_em IS NULL OR (? = 1 AND promo_email_em IS NULL AND criado_em >= ?)) ORDER BY aviso_data_em LIMIT ?`)
       .bind(new Date(t - dia).toISOString(), new Date(t - 7 * dia).toISOString(), comPromo ? 1 : 0, new Date(t - 6 * dia).toISOString(), PAGTO_POR_DIA).all()).results;
   }
   // pagou a versão rápida e não completou as respostas: lembra uma vez, 2 dias depois
