@@ -403,7 +403,7 @@ details.mesmo-assim[open] summary { margin-bottom: 12px; }
         '<div class="resultado">' +
         (est.primeira ? '<p>A primeira dívida pode acabar já em <b>' + esc(mesLongo(est.primeira)) + '</b>.</p>' : '') +
         (est.juros_mes && !est.comp ? '<p>Hoje os juros custam cerca de <b>' + reais(est.juros_mes) + ' por mês</b>. É isso que a ordem certa corta primeiro.</p>' : '') +
-        '</div>' + (est.simples ? htmlSimples() : htmlComp(est.comp, est.saida, reais, ''));
+        '</div>' + (est.simples ? '' : htmlComp(est.comp, est.saida, reais, ''));
     } else {
       topo = '<p class="acolhe">Pelas suas respostas</p><h1>Do jeito que está, a conta não fecha.</h1><div class="resultado">' +
         (est.diferenca ? '<p>Depois das contas da casa e das parcelas, faltam cerca de <b>' + reais(est.diferenca) + ' por mês</b>.</p>' : (est.semSobra ? '<p>Hoje as contas da casa levam tudo o que entra, e não sobra nada para as dívidas.</p>' : '<p>As parcelas e os juros crescem mais rápido do que dá para pagar.</p>')) +
@@ -411,7 +411,7 @@ details.mesmo-assim[open] summary { margin-bottom: 12px; }
     }
     $t.innerHTML = '<section class="tela">' + topo +
       (pp ? '<div class="passo-gratis"><p class="pg-rot">Seu primeiro passo, de graça</p><h2>' + esc(pp.titulo) + '</h2><p>' + esc(pp.texto) + '</p></div>' : '') +
-      '<p class="nota">Data aproximada, feita com valores aproximados. O plano completo confere cada valor e mostra o caminho mês a mês, até a última dívida.</p>' +
+      (est.simples ? htmlSimples() + '<p class="nota">Data aproximada, feita com valores aproximados.</p>' : '<p class="nota">Data aproximada, feita com valores aproximados. O plano completo confere cada valor e mostra o caminho mês a mês, até a última dívida.</p>') +
       '<div class="bloco" id="guardar"><p class="bloco-titulo">Quer guardar a sua data e ver o próximo passo?</p><div class="campos">' +
       '<div class="campo" data-campo="nome"><label for="q-nome">Seu primeiro nome</label><input type="text" id="q-nome" autocomplete="given-name" value="' + esc(r.nome || '') + '"></div>' +
       '<div class="campo" data-campo="email"><label for="q-email">Seu e-mail</label><p class="ajuda">Enviamos a sua data para você não perder.</p><input type="email" id="q-email" autocomplete="email" value="' + esc(r.email || '') + '"></div>' +
