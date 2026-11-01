@@ -1,0 +1,32 @@
+# E-mail do criador com o preço especial para quem já calculou a data e não comprou.
+# Roda quando .github/pedir-campanha.json muda: {"acao": "simular" | "enviar", "ate": "AAAA-MM-DD"}
+# Guarda só as contagens em metricas/campanha-ultimo.json (o repositório é público).
+name: Enviar campanha
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/pedir-campanha.json']
+
+permissions:
+  contents: write
+
+jobs:
+  campanha:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pedir ao site
+        env:
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+        run: |
+          mkdir -p metricas
+          code=$(curl -sS -o metricas/campanha-ultimo.json -w "%{http_code}" -X POST -H "authorization: Bearer $ADMIN_TOKEN" -H "content-type: application/json" --data-binary @.github/pedir-campanha.json https://desaperto.com/api/admin/campanha)
+          cat metricas/campanha-ultimo.json; echo
+          test "$code" = "200" || { echo "::error::O site respondeu $code."; exit 1; }
+      - name: Guardar
+        run: |
+          git config user.name "desaperto-metricas"; git config user.email "metricas@desaperto.com"
+          git pull --rebase -q || true
+          git add metricas/campanha-ultimo.json; git commit -m "Campanha: resultado" || exit 0; git push

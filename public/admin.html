@@ -373,7 +373,7 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
   function desenharAval() {
     $('sec-aval').hidden = false;
     var novas = avals.filter(function (x) { return x.status === 'nova'; }).length;
-    var media = avals.filter(function (x) { return x.nota; });
+    var media = avals.filter(function (x) { return x.nota != null; });
     var m = media.length ? (media.reduce(function (s, x) { return s + x.nota; }, 0) / media.length).toFixed(1).replace('.', ',') : null;
     var fez = avals.filter(function (x) { return x.momento !== '30d' && x.acao; });
     var fezSim = fez.filter(function (x) { return x.acao === 'sim'; }).length;
@@ -397,7 +397,7 @@ pre { background: var(--papel); border-radius: 12px; padding: 12px; font-size: .
           if (x.status === 'nova' && !pode) acoes += '<button type="button" class="sec" data-lida="' + x.id + '">Marcar como lida</button>';
           acoes += apagandoAval === x.id ? '<button type="button" class="perigo" data-apagar-aval-sim="' + x.id + '">Confirmar: apagar</button><button type="button" class="perigo" data-cancelar-aval>Cancelar</button>' : '<button type="button" class="perigo" data-apagar-aval="' + x.id + '">Apagar</button>';
         }
-        return '<tr><td>' + esc(data(x.atualizado_em)) + '</td><td class="n">' + esc(x.protocolo) + '</td><td>' + esc(MOMENTO[x.momento] || x.momento) + '</td><td class="n">' + (x.nota ? '★'.repeat(x.nota) + '<span style="color:#CFC4AE">' + '★'.repeat(5 - x.nota) + '</span>' : '-') + '</td><td>' + esc(acaoTxt(x)) + '</td><td><div class="coment">' + coment + '</div></td><td>' + quemTxt(x) + '</td><td>' + situacaoAval(x) + '</td><td><div class="acoes">' + acoes + '</div></td></tr>';
+        return '<tr><td>' + esc(data(x.atualizado_em)) + '</td><td class="n">' + esc(x.protocolo) + '</td><td>' + esc(MOMENTO[x.momento] || x.momento) + '</td><td class="n">' + (x.nota != null ? x.nota + ' ' + '★'.repeat(x.nota) + '<span style="color:#CFC4AE">' + '★'.repeat(5 - x.nota) + '</span>' : '-') + '</td><td>' + esc(acaoTxt(x)) + '</td><td><div class="coment">' + coment + '</div></td><td>' + quemTxt(x) + '</td><td>' + situacaoAval(x) + '</td><td><div class="acoes">' + acoes + '</div></td></tr>';
       }).join('') + '</tbody></table>';
   }
   function carregarAval() {

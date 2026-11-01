@@ -38,12 +38,12 @@ export async function onRequestPost({ request, env }) {
   }
 
   const m = MOMENTOS.includes(c.m) ? c.m : 'plano';
-  const nota = Number.isInteger(c.nota) && c.nota >= 1 && c.nota <= 5 ? c.nota : null;
+  const nota = Number.isInteger(c.nota) && c.nota >= 0 && c.nota <= 5 ? c.nota : null;
   const acao = ACOES.includes(c.acao) ? c.acao : null;
   const texto = typeof c.texto === 'string' ? c.texto.trim().slice(0, 1500) : '';
   const autoriza = AUTORIZA.includes(c.autoriza) ? c.autoriza : 'nao';
   const cidade = typeof c.cidade === 'string' ? c.cidade.trim().slice(0, 60) : '';
-  if (!nota && !texto) return erro('Escolha uma nota ou escreva alguma coisa.');
+  if (nota === null && !texto) return erro('Escolha uma nota ou escreva alguma coisa.');
   const primeiro = (l.nome || '').trim().split(/\s+/)[0].slice(0, 40) || '';
   const t = agora();
   // Se a pessoa mudar a resposta, volta para "nova": você aprova de novo o que vai para o site.
@@ -54,7 +54,7 @@ export async function onRequestPost({ request, env }) {
     .bind(aleatorio(12), l.id, l.protocolo, m, t, t, nota, acao, texto, autoriza, primeiro, cidade, contextoDepoimento(l)).run();
 
   if (env.EMAIL_AVISO) {
-    const estrelas = nota ? '★'.repeat(nota) + '☆'.repeat(5 - nota) : 'sem nota';
+    const estrelas = nota !== null ? `${nota}/5 ` + '★'.repeat(nota) + '☆'.repeat(5 - nota) : 'sem nota';
     await enviarEmail(env, {
       para: env.EMAIL_AVISO, assunto: `Nova avaliação ${l.protocolo}: ${estrelas}`,
       texto: `${estrelas}\nPrimeira ação: ${acao || '-'}\nPublicar: ${autoriza}\n\n${texto || '(sem texto)'}\n\nAprovar em ${new URL(request.url).origin}/admin`,
