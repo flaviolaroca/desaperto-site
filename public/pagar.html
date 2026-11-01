@@ -59,6 +59,25 @@ main .in { max-width: 36rem; }
 h1 em { font-style: normal; color: var(--verde); }
 .cartao { background: var(--branco); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
 .cartao h2 { margin: 0; font-size: 1.125rem; }
+.comp { background: #16211C; color: #F3EFE6; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.comp .c-rot { margin: 0; font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: #9FD1B6; }
+.comp-g { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.comp-g > div { border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 3px; }
+.comp-g .c-hoje { background: #2A3530; }
+.comp-g .c-plano { background: #16704A; }
+.comp-g small { font-size: .8125rem; opacity: .85; }
+.comp-g b { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; font-size: 1.125rem; }
+.comp-g .c-hoje b { color: #F0B36B; }
+.comp-g span { font-size: .8125rem; opacity: .9; line-height: 1.35; }
+.comp .c-res { margin: 0; font-size: 1.0625rem; line-height: 1.45; font-weight: 700; }
+.comp .c-res em { font-style: normal; color: #9FD1B6; }
+.comp .c-nota { margin: 0; font-size: .75rem; opacity: .65; line-height: 1.4; }
+.barra-compra { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: #16211C; color: #F3EFE6; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 -6px 20px rgba(0,0,0,.18); transform: translateY(110%); transition: transform .25s; }
+.barra-compra.ver { transform: none; }
+.barra-compra .bc-p { display: flex; flex-direction: column; line-height: 1.15; }
+.barra-compra .bc-p s { font-size: .8125rem; opacity: .6; }
+.barra-compra .bc-p b { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 1.25rem; }
+.barra-compra button { background: #DCEBE1; color: #16211C; border: 0; border-radius: 999px; padding: 12px 18px; font: inherit; font-weight: 700; cursor: pointer; }
 .numeros { display: grid; gap: 10px; }
 .numeros div { background: var(--branco); border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 2px; }
 .numeros small { color: var(--cinza); font-size: .875rem; }
@@ -204,6 +223,33 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
   function avisoSpam() {
     return '<div class="aviso-spam"><b>O e-mail pode cair no Spam.</b> Se não aparecer na caixa de entrada em alguns minutos, procure por "Desaperto" no Spam e em Promoções e marque "Não é spam". Ele vem de contato@desaperto.com.</div>';
   }
+  // O que a ordem certa muda: pagando como hoje x na ordem certa (só aparece quando a diferença é real).
+  function MCURTO(t) { var M = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']; return t ? M[t[1] - 1] + '/' + t[0] : ''; }
+  function htmlComp(c, saida, rs, extra) {
+    if (!c || !saida) return '';
+    var dif = Math.max(0, (c.juros12_hoje || 0) - (c.juros12_plano || 0));
+    var res = [];
+    if (dif >= 100) res.push('<em>' + rs(dif) + ' a menos de juros</em> só no primeiro ano');
+    if (!c.hoje_saida) res.push('e uma data para acabar');
+    else if (c.meses_a_menos >= 2) res.push('e <em>' + c.meses_a_menos + ' meses antes</em>');
+    if (!res.length) return '';
+    return '<div class="comp"><p class="c-rot">O que a ordem certa muda</p><div class="comp-g">' +
+      '<div class="c-hoje"><small>Pagando como hoje</small><b>' + (c.hoje_saida ? MCURTO(c.hoje_saida) : 'mais de 10 anos') + '</b><span>' + rs(c.juros12_hoje) + ' de juros em 12 meses</span></div>' +
+      '<div class="c-plano"><small>Na ordem certa</small><b>' + MCURTO(saida) + '</b><span>' + rs(c.juros12_plano) + ' de juros em 12 meses</span></div></div>' +
+      '<p class="c-res">' + res.join(' ') + '.</p>' + (extra || '') +
+      '<p class="c-nota">"Como hoje": cartão e cheque especial no rotativo, atrasadas sem acordo e um pouco para cada dívida. Estimativa com os seus valores de cabeça.</p></div>';
+  }
+  // Barra fixa embaixo com o preço e o botão, enquanto a caixa de pagamento não está na tela.
+  function barraCompra(s) {
+    var velha = document.getElementById('barra-compra'); if (velha) velha.remove();
+    var b = document.createElement('div'); b.className = 'barra-compra'; b.id = 'barra-compra';
+    b.innerHTML = '<div class="bc-p">' + (s.promo ? '<s>' + esc(s.preco_cheio_txt) + '</s>' : '<span style="font-size:.8125rem;opacity:.75">Plano completo</span>') + '<b>' + esc(s.preco_txt) + '</b></div><button type="button">Quero o meu plano</button>';
+    document.body.appendChild(b);
+    b.querySelector('button').addEventListener('click', function () { contar('barra_compra'); var o = document.querySelector('.oferta'); if (o) o.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+    var alvo = document.querySelector('.oferta');
+    function ver() { var r = alvo && alvo.getBoundingClientRect(); var naTela = r && r.top < window.innerHeight && r.bottom > 0; b.classList.toggle('ver', window.scrollY > 200 && !naTela && !!document.getElementById('btn-pix')); }
+    window.addEventListener('scroll', ver, { passive: true }); ver();
+  }
   function inclui(d) {
     var itens = d.tipo === 'lei'
       ? ['O que proteger primeiro: casa, comida e contas.', 'A proposta para os credores, com o valor de cada um.', 'O passo a passo para pedir a renegociação, de graça, no Procon ou na Defensoria Pública.', 'O dossiê pronto para levar: dívidas, orçamento e a proposta.']
@@ -224,6 +270,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
 
   function desenhar() {
     var d = s.data || {}, nome = s.primeiro_nome;
+    var bc0 = document.getElementById('barra-compra'); if (bc0 && s.estado !== 'oferta') bc0.remove();
     clearTimeout(timer);
     if (s.estado === 'gerando') {
       var passou = (Date.now() - inicio) / 1000;
@@ -279,13 +326,14 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
       contar('v_pagar_data');
       var ve = document.getElementById('ver-exemplo'); if (ve) ve.addEventListener('click', function () { contar('viu_exemplo'); });
       umaVez('lead', function () { window.dpx('Lead'); });
-      $t.innerHTML = '<p class="rotulo">' + (d.aprox ? 'Sua data aproximada' : 'Seu resultado') + '</p><h1>' + titulo(d, nome) + '</h1>' + numeros(d) + notaAprox(d) + passoGratis(d) + ordemTravada(d) + inclui(d) +
+      $t.innerHTML = '<p class="rotulo">' + (d.aprox ? 'Sua data aproximada' : 'Seu resultado') + '</p><h1>' + titulo(d, nome) + '</h1>' + (d.comp ? htmlComp(d.comp, d.saida, reais, s.preco_txt ? '<p class="c-nota" style="opacity:.9;font-size:.875rem">O plano que mostra essa ordem custa ' + esc(s.preco_txt) + ', uma vez só.</p>' : '') : '') + numeros(d) + notaAprox(d) + passoGratis(d) + ordemTravada(d) + inclui(d) +
         '<div class="oferta">' + (s.promo ? '<p class="promo-tag">Preço especial · até ' + esc(s.promo_ate_txt) + '</p>' : '') + '<div>' + (s.promo ? '<span class="de">' + esc(s.preco_cheio_txt) + '</span> ' : '') + '<span class="preco">' + esc(s.preco_txt) + '</span></div><p class="sub">' + (d.aprox ? 'Uma vez só, por Pix. Sem assinatura. Depois de pagar, você completa as respostas e o plano exato chega no seu e-mail em minutos.' : 'Uma vez só, por Pix. Sem assinatura. O plano chega no seu e-mail em poucos minutos.') + '</p>' + ancora(d) +
         '<button type="button" class="btn" id="btn-pix">Pagar ' + esc(s.preco_txt) + ' com Pix</button><div id="erro" class="erro-box" hidden></div>' +
         '<p class="pequeno">Pagamento pelo Mercado Pago. No seu banco, o recebedor aparece ' + (s.recebedor ? 'como ' + esc(s.recebedor) : 'com o nome do responsável pelo Desaperto') + '. O Desaperto não vê nem guarda dados do seu banco.</p></div>' +
         '<div class="garantia">' + ESCUDO + '<p><b>Garantia de 7 dias.</b> Se o plano não te ajudar, responda o e-mail do plano e devolvemos o valor inteiro. Sem perguntas difíceis.</p></div>' +
         '<p class="pequeno">Protocolo ' + esc(s.protocolo) + '. A data acima é sua, de graça, pague ou não.</p>' + areaCartao(d);
       document.getElementById('btn-pix').addEventListener('click', gerarPix);
+      barraCompra(s);
       return;
     }
     if (s.estado === 'pix') {

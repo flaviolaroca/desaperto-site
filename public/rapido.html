@@ -158,6 +158,19 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
 .resultado { display: flex; flex-direction: column; gap: 10px; font-size: 18px; line-height: 1.5; }
 .resultado p { margin: 0; }
 #guardar { margin-top: 8px; }
+.comp { background: #16211C; color: #F3EFE6; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.comp .c-rot { margin: 0; font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: #9FD1B6; }
+.comp-g { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.comp-g > div { border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 3px; }
+.comp-g .c-hoje { background: #2A3530; }
+.comp-g .c-plano { background: #16704A; }
+.comp-g small { font-size: .8125rem; opacity: .85; }
+.comp-g b { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; font-size: 1.125rem; }
+.comp-g .c-hoje b { color: #F0B36B; }
+.comp-g span { font-size: .8125rem; opacity: .9; line-height: 1.35; }
+.comp .c-res { margin: 0; font-size: 1.0625rem; line-height: 1.45; font-weight: 700; }
+.comp .c-res em { font-style: normal; color: #9FD1B6; }
+.comp .c-nota { margin: 0; font-size: .75rem; opacity: .65; line-height: 1.4; }
 .passo-gratis { background: #DCEBE1; border-radius: 18px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
 .passo-gratis h2 { margin: 0; font-size: 1.1875rem; line-height: 1.25; }
 .passo-gratis p { margin: 0; line-height: 1.5; }
@@ -323,6 +336,22 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
   }
 
   // ---------- a data na tela, antes de pedir o e-mail ----------
+  // O que a ordem certa muda: pagando como hoje x na ordem certa (só aparece quando a diferença é real).
+  function MCURTO(t) { var M = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']; return t ? M[t[1] - 1] + '/' + t[0] : ''; }
+  function htmlComp(c, saida, rs, extra) {
+    if (!c || !saida) return '';
+    var dif = Math.max(0, (c.juros12_hoje || 0) - (c.juros12_plano || 0));
+    var res = [];
+    if (dif >= 100) res.push('<em>' + rs(dif) + ' a menos de juros</em> só no primeiro ano');
+    if (!c.hoje_saida) res.push('e uma data para acabar');
+    else if (c.meses_a_menos >= 2) res.push('e <em>' + c.meses_a_menos + ' meses antes</em>');
+    if (!res.length) return '';
+    return '<div class="comp"><p class="c-rot">O que a ordem certa muda</p><div class="comp-g">' +
+      '<div class="c-hoje"><small>Pagando como hoje</small><b>' + (c.hoje_saida ? MCURTO(c.hoje_saida) : 'mais de 10 anos') + '</b><span>' + rs(c.juros12_hoje) + ' de juros em 12 meses</span></div>' +
+      '<div class="c-plano"><small>Na ordem certa</small><b>' + MCURTO(saida) + '</b><span>' + rs(c.juros12_plano) + ' de juros em 12 meses</span></div></div>' +
+      '<p class="c-res">' + res.join(' ') + '.</p>' + (extra || '') +
+      '<p class="c-nota">"Como hoje": cartão e cheque especial no rotativo, atrasadas sem acordo e um pouco para cada dívida. Estimativa com os seus valores de cabeça.</p></div>';
+  }
   function telaData(r) {
     var est = estimativa(r), topo, pp = est.passo;
     if (est.tipo === 'data') {
@@ -331,8 +360,8 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
       topo = '<p class="acolhe">Pelas suas respostas</p><h1>Você sai das dívidas <span class="verde">' + esc(quando) + '.</span></h1>' +
         '<div class="resultado">' +
         (est.primeira ? '<p>A primeira dívida pode acabar já em <b>' + esc(mesLongo(est.primeira)) + '</b>.</p>' : '') +
-        (est.juros_mes ? '<p>Hoje os juros te custam cerca de <b>' + reais(est.juros_mes) + ' por mês</b>. É isso que a ordem certa corta primeiro.</p>' : '') +
-        '</div>';
+        (est.juros_mes && !est.comp ? '<p>Hoje os juros te custam cerca de <b>' + reais(est.juros_mes) + ' por mês</b>. É isso que a ordem certa corta primeiro.</p>' : '') +
+        '</div>' + htmlComp(est.comp, est.saida, reais, '');
     } else {
       topo = '<p class="acolhe">Pelas suas respostas</p><h1>Do jeito que está, a conta não fecha.</h1><div class="resultado">' +
         (est.diferenca ? '<p>Depois das contas da casa e das parcelas, faltam cerca de <b>' + reais(est.diferenca) + ' por mês</b>.</p>' : (est.semSobra ? '<p>Hoje as contas da casa levam tudo o que entra, e não sobra nada para as dívidas.</p>' : '<p>As parcelas e os juros crescem mais rápido do que dá para pagar.</p>')) +
@@ -360,13 +389,17 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
   // ---------- a estimativa ----------
   // Simula mês a mês: as parcelas seguem, o que sobra vai primeiro para juntar o acordo das atrasadas e depois para a dívida de juro mais alto.
   // Quando uma dívida acaba, a parcela dela passa a ajudar nas outras. Dívida atrasada: acordo estimado em 60% do valor.
-  function simular(r, aperto) {
+  // modo 'hoje': como a maioria paga sem plano. Cartão e cheque especial ficam no rotativo, a atrasada não é negociada
+  // e o que sobra é dividido igual entre as dívidas. Serve só para mostrar quanto a ordem certa economiza.
+  function simular(r, aperto, modo) {
+    var HOJE = modo === 'hoje';
     var hoje = new Date(), ano = hoje.getFullYear(), mes = hoje.getMonth() + 2; if (mes > 12) { mes = 1; ano++; }
     var g = r.gastosR || {}, gastos = g.total != null ? g.total : (g.moradia || 0) + (g.casa || 0) + (g.transporte || 0) + (g.resto || 0);
     // Como o plano faz: fatura do cartão em aberto e cheque especial viram parcelamento em 12 vezes (juro bem menor).
     var pmt = function (S, i, n) { return i ? S * i / (1 - Math.pow(1 + i, -n)) : S / n; };
     var ds = r.dividas.map(function (d) {
-      if (d.atrasada) return { tipo: d.tipo, saldo: Math.round(d.valor * 0.6), parcela: 0, taxa: 0, atrasada: true, fim: null };
+      if (d.atrasada) return HOJE ? { tipo: d.tipo, saldo: d.valor, parcela: 0, taxa: d.tipo === 'parente' ? 0 : 0.01, atrasada: true, fim: null } : { tipo: d.tipo, saldo: Math.round(d.valor * (d.tipo === 'parente' ? 1 : 0.6)), parcela: 0, taxa: 0, atrasada: true, fim: null };
+      if (HOJE && (d.tipo === 'cartao' || d.tipo === 'cheque') && !d.parcela) return { tipo: d.tipo, saldo: d.valor, parcela: 0, taxa: taxa(d), atrasada: false, fim: null };
       if ((d.tipo === 'cartao' || d.tipo === 'cheque') && !d.parcela) { var i = 0.0727 * (aperto ? 1.15 : 1); return { tipo: d.tipo, saldo: d.valor, parcela: Math.round(pmt(d.valor, i, 12)), taxa: i, atrasada: false, fim: null }; }
       var tx = taxa(d) * (aperto ? 1.15 : 1), saldo = d.valor;
       // Muita gente responde "quanto deve" somando as parcelas que faltam (ex.: 58 × R$ 1.026 = R$ 60 mil).
@@ -379,28 +412,36 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     var parcelas0 = ds.reduce(function (s, d) { return s + d.parcela; }, 0);
     var sobra0 = (r.renda || 0) - gastos - parcelas0;
     if (sobra0 * (aperto ? 0.85 : 1) <= 0 && caixa < ds.reduce(function (s, d) { return s + d.saldo; }, 0)) return { fecha: false, diferenca: Math.max(0, -sobra0), jurosMes: jurosMes, gastos: gastos };
-    var primeira = null;
+    var primeira = null, jurosTot = 0, juros12 = 0;
     for (var k = 0; k < 120; k++) {
       var t = [ano + Math.floor((mes - 1 + k) / 12), (mes - 1 + k) % 12 + 1];
       var pagas = 0;
       ds.forEach(function (d) {
         if (d.fim) return;
-        d.saldo *= 1 + d.taxa;
+        jurosTot += d.saldo * d.taxa; if (k < 12) juros12 += d.saldo * d.taxa; d.saldo *= 1 + d.taxa;
         var p = Math.min(d.parcela, d.saldo); d.saldo -= p; pagas += p;
       });
       var extra = Math.max(0, ((r.renda || 0) - gastos - pagas) * (aperto ? 0.85 : 1)) + caixa; caixa = 0;
       var abertas = ds.filter(function (d) { return !d.fim && d.saldo > 0.5; });
-      abertas.sort(function (a, b) { return (b.atrasada - a.atrasada) || (b.taxa - a.taxa); });
-      abertas.forEach(function (d) { var v = Math.min(extra, d.saldo); d.saldo -= v; extra -= v; });
+      if (HOJE) {  // um pouco para cada uma, até o dinheiro acabar
+        while (extra > 0.5 && abertas.length) {
+          var cota = extra / abertas.length;
+          abertas.forEach(function (d) { var v = Math.min(cota, d.saldo); d.saldo -= v; extra -= v; });
+          abertas = abertas.filter(function (d) { return d.saldo > 0.5; });
+        }
+      } else {
+        abertas.sort(function (a, b) { return (b.atrasada - a.atrasada) || (b.taxa - a.taxa); });
+        abertas.forEach(function (d) { var v = Math.min(extra, d.saldo); d.saldo -= v; extra -= v; });
+      }
       caixa = extra;
       ds.forEach(function (d) { if (!d.fim && d.saldo <= 0.5) { d.fim = t; if (!primeira) primeira = t; } });
       if (ds.every(function (d) { return d.fim; })) {
         // A ordem em que cada dívida acaba (só o tipo e o mês): a oferta mostra a primeira e guarda o resto para o plano.
         var ordem = ds.map(function (d, i) { return { t: d.tipo, fim: d.fim, i: i }; }).sort(function (a, b) { return (a.fim[0] * 12 + a.fim[1]) - (b.fim[0] * 12 + b.fim[1]) || a.i - b.i; }).map(function (x) { return { t: x.t, fim: x.fim }; });
-        return { fecha: true, saida: t, primeira: primeira, ordem: ordem, jurosMes: jurosMes, gastos: gastos };
+        return { fecha: true, saida: t, primeira: primeira, ordem: ordem, jurosMes: jurosMes, jurosTot: jurosTot, juros12: juros12, gastos: gastos };
       }
     }
-    return { fecha: true, saida: null, jurosMes: jurosMes, gastos: gastos };
+    return { fecha: true, saida: null, jurosMes: jurosMes, jurosTot: jurosTot, juros12: juros12, gastos: gastos };
   }
   // O primeiro passo que a pessoa leva de graça, com as dívidas dela.
   function nomeTipo(d) { return (TIPOS.filter(function (x) { return x[1] === d.tipo; })[0] || ['Outra dívida'])[0]; }
@@ -426,7 +467,16 @@ pre.teste { background: var(--branco); border-radius: 12px; padding: 12px; font-
     var total = r.dividas.reduce(function (s, d) { return s + d.valor; }, 0);
     if (!a.fecha) return { tipo: 'lei', aprox: true, diferenca: Math.round(a.diferenca), semSobra: Math.round(a.diferenca) === 0, juros_mes: Math.round(a.jurosMes), dividas: r.dividas.length, total: total };
     if (!a.saida) return { tipo: 'lei', aprox: true, diferenca: 0, juros_mes: Math.round(a.jurosMes), dividas: r.dividas.length, total: total };
-    return { tipo: 'data', aprox: true, saida: a.saida, saida_max: (b.fecha && b.saida && (b.saida[0] * 12 + b.saida[1] > a.saida[0] * 12 + a.saida[1])) ? b.saida : null,
+    // Quanto a ordem certa economiza, contra o jeito de hoje: juros dos próximos 12 meses e mês de saída (só mostra se a diferença for real).
+    var h = simular(r, false, 'hoje'), comp = null;
+    if (h.fecha) {
+      var r10 = function (v) { return Math.round(v / 10) * 10; };
+      var mesesHoje = h.saida ? (h.saida[0] * 12 + h.saida[1]) - (a.saida[0] * 12 + a.saida[1]) : null;
+      var j12h = r10(h.juros12), j12p = r10(a.juros12);
+      if (j12h - j12p >= 100 || (mesesHoje != null && mesesHoje >= 2) || !h.saida)
+        comp = { hoje_saida: h.saida || null, meses_a_menos: mesesHoje != null ? Math.max(0, mesesHoje) : null, juros12_hoje: j12h, juros12_plano: j12p };
+    }
+    return { tipo: 'data', aprox: true, comp: comp, saida: a.saida, saida_max: (b.fecha && b.saida && (b.saida[0] * 12 + b.saida[1] > a.saida[0] * 12 + a.saida[1])) ? b.saida : null,
       primeira: a.primeira && (a.primeira[0] !== a.saida[0] || a.primeira[1] !== a.saida[1]) ? a.primeira : null, ordem: (a.ordem || []).slice(0, 12), juros_mes: Math.round(a.jurosMes), dividas: r.dividas.length, total: total };
   }
 
