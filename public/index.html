@@ -147,6 +147,7 @@ a { color: inherit; }
 .frase[aria-pressed="true"] { color: #DCEBE1; }
 .frase[aria-pressed="true"]::before { background: #9FD1B6; border-color: #9FD1B6; }
 .frase:focus-visible { outline: 3px solid #9FD1B6; outline-offset: 4px; border-radius: 6px; }
+.marcou-cta { margin: 14px 0 0; }
 .marcou { font-family: var(--f-marca); font-weight: 800; font-size: clamp(1.4rem, 5vw, 2rem); line-height: 1.15; color: #9FD1B6; }
 .reconhece .virada { font-size: 1.1875rem; max-width: 36rem; color: #D5DCD7; }
 .reconhece .virada b { color: var(--papel); }
@@ -373,16 +374,16 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
           <div class="nt"><i class="nt-banco" aria-hidden="true">$</i><span class="nt-a">Banco</span><span class="nt-h">agora</span><span class="nt-t"><b>Saldo da conta:</b> <span class="neg">-R$ 312,40</span></span></div>
           <div class="nt"><i class="nt-cartao" aria-hidden="true"><svg viewBox="0 0 16 12" width="14" height="11"><rect x="1" y="1" width="14" height="10" rx="2" fill="none" stroke="#fff" stroke-width="1.6"/><rect x="1" y="3.6" width="14" height="2" fill="#fff"/></svg></i><span class="nt-a">Cartão de crédito</span><span class="nt-h">agora</span><span class="nt-t"><b>Sua fatura vence hoje.</b> Mínimo R$ 427,16</span></div>
         </div>
-        <h1 class="solta">Descubra o mês em que você <em>sai das dívidas.</em></h1>
-        <p class="lead"><b>Grátis, em 5 minutos e sem CPF.</b> Você vê a data antes de deixar contato.</p>
+        <h1 class="solta">Descubra o mês em que o seu salário <em>volta a ser seu.</em></h1>
+        <p class="lead">Qual dívida pagar primeiro, quanto oferecer no acordo e quando volta a sobrar dinheiro. <b>A sua data é grátis, em 5 minutos e sem CPF.</b></p>
         <div class="pergunta" id="pergunta">
-          <p class="p-titulo" id="p-titulo">Para começar: quanto você deve, somando tudo?</p>
+          <p class="p-titulo" id="p-titulo">Para começar: o que mais te aperta hoje?</p>
           <div class="chips-faixa" role="group" aria-labelledby="p-titulo">
-            <a class="chip-faixa" href="rapido.html?faixa=ate5" data-faixa="ate5">Até R$ 5 mil</a>
-            <a class="chip-faixa" href="rapido.html?faixa=5a15" data-faixa="5a15">De R$ 5 a 15 mil</a>
-            <a class="chip-faixa" href="rapido.html?faixa=15a30" data-faixa="15a30">De R$ 15 a 30 mil</a>
-            <a class="chip-faixa" href="rapido.html?faixa=mais30" data-faixa="mais30">Mais de R$ 30 mil</a>
-            <a class="chip-faixa chip-largo" href="rapido.html?faixa=naosei" data-faixa="naosei">Não sei bem quanto</a>
+            <a class="chip-faixa" href="rapido.html?aperta=cartao" data-aperta="cartao">A fatura do cartão</a>
+            <a class="chip-faixa" href="rapido.html?aperta=consignado" data-aperta="consignado">O consignado</a>
+            <a class="chip-faixa" href="rapido.html?aperta=nome" data-aperta="nome">O nome sujo</a>
+            <a class="chip-faixa" href="rapido.html?aperta=cobranca" data-aperta="cobranca">As ligações de cobrança</a>
+            <a class="chip-faixa chip-largo" href="rapido.html?aperta=tudo" data-aperta="tudo">Tudo junto</a>
           </div>
           <button type="button" class="nao-devo" id="nao-devo">Não tenho dívida agora</button>
           <p class="nao-msg" id="nao-msg" hidden>Que bom! O Desaperto é para quem está apertado com dívida. Se você conhece alguém assim, <a id="nao-indicar" href="https://wa.me/?text=Achei%20isso%20e%20lembrei%20de%20voc%C3%AA%3A%20em%205%20minutos%20mostra%20em%20que%20m%C3%AAs%20d%C3%A1%20para%20sair%20do%20aperto.%20%C3%89%20gr%C3%A1tis%3A%20https%3A%2F%2Fdesaperto.com%2F%3Futm_source%3Dwhatsapp" target="_blank" rel="noopener">mande o link pelo WhatsApp</a>.</p>
@@ -429,6 +430,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
         <li><button type="button" class="frase" aria-pressed="false">Não consegue ver um caminho em que tudo esteja quitado.</button></li>
       </ul>
       <p class="marcou" id="marcou" aria-live="polite" hidden></p>
+      <p class="marcou-cta" id="marcou-cta" hidden><a class="btn btn-principal" href="rapido.html?aperta=tudo" data-aperta="tudo">Você não está só nisso. Ver a minha data &rarr;</a></p>
       <p class="virada">Não é falta de esforço. São os juros, que crescem em cima dos juros. <b>Quando você sabe qual dívida pagar primeiro, o aperto começa a soltar.</b></p>
     </div>
   </section>
@@ -484,7 +486,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
         </li>
         <li>
           <h3>Quer o caminho? O plano exato</h3>
-          <p>Por R$ 34,90, você completa as respostas com o app do banco aberto e o plano chega no seu e-mail: qual dívida pagar primeiro e o que fazer em cada mês, até a última.</p>
+          <p>Depois do Pix, você confere alguns valores no app do banco e o plano chega no seu e-mail: qual dívida pagar primeiro, quanto oferecer no acordo e o que fazer em cada mês, até a última.</p>
           <span class="tempo">10 minutos, e chega em minutos</span>
         </li>
       </ol>
@@ -620,7 +622,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
     <div class="miolo">
       <div class="cab">
         <p class="rotulo">Quanto custa</p>
-        <h2 id="t-preco">A data é grátis. O caminho custa R$ 34,90.</h2>
+        <h2 id="t-preco">A data é grátis. Saber quanto oferecer e qual pagar primeiro custa R$ 34,90.</h2>
         <p>Em 5 minutos você vê o mês aproximado em que sai das dívidas, de graça. Só paga se quiser o plano completo, com a data exata. Uma vez só, por Pix, sem assinatura.</p>
       </div>
       <div class="caixa-preco">
@@ -751,9 +753,9 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
     try { var ab = sessionStorage.getItem('desaperto-ab'); if ((ab === 'a' || ab === 'b') && /^(v_inicio|v_rapido|etapa_r|v_pagar_data|clicou_pix|tempo_10s|faixa_)/.test(e)) navigator.sendBeacon('/api/evento', JSON.stringify({ e: 'ab' + ab + '_' + e })); } catch (er) {}
   }
   contar('v_inicio');
-  // primeira tela: quanto a pessoa deve (mede se o público é o certo e quem começa)
-  document.querySelectorAll('.chip-faixa').forEach(function (a) {
-    a.addEventListener('click', function () { contar('faixa_' + a.getAttribute('data-faixa')); });
+  // primeira tela: o que mais aperta (mede o que o público sente e quem começa)
+  document.querySelectorAll('[data-aperta]').forEach(function (a) {
+    a.addEventListener('click', function () { contar('aperta_' + a.getAttribute('data-aperta')); });
   });
   (function () {
     var b = document.getElementById('nao-devo'); if (!b) return;
@@ -798,6 +800,7 @@ figcaption span { color: var(--cinza); font-size: .9375rem; line-height: 1.45; }
       var n = document.querySelectorAll('.frase[aria-pressed="true"]').length;
       marcou.hidden = n === 0;
       marcou.textContent = n === 0 ? '' : n === 1 ? 'Você marcou 1. Isso tem saída.' : n === frases.length ? 'Você marcou todas. Respira: isso tem saída.' : 'Você marcou ' + n + '. Isso tem saída.';
+      document.getElementById('marcou-cta').hidden = n < 3;
     });
   });
 

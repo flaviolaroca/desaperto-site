@@ -72,7 +72,7 @@ export async function onRequestPost({ request, env }) {
     if (await enviarCompletar(env, l, origem, true)) { completares++; await env.DB.prepare('UPDATE respostas SET completar_lembrete_em = ? WHERE id = ?').bind(agora(), l.id).run(); }
   }
   for (const l of pagto) {
-    if (dataDaLinha(l).simples) continue;  // caso simples: não insistir na venda
+    { const dl = dataDaLinha(l); if (dl.simples && !dl.atrasadas) continue; }  // caso simples sem atraso: não insistir na venda
     if (await enviarDataGratis(env, l, origem, true)) {
       pagtos++;
       await env.DB.prepare('UPDATE respostas SET lembrete_pagto_em = COALESCE(lembrete_pagto_em, ?), promo_email_em = ? WHERE id = ?').bind(agora(), promoAtiva(env, l) ? agora() : null, l.id).run();

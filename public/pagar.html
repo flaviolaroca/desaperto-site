@@ -78,6 +78,16 @@ h1 em { font-style: normal; color: var(--verde); }
 .barra-compra .bc-p s { font-size: .8125rem; opacity: .6; }
 .barra-compra .bc-p b { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 1.25rem; }
 .barra-compra button { background: #DCEBE1; color: #16211C; border: 0; border-radius: 999px; padding: 12px 18px; font: inherit; font-weight: 700; cursor: pointer; }
+.acordo { background: #fff; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 12px; border: 1.5px solid #16704A; }
+.acordo .a-rot { margin: 0; font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: #16704A; }
+.acordo h2 { margin: 0; font-size: 1.25rem; line-height: 1.25; }
+.ac-l { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; padding: 12px 0 0; border-top: 1px solid #E7DFD0; }
+.ac-l .ac-n { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 10px; font-weight: 700; }
+.ac-l .ac-n small { font-weight: 400; color: #5C625E; }
+.ac-v { background: #F3EFE6; border-radius: 12px; padding: 8px 12px; display: flex; flex-direction: column; }
+.ac-v span { font-size: .75rem; color: #5C625E; }
+.ac-v b { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 1.0625rem; filter: blur(6px); user-select: none; }
+.acordo p { margin: 0; font-size: .9375rem; line-height: 1.5; color: #2B3530; }
 .simples { background: #DCEBE1; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
 .simples .s-rot { margin: 0; font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: #16704A; }
 .simples h2 { margin: 0; font-size: 1.25rem; line-height: 1.25; }
@@ -196,7 +206,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
     var n = nome ? esc(nome) + ', ' : '';
     if (d.tipo === 'lei') return n + 'a conta não fecha. <em>Mas existe saída.</em>';
     if (d.tipo === 'sem_data') return n + 'as suas contas estão prontas.';
-    if (d.aprox) return n + 'você sai das dívidas <em>' + esc(d.faixa_txt || 'por volta de ' + d.saida_txt) + '</em>.';
+    if (d.aprox) return n + (d.folga ? 'separando ' + esc(reais(d.folga)) + ' por mês, ' : '') + 'você sai das dívidas <em>' + esc(d.faixa_txt || 'por volta de ' + d.saida_txt) + '</em>.';
     return n + (d.carro ? 'vendendo o carro, você sai' : 'você sai') + ' das dívidas em <em>' + esc(d.saida_txt) + '</em>.';
   }
   function notaAprox(d) {
@@ -269,9 +279,19 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
   }
   // Caso simples (uma dívida que acaba em até 3 meses): honestidade em vez de venda, dicas de negociação e pedido de indicação.
   var LINK_INDICAR = 'https://wa.me/?text=' + encodeURIComponent('Achei um site que mostra em que mês você sai das dívidas e qual pagar primeiro. É grátis e não pede CPF: https://desaperto.com/?utm_source=whatsapp&utm_medium=indicacao');
-  function htmlSimples() {
-    return '<div class="simples"><p class="s-rot">Boa notícia</p><h2>O seu caso é simples: você não precisa do plano completo.</h2>' +
-      '<p>Com uma dívida só, o caminho é negociar bem. Quatro cuidados que valem dinheiro:</p><ol>' +
+  // Quanto oferecer no acordo: os valores ficam travados para o plano completo (a pessoa vê a dívida dela, não o número).
+  function htmlAcordo(lista, rs) {
+    if (!lista || !lista.length) return '';
+    return '<div class="acordo"><p class="a-rot">Antes de ligar para o banco</p><h2>Quanto oferecer no acordo</h2>' +
+      lista.map(function (x) {
+        return '<div class="ac-l"><div class="ac-n"><span>' + esc(x.nome) + '</span><small>deve ' + rs(x.valor) + '</small></div>' +
+          '<div class="ac-v"><span>Ofereça primeiro</span><b aria-hidden="true">R$ 0.000</b></div><div class="ac-v"><span>Aceite até</span><b aria-hidden="true">R$ 0.000</b></div></div>';
+      }).join('') +
+      '<p>A primeira proposta do banco quase nunca é a menor. O plano completo mostra quanto oferecer e até quanto aceitar, a frase pronta para a ligação e onde negociar com segurança.</p></div>';
+  }
+  function htmlSimples(comAcordo) {
+    return '<div class="simples"><p class="s-rot">Boa notícia</p><h2>' + (comAcordo ? 'O seu caso é simples: é uma dívida só.' : 'O seu caso é simples: você não precisa do plano completo.') + '</h2>' +
+      '<p>' + (comAcordo ? 'O que decide quanto você vai pagar é o acordo. Quatro cuidados para a negociação:' : 'Com uma dívida só, o caminho é negociar bem. Quatro cuidados que valem dinheiro:') + '</p><ol>' +
       '<li><b>Não aceite a primeira proposta.</b> Pergunte o valor à vista e o parcelado, anote e peça um desconto maior. Em dívida atrasada, descontos grandes são comuns.</li>' +
       '<li><b>Pague só por canal oficial:</b> app ou site do banco, da loja ou o Serasa Limpa Nome. Nunca por link de mensagem nem para a conta de uma pessoa.</li>' +
       '<li><b>Só feche o que cabe no mês.</b> Uma parcela que aperta vira outro atraso.</li>' +
@@ -362,7 +382,15 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
       umaVez('lead', function () { window.dpx('Lead'); });
       if (d.simples) {
         var ofertaS = '<div class="oferta">' + (s.promo ? '<p class="promo-tag">Preço especial · até ' + esc(s.promo_ate_txt) + '</p>' : '') + '<div>' + (s.promo ? '<span class="de">' + esc(s.preco_cheio_txt) + '</span> ' : '') + '<span class="preco">' + esc(s.preco_txt) + '</span></div><p class="sub">Uma vez só, por Pix. Depois de pagar, você completa as respostas e o plano chega no seu e-mail.</p>' +
-          '<button type="button" class="btn" id="btn-pix">Pagar ' + esc(s.preco_txt) + ' com Pix</button><div id="erro" class="erro-box" hidden></div></div>';
+          '<button type="button" class="btn" id="btn-pix">Pagar ' + esc(s.preco_txt) + ' com Pix</button><div id="erro" class="erro-box" hidden></div>' +
+          '<p class="pequeno">Pagamento pelo Mercado Pago. No seu banco, o recebedor aparece ' + (s.recebedor ? 'como ' + esc(s.recebedor) : 'com o nome do responsável pelo Desaperto') + '.</p></div>';
+        var norte = '<div class="interesse"><h2>Depois que essa dívida acabar</h2><p>O próximo passo é não voltar para o vermelho. O <b>NORTE</b> é um diagnóstico das suas finanças: uma nota de 0 a 10, para onde o dinheiro está escapando e um plano de 3 passos, com valores e prazos. Feito pelo mesmo criador do Desaperto.</p><a class="btn-norte" id="btn-norte" href="https://metodonorte.com.br/?utm_source=desaperto&utm_medium=caso_simples" target="_blank" rel="noopener">Conhecer o NORTE &rarr;</a></div>';
+        if (d.atrasadas && d.atrasadas.length) {  // dívida atrasada: o valor do acordo é o motivo para pagar
+          $t.innerHTML = '<p class="rotulo">Sua data aproximada</p><h1>' + titulo(d, nome) + '</h1>' + passoGratis(d) + htmlAcordo(d.atrasadas, reais) + ofertaS + htmlSimples(true) + norte +
+            '<p class="pequeno">Protocolo ' + esc(s.protocolo) + '. A data acima é sua, de graça.</p>';
+          ligarSimples(); document.getElementById('btn-pix').addEventListener('click', gerarPix); barraCompra(s);
+          return;
+        }
         $t.innerHTML = '<p class="rotulo">Sua data aproximada</p><h1>' + titulo(d, nome) + '</h1>' + passoGratis(d) + htmlSimples() +
           '<div class="interesse"><h2>Depois que essa dívida acabar</h2><p>O próximo passo é não voltar para o vermelho. O <b>NORTE</b> é um diagnóstico das suas finanças: uma nota de 0 a 10, para onde o dinheiro está escapando e um plano de 3 passos, com valores e prazos. Feito pelo mesmo criador do Desaperto.</p><a class="btn-norte" id="btn-norte" href="https://metodonorte.com.br/?utm_source=desaperto&utm_medium=caso_simples" target="_blank" rel="noopener">Conhecer o NORTE &rarr;</a></div>' +
           '<details class="mesmo-assim"><summary>Mesmo assim, quero o plano completo</summary>' + inclui(d) + ofertaS + '</details>' +
@@ -371,7 +399,7 @@ textarea.codigo { font: 500 .8125rem/1.4 "IBM Plex Mono", ui-monospace, monospac
         document.getElementById('btn-pix').addEventListener('click', gerarPix);
         return;
       }
-      $t.innerHTML = '<p class="rotulo">' + (d.aprox ? 'Sua data aproximada' : 'Seu resultado') + '</p><h1>' + titulo(d, nome) + '</h1>' + (d.comp ? htmlComp(d.comp, d.saida, reais, s.preco_txt ? '<p class="c-nota" style="opacity:.9;font-size:.875rem">O plano que mostra essa ordem custa ' + esc(s.preco_txt) + ', uma vez só.</p>' : '') : '') + numeros(d) + notaAprox(d) + passoGratis(d) + ordemTravada(d) + inclui(d) +
+      $t.innerHTML = '<p class="rotulo">' + (d.aprox ? 'Sua data aproximada' : 'Seu resultado') + '</p><h1>' + titulo(d, nome) + '</h1>' + (d.comp ? htmlComp(d.comp, d.saida, reais, s.preco_txt ? '<p class="c-nota" style="opacity:.9;font-size:.875rem">O plano que mostra essa ordem custa ' + esc(s.preco_txt) + ', uma vez só.</p>' : '') : '') + numeros(d) + notaAprox(d) + passoGratis(d) + htmlAcordo(d.atrasadas, reais) + ordemTravada(d) + inclui(d) +
         '<div class="oferta">' + (s.promo ? '<p class="promo-tag">Preço especial · até ' + esc(s.promo_ate_txt) + '</p>' : '') + '<div>' + (s.promo ? '<span class="de">' + esc(s.preco_cheio_txt) + '</span> ' : '') + '<span class="preco">' + esc(s.preco_txt) + '</span></div><p class="sub">' + (d.aprox ? 'Uma vez só, por Pix. Sem assinatura. Depois de pagar, você completa as respostas e o plano exato chega no seu e-mail em minutos.' : 'Uma vez só, por Pix. Sem assinatura. O plano chega no seu e-mail em poucos minutos.') + '</p>' + ancora(d) +
         '<button type="button" class="btn" id="btn-pix">Pagar ' + esc(s.preco_txt) + ' com Pix</button><div id="erro" class="erro-box" hidden></div>' +
         '<p class="pequeno">Pagamento pelo Mercado Pago. No seu banco, o recebedor aparece ' + (s.recebedor ? 'como ' + esc(s.recebedor) : 'com o nome do responsável pelo Desaperto') + '. O Desaperto não vê nem guarda dados do seu banco.</p></div>' +
